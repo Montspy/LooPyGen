@@ -16,5 +16,5 @@ COPY --from=build /usr/local/lib/python3.10 /usr/local/lib/python3.10
 ADD dockerfiles/generate.sh /usr/local/bin/generate
 ADD dockerfiles/metadata.sh /usr/local/bin/metadata
 # finish up container
-WORKDIR /lrc-batch
+WORKDIR /loopymint2
 CMD ["bash"]

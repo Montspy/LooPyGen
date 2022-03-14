@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd /lrc-batch
+cd /loopymint2
 python generate.py $@
