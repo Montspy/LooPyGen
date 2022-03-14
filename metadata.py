@@ -52,7 +52,7 @@ def getAttribute(key, value):
     }
 
 for i in data:
-    token_id = i['tokenId']
+    token_id = i['ID']
     token = {
         "name": names["collection"] + ' #' + str(token_id),
         "image": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
