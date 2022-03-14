@@ -10,6 +10,7 @@ __pycache__/
 *$py.class
 *.png
 *.json
+*.zip
 
 # C extensions
 *.so
