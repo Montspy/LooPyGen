@@ -135,6 +135,16 @@ print(trait05_count)
 print(trait06_count)
 print(trait07_count)
 
+METADATA_FILE_NAME = dataPath + '/gen-stats.json'
+with open(METADATA_FILE_NAME, 'w') as outfile:
+    json.dump(trait01_count, outfile, indent=4)
+    json.dump(trait02_count, outfile, indent=4)
+    json.dump(trait03_count, outfile, indent=4)
+    json.dump(trait04_count, outfile, indent=4)
+    json.dump(trait05_count, outfile, indent=4)
+    json.dump(trait06_count, outfile, indent=4)
+    json.dump(trait07_count, outfile, indent=4)
+
 #### Generate Images
 
 for item in all_images:
@@ -164,6 +174,6 @@ for item in all_images:
 
 #### Generate Metadata for all Traits
 
-METADATA_FILE_NAME = dataPath + '/all-traits.json';
+METADATA_FILE_NAME = dataPath + '/all-traits.json'
 with open(METADATA_FILE_NAME, 'w') as outfile:
     json.dump(all_images, outfile, indent=4)
