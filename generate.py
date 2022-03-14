@@ -9,7 +9,7 @@ import torchvision.transforms as T
 import re
 import argparse
 import shutil
-import radbitz as traits
+import traits
 
 # check for command line arguments
 parser = argparse.ArgumentParser()
