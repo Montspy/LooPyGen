@@ -55,12 +55,12 @@ def create_new_image():
 
     # For each trait category, select a random trait based on the weightings
     new_image [traits.names["trait01"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait02"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait03"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait04"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait05"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait06"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait07"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
+    new_image [traits.names["trait02"]] = random.choices(traits.trait02, traits.trait02_weights)[0]
+    new_image [traits.names["trait03"]] = random.choices(traits.trait03, traits.trait03_weights)[0]
+    new_image [traits.names["trait04"]] = random.choices(traits.trait04, traits.trait04_weights)[0]
+    new_image [traits.names["trait05"]] = random.choices(traits.trait05, traits.trait05_weights)[0]
+    new_image [traits.names["trait06"]] = random.choices(traits.trait06, traits.trait06_weights)[0]
+    new_image [traits.names["trait07"]] = random.choices(traits.trait07, traits.trait07_weights)[0]
 
     if new_image in all_images:
         return create_new_image()
@@ -140,16 +140,21 @@ print(trait07_count)
 for item in all_images:
 
     # Define and convert images
-    trait01_file = Image.open(f'{traits.trait01_paths[item[traits.names["trait01"]]]}.png').convert('RGBA')
-    trait02_file = Image.open(f'{traits.trait02_paths[item[traits.names["trait02"]]]}.png').convert('RGBA')
-    trait03_file = Image.open(f'{traits.trait03_paths[item[traits.names["trait03"]]]}.png').convert('RGBA')
-    trait04_file = Image.open(f'{traits.trait04_paths[item[traits.names["trait04"]]]}.png').convert('RGBA')
-    trait05_file = Image.open(f'{traits.trait05_paths[item[traits.names["trait05"]]]}.png').convert('RGBA')
-    trait06_file = Image.open(f'{traits.trait06_paths[item[traits.names["trait06"]]]}.png').convert('RGBA')
-    trait07_file = Image.open(f'{traits.trait07_paths[item[traits.names["trait07"]]]}.png').convert('RGBA')
+    trait01_file = Image.open(f'{traits.trait01dir}{traits.trait01_paths[item[traits.names["trait01"]]]}').convert('RGBA')
+    trait02_file = Image.open(f'{traits.trait02dir}{traits.trait02_paths[item[traits.names["trait02"]]]}').convert('RGBA')
+    trait03_file = Image.open(f'{traits.trait03dir}{traits.trait03_paths[item[traits.names["trait03"]]]}').convert('RGBA')
+    trait04_file = Image.open(f'{traits.trait04dir}{traits.trait04_paths[item[traits.names["trait04"]]]}').convert('RGBA')
+    trait05_file = Image.open(f'{traits.trait05dir}{traits.trait05_paths[item[traits.names["trait05"]]]}').convert('RGBA')
+    trait06_file = Image.open(f'{traits.trait06dir}{traits.trait06_paths[item[traits.names["trait06"]]]}').convert('RGBA')
+    trait07_file = Image.open(f'{traits.trait07dir}{traits.trait07_paths[item[traits.names["trait07"]]]}').convert('RGBA')
 
     # Create the composite image
-    composite = Image.alpha_composite(trait01_file, trait02_file, trait03_file, trait04_file, trait05_file, trait06_file, trait07_file)
+    composite = Image.alpha_composite(trait01_file, trait02_file)
+    composite = Image.alpha_composite(composite, trait03_file)
+    composite = Image.alpha_composite(composite, trait04_file)
+    composite = Image.alpha_composite(composite, trait05_file)
+    composite = Image.alpha_composite(composite, trait06_file)
+    composite = Image.alpha_composite(composite, trait07_file)
 
     #Convert to RGB
     rgb_im = composite.convert('RGB')
