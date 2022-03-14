@@ -5,15 +5,14 @@ This system utilizes a few parts.
 1. Python to generate images and metadata according to the standards for the new Layer 2 marketplace.
 2. Python to run the batch minting process
 
-# Setting up the generator
-
-Edit the `traits.py` file to include the number of traits you wish to have, mapping the same information you see there.
-
-# Running the engine
+# Setting up the environment
 
 For now this is based in Docker, so [install that first.](https://docs.docker.com/engine/install/)
 
-Now run `./docker.sh` to setup a python environment with the scripts ready to go:
+
+## Linux & Mac
+
+Open a terminal, and `cd` to this folder. Now run `./docker.sh` to setup a python environment with the scripts ready to go:
 
 ```shell
 $ ./docker.sh
@@ -40,14 +39,34 @@ Successfully tagged lrc-batch:latest
 root@43c30d60526a:/lrc-batch#
 ```
 
+## Windows
+
+1. In this folder, `Right-click -> Open in Windows Terminal` to open command prompt. Now run `docker.bat` to build the image for our container.
+2. Once the build is successful, open Docker Desktop and locate the image
+3. Click the blue RUN button
+4. **Name** the image whatever you like
+5. Leave **Ports** alone
+6. Set **Host Path** to this folder
+7. Set **Container Path** to `/loopymint2`
+8. Click RUN
+9. Once running, find the container in the list and click CLI to open the shell prompt.
+
+# Setting up the generator
+
+Edit the `traits.py` file to include the number of traits you wish to have, mapping the same information you see there.
+
+## Generating Images
+
 Once at this shell prompt, you can run the image generator and specify how many unique items you want to create.
 
 ```shell
 $ generate 100
 ```
 
+## Generating Metadata
+
 After you generate the images and upload to IPFS, you can then generate the metadata JSON files.
 
 ```shell
-$ metadata
+$ metadata --cid QmVpLSoYak1N8pasuxLrNZLbnvrNvLTJmY8ncMBjNRPBtQ
 ```
