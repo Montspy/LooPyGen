@@ -9,7 +9,7 @@ import torchvision.transforms as T
 import re
 import argparse
 import shutil
-import traits
+import radbitz as traits
 
 # check for command line arguments
 parser = argparse.ArgumentParser()
@@ -135,8 +135,8 @@ print(trait05_count)
 print(trait06_count)
 print(trait07_count)
 
-METADATA_FILE_NAME = dataPath + '/gen-stats.json'
-with open(METADATA_FILE_NAME, 'w') as outfile:
+STATS_FILENAME = dataPath + '/gen-stats.json'
+with open(STATS_FILENAME, 'w') as outfile:
     json.dump(trait01_count, outfile, indent=4)
     json.dump(trait02_count, outfile, indent=4)
     json.dump(trait03_count, outfile, indent=4)
