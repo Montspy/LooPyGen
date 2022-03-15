@@ -1,7 +1,7 @@
 ## Top level image directory, relative to generate.py
 topLevel = "./images/source_layers"
 
-"""
+""" DO NOT EDIT
 This script treats each layer of the image as traits, and each variant of a layer as items.
 
 This section links the code names to the "pretty" names that you want to
@@ -21,13 +21,13 @@ names = {
 
 If you were to increase the traits to 4, then it would look like this
 
-## Tell the script about each folder
+## Tell the script about each layer
 layer01dir = topLevel + "/layer01/"
 layer02dir = topLevel + "/layer02/"
 layer02dir = topLevel + "/layer03/"
 layer02dir = topLevel + "/layer04/"
 
-## Give each trait a name
+## Give each layer a name
 names = {
     "collection": "Collection Name",
     "layer01": "Pretty Trait Name 01",
@@ -35,7 +35,7 @@ names = {
     "layer01": "Pretty Trait Name 03",
     "layer02": "Pretty Trait Name 04"
 }
-"""
+DO NOT EDIT"""
 
 ## Tell the script about each folder
 layer01dir = topLevel + "/layer01/"
