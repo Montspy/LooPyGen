@@ -101,7 +101,7 @@ $ generate --number 100
 If you decide that you want to mint another batch, you can specify a starting ID on the command to pick up where you left off. The script will automatically pull in data from previous batches to make sure each token is still unique within the entire collection.
 
 ```shell
-$ ./docker.sh generate --id 101 --number 100
+$ generate --id 101 --number 100
 ```
 
 ### Generating Metadata
