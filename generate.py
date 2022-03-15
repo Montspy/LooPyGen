@@ -1,6 +1,8 @@
 from PIL import Image, ImageDraw, ImageFont
 from IPython.display import display
+from base64 import b64encode
 import random
+import time
 import json
 import os
 import torch
@@ -16,6 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--count", nargs=1, help="Total number of images to generate", type=int)
 parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
 parser.add_argument("--id", nargs=1, help="Specify starting ID for images", type=int)
+parser.add_argument("--seed", nargs=1, help="Randomness seed", type=str, default=None)
 args = parser.parse_args()
 
 # Define amount of images to generate
@@ -49,6 +52,12 @@ if args.id:
 else:
     startingId = 1
 
+# Randomness seed
+if args.seed is None:
+    timestamp = time.time_ns().to_bytes(16, byteorder='big')
+    SEED = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
+print(f"Using randomness seed: {SEED}")
+
 ## Generate Traits
 
 this_batch = []
@@ -74,20 +83,23 @@ for l in traits.layers:
     n = n + 1
 
 # A recursive function to generate unique image combinations
-def create_new_image():
+def create_new_image(dup_cnt: int = 0):
 
     # New, empty dictionary
-    new_image = {}
+    new_image = {"ID": startingId}
     n = 1
+
+    # Seed each image based on randomness seed and ID
+    image_seed = f"{SEED}{new_image['ID']}{dup_cnt}"
+    random.seed(image_seed)
 
     # For each trait category, select a random trait based on the weightings
     for l in traits.layers:
         new_image[traits.layers[n]["layer_name"]] = random.choices(traits.layers[n]["names"], traits.layers[n]["weights"])[0]
-        new_image["ID"] = startingId
         n = n + 1
 
     if new_image in this_batch or new_image in prev_batches:
-        return create_new_image()
+        return create_new_image(dup_cnt + 1)
     else:
         return new_image
 
