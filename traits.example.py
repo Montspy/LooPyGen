@@ -31,8 +31,7 @@ Add as many filenames and weights as needed.
     "weights": [
         50,
         50
-    ],
-    "names": []
+    ]
 }
 
 END COMMENT SECTION """
