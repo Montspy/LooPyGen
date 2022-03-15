@@ -56,6 +56,8 @@ else:
 if args.seed is None:
     timestamp = time.time_ns().to_bytes(16, byteorder='big')
     SEED = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
+else:
+    SEED = args.seed[0]
 print(f"Using randomness seed: {SEED}")
 
 ## Generate Traits
