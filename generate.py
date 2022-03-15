@@ -41,23 +41,33 @@ if not os.path.exists(dataPath):
 if args.id:
     startingId = args.id[0]
 else:
-    startingId = 0
+    startingId = 1
 
 ## Generate Traits
 
 all_images = []
+
+## Top level image directory
+topLevel = "./images/source_layers"
+
+## Generate folders and names list from layers available in traits
+n = 1
+for l in traits.layers:
+    traits.layers[n]["names"] = list(traits.layers[n]["filenames"].keys())
+    traits.layers[n]["path"] = topLevel + "/layer0" + str(n) + "/"
+    n = n + 1
 
 # A recursive function to generate unique image combinations
 def create_new_image():
 
     # New, empty dictionary
     new_image = {}
+    n = 1
 
     # For each trait category, select a random trait based on the weightings
-    new_image [traits.names["layer01"]] = random.choices(traits.layer01_names, traits.layer01_weights)[0]
-    new_image [traits.names["layer02"]] = random.choices(traits.layer02_names, traits.layer02_weights)[0]
-    new_image [traits.names["layer03"]] = random.choices(traits.layer03_names, traits.layer03_weights)[0]
-    new_image [traits.names["layer04"]] = random.choices(traits.layer04_names, traits.layer04_weights)[0]
+    for l in traits.layers:
+        new_image [traits.layers[n]["layer_name"]] = random.choices(traits.layers[n]["names"], traits.layers[n]["weights"])[0]
+        n = n + 1
 
     if new_image in all_images:
         return create_new_image()
@@ -82,63 +92,62 @@ for item in all_images:
     item["ID"] = startingId
     startingId = startingId + 1
 
-print(all_images)
+print("Look in " + dataPath + "/all-traits.json for an overview of all generated IDs and traits.")
 
 # Get Trait Counts
 print("How many of each trait exist?")
 
-trait01_count = {}
-for item in traits.layer01_names:
-    trait01_count[item] = 0
-
-trait02_count = {}
-for item in traits.layer02_names:
-    trait02_count[item] = 0
-
-trait03_count = {}
-for item in traits.layer03_names:
-    trait03_count[item] = 0
-
-trait04_count = {}
-for item in traits.layer04_names:
-    trait04_count[item] = 0
+n = 1
+for l in traits.layers:
+    traits.layers[n]["count"] = {}
+    for item in traits.layers[n]["names"]:
+        traits.layers[n]["count"][item] = 0
+    n = n + 1
 
 for image in all_images:
-    trait01_count[image[traits.names["layer01"]]] += 1
-    trait02_count[image[traits.names["layer02"]]] += 1
-    trait03_count[image[traits.names["layer03"]]] += 1
-    trait04_count[image[traits.names["layer04"]]] += 1
+    n = 1
+    for l in traits.layers:
+        traits.layers[n]["count"][image[traits.layers[n]["layer_name"]]] += 1
+        n = n + 1
 
-print(trait01_count)
-print(trait02_count)
-print(trait03_count)
-print(trait04_count)
+n = 1
+for c in traits.layers:
+    print(traits.layers[n]["count"])
+    n = n + 1
 
+## Store trait counts to json
+n = 1
 STATS_FILENAME = dataPath + '/gen-stats.json'
 with open(STATS_FILENAME, 'w') as outfile:
-    json.dump(trait01_count, outfile, indent=4)
-    json.dump(trait02_count, outfile, indent=4)
-    json.dump(trait03_count, outfile, indent=4)
-    json.dump(trait04_count, outfile, indent=4)
+    gen_stats = {}
+    for l in traits.layers:
+        gen_stats[traits.layers[n]["layer_name"]] = traits.layers[n]["count"]
+        n = n + 1
+    json.dump(gen_stats, outfile, indent=4)
 
 #### Generate Images
 
 for item in all_images:
 
-    # Define and convert images
-    trait01_file = Image.open(f'{traits.layer01dir}{traits.layer01_filenames[item[traits.names["layer01"]]]}').convert('RGBA')
-    trait02_file = Image.open(f'{traits.layer02dir}{traits.layer02_filenames[item[traits.names["layer02"]]]}').convert('RGBA')
-    trait03_file = Image.open(f'{traits.layer03dir}{traits.layer03_filenames[item[traits.names["layer03"]]]}').convert('RGBA')
-    trait04_file = Image.open(f'{traits.layer04dir}{traits.layer04_filenames[item[traits.names["layer04"]]]}').convert('RGBA')
+    n = 1
+    for l in traits.layers:
+        traits.layers[n]["file"] = Image.open(f'{traits.layers[n]["path"]}{traits.layers[n]["filenames"][item[traits.layers[n]["layer_name"]]]}').convert('RGBA')
+        n = n + 1
 
-    # Create the composite image
-    composite = Image.alpha_composite(trait01_file, trait02_file)
-    composite = Image.alpha_composite(composite, trait03_file)
-    composite = Image.alpha_composite(composite, trait04_file)
+    composite = Image.alpha_composite(traits.layers[1]["file"], traits.layers[2]["file"])
+
+    if len(traits.layers) > 2:
+        n = 1
+        for l in traits.layers:
+            if n < 3:
+                n = n + 1
+            else:
+                composite = Image.alpha_composite(composite, traits.layers[n]["file"])
+                n = n + 1
 
     #Convert to RGB
     rgb_im = composite.convert('RGB')
-    file_name = traits.names["collection"] + "_" + str(item["ID"]) + ".png"
+    file_name = traits.COLLECTION_NAME + "_" + str(item["ID"]) + ".png"
     rgb_im.save(genPath + "/" + file_name)
     print("Generated " + genPath + "/" + file_name)
 

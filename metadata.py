@@ -2,7 +2,7 @@ import json
 import argparse
 from os import path, getenv, makedirs
 from dotenv import load_dotenv
-from traits import names
+import traits
 import shutil
 
 load_dotenv()
@@ -35,7 +35,6 @@ if not path.exists(genPath):
 if not path.exists(dataPath):
     makedirs(dataPath)
 
-
 #### Generate Metadata for each Image
 
 f = open(dataPath + '/all-traits.json',)
@@ -43,7 +42,7 @@ data = json.load(f)
 
 # Changes this IMAGES_BASE_URL to yours
 IMAGES_BASE_URL = "ipfs://" + cid + "/"
-COLLECTION_LOWER = names["collection"].replace(" ", "_").lower()
+COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 
 def getAttribute(key, value):
     return {
@@ -54,7 +53,7 @@ def getAttribute(key, value):
 for i in data:
     token_id = i['ID']
     token = {
-        "name": names["collection"] + ' #' + str(token_id),
+        "name": traits.COLLECTION_NAME + ' #' + str(token_id),
         "image": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
         "animation_url": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
         "royalty_percentage": getenv("ROYALTY_PERCENTAGE"),
@@ -66,16 +65,16 @@ for i in data:
     }
 
     # set the attributes
-    token["attributes"].append(getAttribute(names["layer01"], i[names["layer01"]]))
-    token["attributes"].append(getAttribute(names["layer02"], i[names["layer02"]]))
-    token["attributes"].append(getAttribute(names["layer03"], i[names["layer03"]]))
-    token["attributes"].append(getAttribute(names["layer04"], i[names["layer04"]]))
+    n = 1
+    for l in traits.layers:
+        token["attributes"].append(getAttribute(traits.layers[n]["layer_name"], i[traits.layers[n]["layer_name"]]))
+        n = n + 1
 
     # set the properties
-    token["properties"][names["layer01"]] = i[names["layer01"]]
-    token["properties"][names["layer02"]] = i[names["layer02"]]
-    token["properties"][names["layer03"]] = i[names["layer03"]]
-    token["properties"][names["layer04"]] = i[names["layer04"]]
+    n = 1
+    for l in traits.layers:
+        token["properties"][traits.layers[n]["layer_name"]] = i[traits.layers[n]["layer_name"]]
+        n = n + 1
 
     with open(genPath + "/" + COLLECTION_LOWER + "_" + str(token_id) + ".json", 'w') as outfile:
         json.dump(token, outfile, indent=4)

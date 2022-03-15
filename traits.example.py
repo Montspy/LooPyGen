@@ -1,88 +1,68 @@
-## Top level image directory, relative to generate.py
-topLevel = "./images/source_layers"
+""" START COMMENT SECTION
 
-""" DO NOT EDIT
-This script treats each layer of the image as traits, and each variant of a layer as items.
+Consider the lowest number to be your background layer. Then you are adding new layers on top in order.
 
-This section links the code names to the "pretty" names that you want to
-appear on websites. Anything that has "layer" or "variant" in the name
-should only be incremented. Leave the "layer" or "variant" part as is.
+You must have at least 2 layers to run this script.
 
-## Tell the script about each folder
-layer01dir = topLevel + "/layer01/"
-layer02dir = topLevel + "/layer02/"
+Don't change anything that starts with "layer" other than its number.
 
-## Give each trait a name
-names = {
-    "collection": "Collection Title",
-    "layer01": "Pretty Trait Name 01",
-    "layer02": "Pretty Trait Name 02"
-}
+Increase the number for each line that you add.
 
-If you were to increase the traits to 4, then it would look like this
+Add as many layers as you need.
 
-## Tell the script about each layer
-layer01dir = topLevel + "/layer01/"
-layer02dir = topLevel + "/layer02/"
-layer02dir = topLevel + "/layer03/"
-layer02dir = topLevel + "/layer04/"
-
-## Give each layer a name
-names = {
-    "collection": "Collection Name",
-    "layer01": "Pretty Trait Name 01",
-    "layer01": "Pretty Trait Name 02",
-    "layer01": "Pretty Trait Name 03",
-    "layer02": "Pretty Trait Name 04"
-}
-DO NOT EDIT"""
-
-## Tell the script about each folder
-layer01dir = topLevel + "/layer01/"
-layer02dir = topLevel + "/layer02/"
-
-## Give each trait a name
-names = {
-    "collection": "Collection Title",
-    "layer01": "Pretty Trait Name 01",
-    "layer02": "Pretty Trait Name 02"
-}
-
-"""
 Make sure to copy the entire layer section when adding new ones.
 
-layer0X_filenames - Links the "pretty" names to the filenames.
+Only edit the values for "filenames" and "weights".
 
-layer0X_weights - Sets the rarity for each item in layer0X_filenames. There must be a weight for each item.
-                  When added up, all weights should equal exactly 100.
+Increase the layer number by 1 for each new section.
 
-layer0X_names - Automatically generated from what you enter into layer0X_filenames
-"""
+Add as many filenames and weights as needed.
+    1. You have to have the same amount of weights as you do filenames.
+    2. When you add up all the weights together, they must equal exactly 100.
 
-## Start Trait 01
-layer01_filenames = {
-    "Pretty Item Name 01": "item_01.png",
-    "Pretty Item Name 02": "item_02.png"
+    What you're doing is setting a "percentage chance this item gets picked"
+
+"layer0X": {
+    "layer_name": "Pretty Trait Name 0X",
+    "filenames": {
+        "Pretty Item Name 01": "item_01.png",
+        "Pretty Item Name 02": "item_02.png"
+    },
+    "weights": [
+        50,
+        50
+    ],
+    "names": []
 }
 
-layer01_weights = [
-    50,
-    50
-]
+END COMMENT SECTION """
 
-layer01_names = list(layer01_filenames.keys())
-## End Trait 01
+## Give the collection a name
+COLLECTION_NAME="Collection Title"
 
-## Start Trait 02
-layer02_filenames = {
-    "Pretty Item Name 01": "item_01.png",
-    "Pretty Item Name 02": "item_02.png"
+layers = {
+    1: {
+        "layer_name": "Pretty Trait Name 01",
+        "filenames": {
+            "Pretty Item Name 01": "item_01.png",
+            "Pretty Item Name 02": "item_02.png"
+        },
+        "weights": [
+            50,
+            50
+        ],
+        "names": []
+    },
+    2: {
+        "layer_name": "Pretty Trait Name 02",
+        "filenames": {
+            "Pretty Item Name 01": "item_01.png",
+            "Pretty Item Name 02": "item_02.png"
+        },
+        "weights": [
+            50,
+            50
+        ],
+        "names": []
+    }
 }
-
-layer02_weights = [
-    50,
-    50
-]
-
-layer02_names = list(layer02_filenames.keys())
-## End Trait 02
