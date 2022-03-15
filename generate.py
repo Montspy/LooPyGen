@@ -13,13 +13,13 @@ import traits
 
 # check for command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--number", nargs=1, help="Total number of images to generate", type=int)
-parser.add_argument("-c", "--clear", help="Empty the generated directory", action="store_true")
+parser.add_argument("-c", "--count", nargs=1, help="Total number of images to generate", type=int)
+parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
 parser.add_argument("--id", nargs=1, help="Specify starting ID for images", type=int)
 args = parser.parse_args()
 
 # Define amount of images to generate
-TOTAL_IMAGES = args.number[0]
+TOTAL_IMAGES = args.count[0]
 
 genPath = "./images/generated"
 dataPath = "./metadata"
@@ -28,7 +28,7 @@ STATS_FILENAME = dataPath + '/gen-stats.json'
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 
 # Remove directories if asked to
-if args.clear:
+if args.empty:
     if os.path.exists(genPath):
         shutil.rmtree(genPath)
     if os.path.exists(METADATA_FILE_NAME):

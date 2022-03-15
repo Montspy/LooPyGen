@@ -31,9 +31,11 @@ Coming Soon.
 
 ## Docker Setup on Linux, Mac, and Windows with WSL 2 enabled
 
-Open a bash terminal, and `cd` to this folder. Now run `./docker.sh build` to setup a python environment with the scripts ready to go:
+You can open a bash terminal, then run the following to clone and build this repo:
 
 ```shell
+$ git clone https://github.com/sk33z3r/loopymint2.git
+$ cd loopymint2
 $ ./docker.sh build
 Sending build context to Docker daemon  4.455MB
 Step 1/8 : FROM python:3.8-slim-buster
@@ -56,18 +58,25 @@ Removing intermediate container d0b767026eb4
 Successfully built 5e6e99aaa565
 Successfully tagged lrc-batch:latest
 ```
+
 ### Generating Images
 
 You can run the image generator and specify how many unique items you want to create.
 
 ```shell
-$ ./docker.sh generate --number 100
+$ ./docker.sh generate --count 100
 ```
 
 If you decide that you want to mint another batch, you can specify a starting ID on the command to pick up where you left off. The script will automatically pull in data from previous batches to make sure each token is still unique within the entire collection.
 
 ```shell
-$ ./docker.sh generate --id 101 --number 100
+$ ./docker.sh generate --id 101 --count 100
+```
+
+Should you need to clear out generated images and metadata to start over from scratch, you can run the script with the `--empty` argument to clear the folders before you generate again. Only use this if you want to erase items you may have already generated! This will not delete source layers.
+
+```shell
+$ ./docker.sh generate --clear --count 100
 ```
 
 ### Generating Metadata
@@ -95,13 +104,19 @@ $ ./docker.sh metadata
 Once at this shell prompt, you can run the image generator and specify how many unique items you want to create.
 
 ```shell
-$ generate --number 100
+$ generate --count 100
 ```
 
 If you decide that you want to mint another batch, you can specify a starting ID on the command to pick up where you left off. The script will automatically pull in data from previous batches to make sure each token is still unique within the entire collection.
 
 ```shell
-$ generate --id 101 --number 100
+$ generate --id 101 --count 100
+```
+
+Should you need to clear out generated images and metadata to start over from scratch, you can run the script with the `--empty` argument to clear the folders before you generate again. Only use this if you want to erase items you may have already generated! This will not delete source layers.
+
+```shell
+$ generate --clear --count 100
 ```
 
 ### Generating Metadata
