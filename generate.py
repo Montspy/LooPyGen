@@ -54,22 +54,22 @@ def create_new_image():
     new_image = {}
 
     # For each trait category, select a random trait based on the weightings
-    new_image [traits.names["trait01"]] = random.choices(traits.trait01, traits.trait01_weights)[0]
-    new_image [traits.names["trait02"]] = random.choices(traits.trait02, traits.trait02_weights)[0]
-    new_image [traits.names["trait03"]] = random.choices(traits.trait03, traits.trait03_weights)[0]
-    new_image [traits.names["trait04"]] = random.choices(traits.trait04, traits.trait04_weights)[0]
+    new_image [traits.names["layer01"]] = random.choices(traits.layer01, traits.layer01_weights)[0]
+    new_image [traits.names["layer02"]] = random.choices(traits.layer02, traits.layer02_weights)[0]
+    new_image [traits.names["layer03"]] = random.choices(traits.layer03, traits.layer03_weights)[0]
+    new_image [traits.names["layer04"]] = random.choices(traits.layer04, traits.layer04_weights)[0]
 
     if new_image in all_images:
         return create_new_image()
     else:
         return new_image
 
-# Generate the unique combinations based on trait weightings
+# Generate the unique combinations based on layer weightings
 for i in range(TOTAL_IMAGES):
 
-    new_trait_image = create_new_image()
+    new_layer_image = create_new_image()
 
-    all_images.append(new_trait_image)
+    all_images.append(new_layer_image)
 
 # Returns true if all images are unique
 def all_images_unique(all_images):
@@ -88,19 +88,19 @@ print(all_images)
 print("How many of each trait exist?")
 
 trait01_count = {}
-for item in traits.trait01:
+for item in traits.layer01:
     trait01_count[item] = 0
 
 trait02_count = {}
-for item in traits.trait02:
+for item in traits.layer02:
     trait02_count[item] = 0
 
 trait03_count = {}
-for item in traits.trait03:
+for item in traits.layer03:
     trait03_count[item] = 0
 
 trait04_count = {}
-for item in traits.trait04:
+for item in traits.layer04:
     trait04_count[item] = 0
 
 for image in all_images:
@@ -126,10 +126,10 @@ with open(STATS_FILENAME, 'w') as outfile:
 for item in all_images:
 
     # Define and convert images
-    trait01_file = Image.open(f'{traits.trait01dir}{traits.trait01_paths[item[traits.names["trait01"]]]}').convert('RGBA')
-    trait02_file = Image.open(f'{traits.trait02dir}{traits.trait02_paths[item[traits.names["trait02"]]]}').convert('RGBA')
-    trait03_file = Image.open(f'{traits.trait03dir}{traits.trait03_paths[item[traits.names["trait03"]]]}').convert('RGBA')
-    trait04_file = Image.open(f'{traits.trait04dir}{traits.trait04_paths[item[traits.names["trait04"]]]}').convert('RGBA')
+    trait01_file = Image.open(f'{traits.layer01dir}{traits.layer01_paths[item[traits.names["layer01"]]]}').convert('RGBA')
+    trait02_file = Image.open(f'{traits.layer02dir}{traits.layer02_paths[item[traits.names["layer02"]]]}').convert('RGBA')
+    trait03_file = Image.open(f'{traits.layer03dir}{traits.layer03_paths[item[traits.names["layer03"]]]}').convert('RGBA')
+    trait04_file = Image.open(f'{traits.layer04dir}{traits.layer04_paths[item[traits.names["layer04"]]]}').convert('RGBA')
 
     # Create the composite image
     composite = Image.alpha_composite(trait01_file, trait02_file)

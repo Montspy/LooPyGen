@@ -66,16 +66,16 @@ for i in data:
     }
 
     # set the attributes
-    token["attributes"].append(getAttribute(names["trait01"], i[names["trait01"]]))
-    token["attributes"].append(getAttribute(names["trait02"], i[names["trait02"]]))
-    token["attributes"].append(getAttribute(names["trait03"], i[names["trait03"]]))
-    token["attributes"].append(getAttribute(names["trait04"], i[names["trait04"]]))
+    token["attributes"].append(getAttribute(names["layer01"], i[names["layer01"]]))
+    token["attributes"].append(getAttribute(names["layer02"], i[names["layer02"]]))
+    token["attributes"].append(getAttribute(names["layer03"], i[names["layer03"]]))
+    token["attributes"].append(getAttribute(names["layer04"], i[names["layer04"]]))
 
     # set the properties
-    token["properties"][names["trait01"]] = i[names["trait01"]]
-    token["properties"][names["trait02"]] = i[names["trait02"]]
-    token["properties"][names["trait03"]] = i[names["trait03"]]
-    token["properties"][names["trait04"]] = i[names["trait04"]]
+    token["properties"][names["layer01"]] = i[names["layer01"]]
+    token["properties"][names["layer02"]] = i[names["layer02"]]
+    token["properties"][names["layer03"]] = i[names["layer03"]]
+    token["properties"][names["layer04"]] = i[names["layer04"]]
 
     with open(genPath + "/" + COLLECTION_LOWER + "_" + str(token_id) + ".json", 'w') as outfile:
         json.dump(token, outfile, indent=4)
