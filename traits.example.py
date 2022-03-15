@@ -4,25 +4,20 @@ Consider the lowest number to be your background layer. Then you are adding new 
 
 You must have at least 2 layers to run this script.
 
-Don't change anything that starts with "layer" other than its number.
+Only change the values and layer numbers in the layers dictionary.
 
-Increase the number for each line that you add.
+Add as many layers as you need, just remember to increase the layer number when copying a new section.
 
-Add as many layers as you need.
+Add as many "filenames" and "weights" as needed.
 
-Make sure to copy the entire layer section when adding new ones.
-
-Only edit the values for "filenames" and "weights".
-
-Increase the layer number by 1 for each new section.
-
-Add as many filenames and weights as needed.
     1. You have to have the same amount of weights as you do filenames.
     2. When you add up all the weights together, they must equal exactly 100.
 
     What you're doing is setting a "percentage chance this item gets picked"
 
-"layer0X": {
+An Example of 1 Layer:
+
+1: {
     "layer_name": "Pretty Trait Name 0X",
     "filenames": {
         "Pretty Item Name 01": "item_01.png",
@@ -39,6 +34,7 @@ END COMMENT SECTION """
 ## Give the collection a name
 COLLECTION_NAME="Collection Title"
 
+## Layers dictionary
 layers = {
     1: {
         "layer_name": "Pretty Trait Name 01",
