@@ -8,6 +8,8 @@ The system utilizes a few parts:
 2. NodeJS to pre-calculate CIDs on images and metadata files.
 3. Python to run the batch minting process.
 
+This README has some command info, but the [Wiki pages](https://github.com/sk33z3r/loopymint2/wiki) are slowly getting filled out with more detailed info.
+
 **System Requirements**
 
 * [Docker](https://docs.docker.com/engine/install/) or [Python](https://www.python.org/downloads/)
@@ -18,16 +20,6 @@ The system utilizes a few parts:
 2. Edit the file according to the comments and examples to match your collection traits and items.
 3. Copy the `.env.example` file and rename it to `.env`.
 4. Add your information to the file. `MINTER` should be set to the wallet address that mints the collection. Some times this is not the same as the artist.
-
-## Exporting Layers for Image Generation
-
-### Photoshop
-
-Coming Soon.
-
-### GIMP
-
-Coming Soon.
 
 ## Docker Setup on Linux, Mac, and Windows with WSL 2 enabled
 
@@ -76,7 +68,7 @@ $ ./docker.sh generate --id 101 --count 100
 Should you need to clear out generated images and metadata to start over from scratch, you can run the script with the `--empty` argument to clear the folders before you generate again. Only use this if you want to erase items you may have already generated! This will not delete source layers.
 
 ```shell
-$ ./docker.sh generate --clear --count 100
+$ ./docker.sh generate --empty --count 100
 ```
 
 ### Generating Metadata
@@ -86,6 +78,14 @@ After you generate the images and upload to IPFS, add your CID to the `.env` fil
 ```shell
 $ ./docker.sh metadata
 ```
+
+You can also pass the CID on the command line if you want to put this into a for loop, etc.:
+
+```shell
+$ ./docker.sh metadata --cid Qmeq2WXT5obb1WxU6aWbgFAqMmgmjZmVsLuL25GTLdYcQD
+```
+
+---
 
 ## Docker setup on Docker Desktop for Windows
 
@@ -116,7 +116,7 @@ $ generate --id 101 --count 100
 Should you need to clear out generated images and metadata to start over from scratch, you can run the script with the `--empty` argument to clear the folders before you generate again. Only use this if you want to erase items you may have already generated! This will not delete source layers.
 
 ```shell
-$ generate --clear --count 100
+$ generate --empty --count 100
 ```
 
 ### Generating Metadata
@@ -125,4 +125,10 @@ After you generate the images and upload to IPFS, add your CID to the `.env` fil
 
 ```shell
 $ metadata
+```
+
+You can also pass the CID on the command line if you want to put this into a for loop, etc.:
+
+```shell
+$ metadata --cid Qmeq2WXT5obb1WxU6aWbgFAqMmgmjZmVsLuL25GTLdYcQD
 ```
