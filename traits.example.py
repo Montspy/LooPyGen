@@ -50,8 +50,7 @@ layers = {
         "weights": [
             50,
             50
-        ],
-        "names": []
+        ]
     },
     2: {
         "layer_name": "Pretty Trait Name 02",
@@ -62,7 +61,6 @@ layers = {
         "weights": [
             50,
             50
-        ],
-        "names": []
+        ]
     }
 }
