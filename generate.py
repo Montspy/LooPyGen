@@ -25,6 +25,7 @@ genPath = "./images/generated"
 dataPath = "./metadata"
 METADATA_FILE_NAME = dataPath + '/all-traits.json'
 STATS_FILENAME = dataPath + '/gen-stats.json'
+COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 
 # Remove directories if asked to
 if args.clear:
@@ -171,7 +172,7 @@ for item in this_batch:
 
     #Convert to RGB
     rgb_im = composite.convert('RGB')
-    file_name = traits.COLLECTION_NAME + "_" + str(item["ID"]) + ".png"
+    file_name = traits.COLLECTION_LOWER + "_" + str(item["ID"]) + ".png"
     rgb_im.save(genPath + "/" + file_name)
     print("Generated " + genPath + "/" + file_name)
 
