@@ -126,10 +126,10 @@ with open(STATS_FILENAME, 'w') as outfile:
 for item in all_images:
 
     # Define and convert images
-    trait01_file = Image.open(f'{traits.layer01dir}{traits.layer01_paths[item[traits.names["layer01"]]]}').convert('RGBA')
-    trait02_file = Image.open(f'{traits.layer02dir}{traits.layer02_paths[item[traits.names["layer02"]]]}').convert('RGBA')
-    trait03_file = Image.open(f'{traits.layer03dir}{traits.layer03_paths[item[traits.names["layer03"]]]}').convert('RGBA')
-    trait04_file = Image.open(f'{traits.layer04dir}{traits.layer04_paths[item[traits.names["layer04"]]]}').convert('RGBA')
+    trait01_file = Image.open(f'{traits.layer01dir}{traits.layer01_filenames[item[traits.names["layer01"]]]}').convert('RGBA')
+    trait02_file = Image.open(f'{traits.layer02dir}{traits.layer02_filenames[item[traits.names["layer02"]]]}').convert('RGBA')
+    trait03_file = Image.open(f'{traits.layer03dir}{traits.layer03_filenames[item[traits.names["layer03"]]]}').convert('RGBA')
+    trait04_file = Image.open(f'{traits.layer04dir}{traits.layer04_filenames[item[traits.names["layer04"]]]}').convert('RGBA')
 
     # Create the composite image
     composite = Image.alpha_composite(trait01_file, trait02_file)
