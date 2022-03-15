@@ -2,6 +2,8 @@
 
 generated
 all-traits.json
+gen-stats.json
+traits.py
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
