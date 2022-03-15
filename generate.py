@@ -13,13 +13,13 @@ import traits
 
 # check for command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("total", help="Total number of images to generate", type=int)
+parser.add_argument("-n", "--number", nargs=1, help="Total number of images to generate", type=int)
 parser.add_argument("-c", "--clear", help="Empty the generated directory", action="store_true")
 parser.add_argument("--id", nargs=1, help="Specify starting ID for images", type=int)
 args = parser.parse_args()
 
 # Define amount of images to generate
-TOTAL_IMAGES = args.total
+TOTAL_IMAGES = args.number[0]
 
 genPath = "./images/generated"
 dataPath = "./metadata"
