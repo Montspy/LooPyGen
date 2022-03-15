@@ -58,9 +58,6 @@ def create_new_image():
     new_image [traits.names["trait02"]] = random.choices(traits.trait02, traits.trait02_weights)[0]
     new_image [traits.names["trait03"]] = random.choices(traits.trait03, traits.trait03_weights)[0]
     new_image [traits.names["trait04"]] = random.choices(traits.trait04, traits.trait04_weights)[0]
-    new_image [traits.names["trait05"]] = random.choices(traits.trait05, traits.trait05_weights)[0]
-    new_image [traits.names["trait06"]] = random.choices(traits.trait06, traits.trait06_weights)[0]
-    new_image [traits.names["trait07"]] = random.choices(traits.trait07, traits.trait07_weights)[0]
 
     if new_image in all_images:
         return create_new_image()
@@ -106,34 +103,16 @@ trait04_count = {}
 for item in traits.trait04:
     trait04_count[item] = 0
 
-trait05_count = {}
-for item in traits.trait05:
-    trait05_count[item] = 0
-
-trait06_count = {}
-for item in traits.trait06:
-    trait06_count[item] = 0
-
-trait07_count = {}
-for item in traits.trait07:
-    trait07_count[item] = 0
-
 for image in all_images:
     trait01_count[image[traits.names["trait01"]]] += 1
     trait02_count[image[traits.names["trait02"]]] += 1
     trait03_count[image[traits.names["trait03"]]] += 1
     trait04_count[image[traits.names["trait04"]]] += 1
-    trait05_count[image[traits.names["trait05"]]] += 1
-    trait06_count[image[traits.names["trait06"]]] += 1
-    trait07_count[image[traits.names["trait07"]]] += 1
 
 print(trait01_count)
 print(trait02_count)
 print(trait03_count)
 print(trait04_count)
-print(trait05_count)
-print(trait06_count)
-print(trait07_count)
 
 STATS_FILENAME = dataPath + '/gen-stats.json'
 with open(STATS_FILENAME, 'w') as outfile:
@@ -141,9 +120,6 @@ with open(STATS_FILENAME, 'w') as outfile:
     json.dump(trait02_count, outfile, indent=4)
     json.dump(trait03_count, outfile, indent=4)
     json.dump(trait04_count, outfile, indent=4)
-    json.dump(trait05_count, outfile, indent=4)
-    json.dump(trait06_count, outfile, indent=4)
-    json.dump(trait07_count, outfile, indent=4)
 
 #### Generate Images
 
@@ -154,17 +130,11 @@ for item in all_images:
     trait02_file = Image.open(f'{traits.trait02dir}{traits.trait02_paths[item[traits.names["trait02"]]]}').convert('RGBA')
     trait03_file = Image.open(f'{traits.trait03dir}{traits.trait03_paths[item[traits.names["trait03"]]]}').convert('RGBA')
     trait04_file = Image.open(f'{traits.trait04dir}{traits.trait04_paths[item[traits.names["trait04"]]]}').convert('RGBA')
-    trait05_file = Image.open(f'{traits.trait05dir}{traits.trait05_paths[item[traits.names["trait05"]]]}').convert('RGBA')
-    trait06_file = Image.open(f'{traits.trait06dir}{traits.trait06_paths[item[traits.names["trait06"]]]}').convert('RGBA')
-    trait07_file = Image.open(f'{traits.trait07dir}{traits.trait07_paths[item[traits.names["trait07"]]]}').convert('RGBA')
 
     # Create the composite image
     composite = Image.alpha_composite(trait01_file, trait02_file)
     composite = Image.alpha_composite(composite, trait03_file)
     composite = Image.alpha_composite(composite, trait04_file)
-    composite = Image.alpha_composite(composite, trait05_file)
-    composite = Image.alpha_composite(composite, trait06_file)
-    composite = Image.alpha_composite(composite, trait07_file)
 
     #Convert to RGB
     rgb_im = composite.convert('RGB')

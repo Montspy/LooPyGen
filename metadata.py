@@ -70,18 +70,12 @@ for i in data:
     token["attributes"].append(getAttribute(names["trait02"], i[names["trait02"]]))
     token["attributes"].append(getAttribute(names["trait03"], i[names["trait03"]]))
     token["attributes"].append(getAttribute(names["trait04"], i[names["trait04"]]))
-    token["attributes"].append(getAttribute(names["trait05"], i[names["trait05"]]))
-    token["attributes"].append(getAttribute(names["trait06"], i[names["trait06"]]))
-    token["attributes"].append(getAttribute(names["trait07"], i[names["trait07"]]))
 
     # set the properties
     token["properties"][names["trait01"]] = i[names["trait01"]]
     token["properties"][names["trait02"]] = i[names["trait02"]]
     token["properties"][names["trait03"]] = i[names["trait03"]]
     token["properties"][names["trait04"]] = i[names["trait04"]]
-    token["properties"][names["trait05"]] = i[names["trait05"]]
-    token["properties"][names["trait06"]] = i[names["trait06"]]
-    token["properties"][names["trait07"]] = i[names["trait07"]]
 
     with open(genPath + "/" + COLLECTION_LOWER + "_" + str(token_id) + ".json", 'w') as outfile:
         json.dump(token, outfile, indent=4)
