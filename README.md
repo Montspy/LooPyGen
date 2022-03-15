@@ -3,19 +3,26 @@
 This system utilizes a few parts.
 
 1. Python to generate images and metadata according to the standards for the new Layer 2 marketplace.
-2. Python to run the batch minting process
+2. NodeJS to pre-calculate CIDs on images and metadata files.
+3. Python to run the batch minting process.
 
-# Setting up the environment
+**System Requirements**
 
-For now this is based in Docker, so [install that first.](https://docs.docker.com/engine/install/)
+* [Docker](https://docs.docker.com/engine/install/) or [Python](https://www.python.org/downloads/)
 
+## Setting up the generator
 
-## Linux & Mac
+1. Copy the `traits.example.py` file and rename it to `traits.py`.
+2. Edit the file according to the comments and examples to match your collection traits and items.
+3. Copy the `.env.example` file and rename it to `.env`.
+4. Add your information to the file. `MINTER` should be set to the wallet address that mints the collection. Some times this is not the same as the artist.
 
-Open a terminal, and `cd` to this folder. Now run `./docker.sh` to setup a python environment with the scripts ready to go:
+## Docker Setup on Linux, Mac, and Windows with Ubuntu
+
+Open a bash terminal, and `cd` to this folder. Now run `./docker.sh build` to setup a python environment with the scripts ready to go:
 
 ```shell
-$ ./docker.sh
+$ ./docker.sh build
 Sending build context to Docker daemon  4.455MB
 Step 1/8 : FROM python:3.8-slim-buster
  ---> 5cc8cb0c433a
@@ -36,10 +43,9 @@ Removing intermediate container d0b767026eb4
  ---> 5e6e99aaa565
 Successfully built 5e6e99aaa565
 Successfully tagged lrc-batch:latest
-root@43c30d60526a:/lrc-batch#
 ```
 
-## Windows
+## Docker setup on Docker Desktop for Windows
 
 1. In this folder, `Right-click -> Open in Windows Terminal` to open command prompt. Now run `docker.bat` to build the image for our container.
 2. Once the build is successful, open Docker Desktop and locate the image
@@ -51,11 +57,7 @@ root@43c30d60526a:/lrc-batch#
 8. Click RUN
 9. Once running, find the container in the list and click CLI to open the shell prompt.
 
-# Setting up the generator
-
-Edit the `traits.py` file to include the number of traits you wish to have, mapping the same information you see there.
-
-## Generating Images
+### Generating Images
 
 Once at this shell prompt, you can run the image generator and specify how many unique items you want to create.
 
@@ -63,7 +65,7 @@ Once at this shell prompt, you can run the image generator and specify how many 
 $ generate 100
 ```
 
-## Generating Metadata
+### Generating Metadata
 
 After you generate the images and upload to IPFS, you can then generate the metadata JSON files.
 
