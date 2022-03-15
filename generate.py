@@ -23,13 +23,17 @@ TOTAL_IMAGES = args.total
 
 genPath = "./images/generated"
 dataPath = "./metadata"
+METADATA_FILE_NAME = dataPath + '/all-traits.json'
+STATS_FILENAME = dataPath + '/gen-stats.json'
 
 # Remove directories if asked to
 if args.clear:
     if os.path.exists(genPath):
         shutil.rmtree(genPath)
-    if os.path.exists(dataPath):
-        shutil.rmtree(dataPath)
+    if os.path.exists(METADATA_FILE_NAME):
+        os.remove(METADATA_FILE_NAME)
+    if os.path.exists(STATS_FILENAME):
+        os.remove(STATS_FILENAME)
 
 # Make paths if they don't exist
 if not os.path.exists(genPath):
@@ -40,12 +44,23 @@ if not os.path.exists(dataPath):
 # Set starting ID
 if args.id:
     startingId = args.id[0]
+    print("Starting at ID: " + str(startingId))
 else:
     startingId = 1
 
 ## Generate Traits
 
+this_batch = []
 all_images = []
+
+# Check if all-traits.json exists
+if os.path.exists(METADATA_FILE_NAME):
+    print("Previous batches exist, pulling in their data.")
+    f = open(METADATA_FILE_NAME)
+    prev_batches = json.load(f)
+    f.close()
+else:
+    prev_batches = []
 
 ## Top level image directory
 topLevel = "./images/source_layers"
@@ -66,10 +81,11 @@ def create_new_image():
 
     # For each trait category, select a random trait based on the weightings
     for l in traits.layers:
-        new_image [traits.layers[n]["layer_name"]] = random.choices(traits.layers[n]["names"], traits.layers[n]["weights"])[0]
+        new_image[traits.layers[n]["layer_name"]] = random.choices(traits.layers[n]["names"], traits.layers[n]["weights"])[0]
+        new_image["ID"] = startingId
         n = n + 1
 
-    if new_image in all_images:
+    if new_image in this_batch or new_image in prev_batches:
         return create_new_image()
     else:
         return new_image
@@ -79,20 +95,29 @@ for i in range(TOTAL_IMAGES):
 
     new_layer_image = create_new_image()
 
-    all_images.append(new_layer_image)
+    this_batch.append(new_layer_image)
+
+    startingId = startingId + 1
 
 # Returns true if all images are unique
 def all_images_unique(all_images):
     seen = list()
     return not any(i in seen or seen.append(i) for i in all_images)
 
-print("Are all images unique?", all_images_unique(all_images))
-# Add token Id to each image
-for item in all_images:
-    item["ID"] = startingId
-    startingId = startingId + 1
+# Combine and sort the lists
+def sortID(e):
+    return e["ID"]
 
-print("Look in " + dataPath + "/all-traits.json for an overview of all generated IDs and traits.")
+for i in prev_batches:
+    all_images.append(i)
+
+for i in this_batch:
+    all_images.append(i)
+
+all_images.sort(key=sortID)
+
+# Couble check that all images are unique to the whole collection
+print("Are all images unique?", all_images_unique(all_images))
 
 # Get Trait Counts
 print("How many of each trait exist?")
@@ -117,7 +142,6 @@ for c in traits.layers:
 
 ## Store trait counts to json
 n = 1
-STATS_FILENAME = dataPath + '/gen-stats.json'
 with open(STATS_FILENAME, 'w') as outfile:
     gen_stats = {}
     for l in traits.layers:
@@ -127,7 +151,7 @@ with open(STATS_FILENAME, 'w') as outfile:
 
 #### Generate Images
 
-for item in all_images:
+for item in this_batch:
 
     n = 1
     for l in traits.layers:
@@ -153,6 +177,7 @@ for item in all_images:
 
 #### Generate Metadata for all Traits
 
-METADATA_FILE_NAME = dataPath + '/all-traits.json'
 with open(METADATA_FILE_NAME, 'w') as outfile:
     json.dump(all_images, outfile, indent=4)
+
+print("Look in " + METADATA_FILE_NAME + " for an overview of all generated IDs and traits.")
