@@ -9,7 +9,6 @@ load_dotenv()
 
 # check for command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--clear", help="Empty the generated directory", action="store_true")
 parser.add_argument("--cid", nargs=1, help="Specify starting ID for images", type=int)
 args = parser.parse_args()
 
@@ -22,13 +21,6 @@ if args.cid:
 else:
     cid = getenv("IMAGES_CID")
 
-# Remove directories if asked to
-if args.clear:
-    if path.exists(genPath):
-        shutil.rmtree(genPath)
-    if path.exists(dataPath):
-        shutil.rmtree(dataPath)
-
 # Make paths if they don't exist
 if not path.exists(genPath):
     makedirs(genPath)
@@ -37,7 +29,7 @@ if not path.exists(dataPath):
 
 #### Generate Metadata for each Image
 
-f = open(dataPath + '/all-traits.json',)
+f = open(dataPath + '/all-traits.json')
 data = json.load(f)
 
 # Changes this IMAGES_BASE_URL to yours
