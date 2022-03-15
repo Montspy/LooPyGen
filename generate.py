@@ -104,10 +104,10 @@ for item in traits.layer04_names:
     trait04_count[item] = 0
 
 for image in all_images:
-    trait01_count[image[traits.names["trait01"]]] += 1
-    trait02_count[image[traits.names["trait02"]]] += 1
-    trait03_count[image[traits.names["trait03"]]] += 1
-    trait04_count[image[traits.names["trait04"]]] += 1
+    trait01_count[image[traits.names["layer01"]]] += 1
+    trait02_count[image[traits.names["layer02"]]] += 1
+    trait03_count[image[traits.names["layer03"]]] += 1
+    trait04_count[image[traits.names["layer04"]]] += 1
 
 print(trait01_count)
 print(trait02_count)
