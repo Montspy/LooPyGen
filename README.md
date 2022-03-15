@@ -1,6 +1,8 @@
-# LRC Batch Mint System
+# LooPyMint2
 
-This system utilizes a few parts.
+This is the unofficial Loopring Python Minter on Layer 2. Don't be fooled, this tool does much more than just minting!
+
+The system utilizes a few parts:
 
 1. Python to generate images and metadata according to the standards for the new Layer 2 marketplace.
 2. NodeJS to pre-calculate CIDs on images and metadata files.
@@ -17,7 +19,17 @@ This system utilizes a few parts.
 3. Copy the `.env.example` file and rename it to `.env`.
 4. Add your information to the file. `MINTER` should be set to the wallet address that mints the collection. Some times this is not the same as the artist.
 
-## Docker Setup on Linux, Mac, and Windows with Ubuntu
+## Exporting Layers for Image Generation
+
+### Photoshop
+
+Coming Soon.
+
+### GIMP
+
+Coming Soon.
+
+## Docker Setup on Linux, Mac, and Windows with WSL 2 enabled
 
 Open a bash terminal, and `cd` to this folder. Now run `./docker.sh build` to setup a python environment with the scripts ready to go:
 
@@ -46,10 +58,16 @@ Successfully tagged lrc-batch:latest
 ```
 ### Generating Images
 
-Once at this shell prompt, you can run the image generator and specify how many unique items you want to create.
+You can run the image generator and specify how many unique items you want to create.
 
 ```shell
-$ ./docker.sh generate 100
+$ ./docker.sh generate --number 100
+```
+
+If you decide that you want to mint another batch, you can specify a starting ID on the command to pick up where you left off. The script will automatically pull in data from previous batches to make sure each token is still unique within the entire collection.
+
+```shell
+$ ./docker.sh generate --id 101 --number 100
 ```
 
 ### Generating Metadata
@@ -77,7 +95,13 @@ $ ./docker.sh metadata
 Once at this shell prompt, you can run the image generator and specify how many unique items you want to create.
 
 ```shell
-$ generate 100
+$ generate --number 100
+```
+
+If you decide that you want to mint another batch, you can specify a starting ID on the command to pick up where you left off. The script will automatically pull in data from previous batches to make sure each token is still unique within the entire collection.
+
+```shell
+$ ./docker.sh generate --id 101 --number 100
 ```
 
 ### Generating Metadata
