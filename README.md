@@ -44,6 +44,21 @@ Removing intermediate container d0b767026eb4
 Successfully built 5e6e99aaa565
 Successfully tagged lrc-batch:latest
 ```
+### Generating Images
+
+Once at this shell prompt, you can run the image generator and specify how many unique items you want to create.
+
+```shell
+$ ./docker.sh generate 100
+```
+
+### Generating Metadata
+
+After you generate the images and upload to IPFS, add your CID to the `.env` file and you can then generate the metadata JSON files.
+
+```shell
+$ ./docker.sh metadata
+```
 
 ## Docker setup on Docker Desktop for Windows
 
@@ -67,8 +82,8 @@ $ generate 100
 
 ### Generating Metadata
 
-After you generate the images and upload to IPFS, you can then generate the metadata JSON files.
+After you generate the images and upload to IPFS, add your CID to the `.env` file and you can then generate the metadata JSON files.
 
 ```shell
-$ metadata --cid QmVpLSoYak1N8pasuxLrNZLbnvrNvLTJmY8ncMBjNRPBtQ
+$ metadata
 ```
