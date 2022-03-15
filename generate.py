@@ -54,10 +54,10 @@ def create_new_image():
     new_image = {}
 
     # For each trait category, select a random trait based on the weightings
-    new_image [traits.names["layer01"]] = random.choices(traits.layer01, traits.layer01_weights)[0]
-    new_image [traits.names["layer02"]] = random.choices(traits.layer02, traits.layer02_weights)[0]
-    new_image [traits.names["layer03"]] = random.choices(traits.layer03, traits.layer03_weights)[0]
-    new_image [traits.names["layer04"]] = random.choices(traits.layer04, traits.layer04_weights)[0]
+    new_image [traits.names["layer01"]] = random.choices(traits.layer01_names, traits.layer01_weights)[0]
+    new_image [traits.names["layer02"]] = random.choices(traits.layer02_names, traits.layer02_weights)[0]
+    new_image [traits.names["layer03"]] = random.choices(traits.layer03_names, traits.layer03_weights)[0]
+    new_image [traits.names["layer04"]] = random.choices(traits.layer04_names, traits.layer04_weights)[0]
 
     if new_image in all_images:
         return create_new_image()
@@ -88,19 +88,19 @@ print(all_images)
 print("How many of each trait exist?")
 
 trait01_count = {}
-for item in traits.layer01:
+for item in traits.layer01_names:
     trait01_count[item] = 0
 
 trait02_count = {}
-for item in traits.layer02:
+for item in traits.layer02_names:
     trait02_count[item] = 0
 
 trait03_count = {}
-for item in traits.layer03:
+for item in traits.layer03_names:
     trait03_count[item] = 0
 
 trait04_count = {}
-for item in traits.layer04:
+for item in traits.layer04_names:
     trait04_count[item] = 0
 
 for image in all_images:
