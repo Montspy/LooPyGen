@@ -22,8 +22,6 @@ names = {
 trait01 = ["Trait Item 01","Trait Item 02"]
 trait01_weights = [50, 50]
 
-"Trait Item 01","Trait Item 02"
-
 trait01_paths = {
     "Trait Item 01": "trait_item_01.png",
     "Trait Item 02": "trait_item_02.png"
@@ -32,8 +30,6 @@ trait01_paths = {
 ## Trait 02
 trait02 = ["Trait Item 01","Trait Item 02"]
 trait02_weights = [50, 50]
-
-"Trait Item 01","Trait Item 02"
 
 trait02_paths = {
     "Trait Item 01": "trait_item_01.png",
