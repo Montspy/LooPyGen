@@ -172,7 +172,7 @@ for item in this_batch:
 
     #Convert to RGB
     rgb_im = composite.convert('RGB')
-    file_name = traits.COLLECTION_LOWER + "_" + str(item["ID"]) + ".png"
+    file_name = COLLECTION_LOWER + "_" + str(item["ID"]) + ".png"
     rgb_im.save(genPath + "/" + file_name)
     print("Generated " + genPath + "/" + file_name)
 
