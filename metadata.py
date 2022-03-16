@@ -16,12 +16,12 @@ args = parser.parse_args()
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 IMAGES_BASE_URL = "ipfs://" + cid + "/"
 
-dataPath = "./metadata"
-genPath = dataPath + "/" + COLLECTION_LOWER + "/generated"
+dataPath = path.join("./metadata", COLLECTION_LOWER)
+genPath = path.join("./images", COLLECTION_LOWER, "generated")
 
 # Remove directories if asked to
 if args.empty:
-    if os.path.exists(genPath):
+    if path.exists(genPath):
         shutil.rmtree(genPath)
 
 # Set starting ID
