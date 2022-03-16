@@ -32,7 +32,7 @@ An Example of 1 Layer:
 END COMMENT SECTION """
 
 ## Give the collection a name
-COLLECTION_NAME="Collection Title"
+COLLECTION_NAME="Collection Name"
 
 ## Layers dictionary
 layers = {

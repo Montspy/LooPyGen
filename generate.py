@@ -25,16 +25,16 @@ args = parser.parse_args()
 TOTAL_IMAGES = args.count[0]
 
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
-METADATA_FILE_NAME = dataPath + "/" + COLLECTION_LOWER + '/all-traits.json'
-STATS_FILENAME = dataPath + "/" + COLLECTION_LOWER + '/gen-stats.json'
+dataPath = os.path.join("./metadata", COLLECTION_LOWER)
+genPath = os.path.join("./images", COLLECTION_LOWER, "generated")
 
-dataPath = "./metadata"
-genPath = "./images/" + COLLECTION_LOWER + "/generated"
+METADATA_FILE_NAME = os.path.join(dataPath, "all-traits.json")
+STATS_FILENAME = os.path.join(dataPath, "gen-stats.json")
 
-if getenv("SOURCE_FILES") is None:
+if os.getenv("SOURCE_FILES") is None:
     SOURCE_FILES = "./images/" + COLLECTION_LOWER
 else:
-    SOURCE_FILES = getenv("SOURCE_FILES")
+    SOURCE_FILES = os.getenv("SOURCE_FILES")
 
 # Remove directories if asked to
 if args.empty:
@@ -61,8 +61,8 @@ else:
 # Randomness seed
 if args.seed is not None:
     SEED = args.seed[0]
-else if args.seed is None and getenv("SEED") is not None:
-    SEED = getenv("SEED")
+elif args.seed is None and getenv("SEED") is not None:
+    SEED = os.getenv("SEED")
 else:
     timestamp = time.time_ns().to_bytes(16, byteorder='big')
     SEED = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
