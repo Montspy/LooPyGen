@@ -217,11 +217,11 @@ def main():
             composite = Image.alpha_composite(composite, p)
 
         # Convert to RGB
-        background = Image.new(mode="RGB", size=composite.size, color=(255, 255, 255))
+        background = Image.new(mode="RGB", size=composite.size, color=(128, 128, 128))
         background.paste(composite, mask=composite.split()[3])  # Drop the alpha channel
 
         file_path = os.path.join(GEN_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
-        composite.save(file_path)
+        background.save(file_path)
         print(f"Generated {file_path}")
     
     # Close images
