@@ -24,11 +24,12 @@ args = parser.parse_args()
 # Define amount of images to generate
 TOTAL_IMAGES = args.count[0]
 
-genPath = "./images/generated"
-dataPath = "./metadata"
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 METADATA_FILE_NAME = dataPath + "/" + COLLECTION_LOWER + '/all-traits.json'
 STATS_FILENAME = dataPath + "/" + COLLECTION_LOWER + '/gen-stats.json'
+
+dataPath = "./metadata"
+genPath = "./images/" + COLLECTION_LOWER + "/generated"
 
 if getenv("SOURCE_FILES") is None:
     SOURCE_FILES = "./images/" + COLLECTION_LOWER
