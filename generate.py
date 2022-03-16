@@ -1,19 +1,14 @@
 from copy import deepcopy
-from pprint import pprint
-from tracemalloc import start
-from PIL import Image, ImageDraw, ImageFont
-from IPython.display import display
+from PIL import Image
 from base64 import b64encode
 import random
 import time
 import json
 import os
 import sys
-import re
 import argparse
 import shutil
 
-from aiohttp import ServerDisconnectedError
 import traits
 
 # Paths generation
