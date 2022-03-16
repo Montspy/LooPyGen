@@ -35,8 +35,8 @@ END COMMENT SECTION """
 COLLECTION_NAME="Collection Name"
 
 ## Layers dictionary
-layers = {
-    1: {
+layers = [
+    {   # layer01
         "layer_name": "Pretty Trait Name 01",
         "filenames": {
             "Pretty Item Name 01": "item_01.png",
@@ -47,7 +47,7 @@ layers = {
             50
         ]
     },
-    2: {
+    {   # layer02
         "layer_name": "Pretty Trait Name 02",
         "filenames": {
             "Pretty Item Name 01": "item_01.png",
@@ -58,4 +58,10 @@ layers = {
             50
         ]
     }
-}
+]
+
+def get_variation_cnt():
+    cnt = 1
+    for l in layers:
+        cnt *= len(l["filenames"])
+    return cnt
