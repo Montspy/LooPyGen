@@ -13,8 +13,9 @@ import traits
 
 # Paths generation
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
-DATA_PATH = os.path.join("./metadata", COLLECTION_LOWER)
-GEN_PATH = os.path.join("./images", COLLECTION_LOWER, "generated")
+COLLECTION_PATH = os.path.join("./generated", COLLECTION_LOWER)
+DATA_PATH = os.path.join(COLLECTION_PATH, "metadata")
+IMAGES_PATH = os.path.join(COLLECTION_PATH, "images")
 
 METADATA_FILE_NAME = os.path.join(DATA_PATH, "all-traits.json")
 STATS_FILENAME = os.path.join(DATA_PATH, "gen-stats.json")
@@ -98,16 +99,16 @@ def parse_args():
 
 def generate_paths(empty: bool):
     if empty:
-        if os.path.exists(GEN_PATH):
-            shutil.rmtree(GEN_PATH)
+        if os.path.exists(IMAGES_PATH):
+            shutil.rmtree(IMAGES_PATH)
         if os.path.exists(METADATA_FILE_NAME):
             os.remove(METADATA_FILE_NAME)
         if os.path.exists(STATS_FILENAME):
             os.remove(STATS_FILENAME)
 
     # Make paths if they don't exist
-    if not os.path.exists(GEN_PATH):
-        os.makedirs(GEN_PATH)
+    if not os.path.exists(IMAGES_PATH):
+        os.makedirs(IMAGES_PATH)
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
 
@@ -222,7 +223,7 @@ def main():
         # background.paste(composite, mask=composite.split()[3])  # Drop the alpha channel
         # composite = background
 
-        file_path = os.path.join(GEN_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
+        file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
         composite.save(file_path)
         print(f"Generated {file_path}")
 

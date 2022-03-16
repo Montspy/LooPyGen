@@ -9,9 +9,9 @@ import shutil
 
 # Paths generation
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
-DATA_PATH = path.join("./metadata", COLLECTION_LOWER)
-GEN_PATH = path.join("./images", COLLECTION_LOWER, "generated")
-
+COLLECTION_PATH = path.join("./generated", COLLECTION_LOWER)
+DATA_PATH = path.join(COLLECTION_PATH, "metadata")
+IMAGE_PATH = path.join(COLLECTION_PATH, "images")
 
 def properties_to_attributes(properties: dict):
     attributes = []
@@ -37,10 +37,10 @@ def main():
 
     # Remove directories if asked to
     if args.empty:
-        if path.exists(GEN_PATH):
-            shutil.rmtree(GEN_PATH)
+        if path.exists(DATA_PATH):
+            shutil.rmtree(DATA_PATH)
 
-    # Set starting ID
+    # Set the CID and IPFS URL
     if args.cid:
         cid = args.cid[0]
     else:
@@ -49,8 +49,6 @@ def main():
     images_base_url = "ipfs://" + cid + "/"
 
     # Make paths if they don't exist
-    if not path.exists(GEN_PATH):
-        makedirs(GEN_PATH)
     if not path.exists(DATA_PATH):
         makedirs(DATA_PATH)
 
@@ -83,7 +81,7 @@ def main():
             "properties": image
         }
 
-        with open(path.join(GEN_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json"), 'w') as outfile:
+        with open(path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json"), 'w') as outfile:
             json.dump(token, outfile, indent=4)
 
 if __name__ == "__main__":
