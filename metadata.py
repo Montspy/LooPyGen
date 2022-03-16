@@ -1,88 +1,90 @@
+from copy import deepcopy
 import json
 import argparse
 from os import path, getenv, makedirs
+from pprint import pprint
 from dotenv import load_dotenv
 import traits
 import shutil
 
-load_dotenv()
-
-# check for command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("--cid", nargs=1, help="Specify starting ID for images", type=int)
-parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
-args = parser.parse_args()
-
+# Paths generation
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
+DATA_PATH = path.join("./metadata", COLLECTION_LOWER)
+GEN_PATH = path.join("./images", COLLECTION_LOWER, "generated")
 
-dataPath = path.join("./metadata", COLLECTION_LOWER)
-genPath = path.join("./images", COLLECTION_LOWER, "generated")
 
-# Remove directories if asked to
-if args.empty:
-    if path.exists(genPath):
-        shutil.rmtree(genPath)
+def properties_to_attributes(properties: dict):
+    attributes = []
+    for key, value in properties.items():
+        attributes.append({
+            "trait_type": key,
+            "value": value
+        })
+    return attributes
 
-# Set starting ID
-if args.cid:
-    cid = args.cid[0]
-else:
-    cid = getenv("IMAGES_CID")
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cid", nargs=1, help="Specify starting ID for images", type=str)
+    parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
+    args = parser.parse_args()
+    return args
 
-# Make paths if they don't exist
-if not path.exists(genPath):
-    makedirs(genPath)
-if not path.exists(dataPath):
-    makedirs(dataPath)
+def main():
+    load_dotenv()
 
-#### Generate Metadata for each Image
+    # check for command line arguments
+    args = parse_args()
 
-f = open(dataPath + '/all-traits.json')
-data = json.load(f)
+    # Remove directories if asked to
+    if args.empty:
+        if path.exists(GEN_PATH):
+            shutil.rmtree(GEN_PATH)
 
-# Changes this IMAGES_BASE_URL to yours
-IMAGES_BASE_URL = "ipfs://" + cid + "/"
-
-def getAttribute(key, value):
-    return {
-        "trait_type": key,
-        "value": value
-    }
-
-for i in data:
-    token_id = i['ID']
-
-    if getenv("COLLECTION_DESCRIPTION") is None:
-        DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
+    # Set starting ID
+    if args.cid:
+        cid = args.cid[0]
     else:
-        DESCRIPTION = getenv("COLLECTION_DESCRIPTION")
+        cid = getenv("IMAGES_CID")
 
-    token = {
-        "name": traits.COLLECTION_NAME + ' #' + str(token_id),
-        "image": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
-        "animation_url": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
-        "description": DESCRIPTION,
-        "royalty_percentage": getenv("ROYALTY_PERCENTAGE"),
-        "tokenId": token_id,
-        "artist": getenv("ARTIST_NAME"),
-        "minter": getenv("MINTER"),
-        "attributes": [],
-        "properties": {}
-    }
+    images_base_url = "ipfs://" + cid + "/"
 
-    # set the attributes
-    n = 1
-    for l in traits.layers:
-        token["attributes"].append(getAttribute(traits.layers[n]["layer_name"], i[traits.layers[n]["layer_name"]]))
-        n = n + 1
+    # Make paths if they don't exist
+    if not path.exists(GEN_PATH):
+        makedirs(GEN_PATH)
+    if not path.exists(DATA_PATH):
+        makedirs(DATA_PATH)
 
-    # set the properties
-    n = 1
-    for l in traits.layers:
-        token["properties"][traits.layers[n]["layer_name"]] = i[traits.layers[n]["layer_name"]]
-        n = n + 1
+    #### Generate Metadata for each Image
 
-    with open(genPath + "/" + COLLECTION_LOWER + "_" + str(token_id) + ".json", 'w') as outfile:
-        json.dump(token, outfile, indent=4)
+    with open(path.join(DATA_PATH, 'all-traits.json')) as f:
+        all_images = json.load(f)
 
-f.close()
+    # Changes this IMAGES_BASE_URL to yours
+    for image in all_images:
+        token_id = image['ID']
+
+        if getenv("COLLECTION_DESCRIPTION") is None:
+            DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
+        else:
+            DESCRIPTION = getenv("COLLECTION_DESCRIPTION")
+
+        image.pop("ID", None)   # Remove ID to get properties only
+
+        token = {
+            "name": f"{traits.COLLECTION_NAME} #{token_id:03}",
+            "image": path.join(images_base_url, f"{COLLECTION_LOWER}_{token_id:03}.png"),
+            "animation_url": path.join(images_base_url, f"{COLLECTION_LOWER}_{token_id:03}.png"),   # TODO: replace with pre-calc'd CID of file directly
+            "description": DESCRIPTION,
+            "royalty_percentage": getenv("ROYALTY_PERCENTAGE"),
+            "tokenId": token_id,
+            "artist": getenv("ARTIST_NAME"),
+            "minter": getenv("MINTER"),
+            "attributes": properties_to_attributes(image),
+            "properties": image
+        }
+
+        with open(path.join(GEN_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json"), 'w') as outfile:
+            json.dump(token, outfile, indent=4)
+
+if __name__ == "__main__":
+    main()
