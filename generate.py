@@ -1,6 +1,7 @@
 from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
+from dotenv import load_dotenv
 import random
 import time
 import json
@@ -20,6 +21,10 @@ IMAGES_PATH = os.path.join(COLLECTION_PATH, "images")
 METADATA_FILE_NAME = os.path.join(DATA_PATH, "all-traits.json")
 STATS_FILENAME = os.path.join(DATA_PATH, "gen-stats.json")
 
+# load .env file into memory
+load_dotenv()
+
+# set the SOURCE_FILES if it's not specified in .env
 if os.getenv("SOURCE_FILES") is None:
     SOURCE_FILES = os.path.join("./images", COLLECTION_LOWER)
 else:
@@ -219,7 +224,7 @@ def main():
 
         # # Convert to RGB (uncomment section)
         # background_color = (128, 128, 128)
-        # background = Image.new(mode="RGB", size=composite.size, color=backgroun_color)
+        # background = Image.new(mode="RGB", size=composite.size, color=background_color)
         # background.paste(composite, mask=composite.split()[3])  # Drop the alpha channel
         # composite = background
 
