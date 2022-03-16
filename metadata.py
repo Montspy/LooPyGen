@@ -44,11 +44,17 @@ def getAttribute(key, value):
 
 for i in data:
     token_id = i['ID']
+
+    if getenv("COLLECTION_DESCRIPTION") is None:
+        DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
+    else:
+        DESCRIPTION = getenv("COLLECTION_DESCRIPTION")
+
     token = {
         "name": traits.COLLECTION_NAME + ' #' + str(token_id),
         "image": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
         "animation_url": IMAGES_BASE_URL + COLLECTION_LOWER + "_" + str(token_id) + '.png',
-        "description": getenv("COLLECTION_DESCRIPTION"),
+        "description": DESCRIPTION,
         "royalty_percentage": getenv("ROYALTY_PERCENTAGE"),
         "tokenId": token_id,
         "artist": getenv("ARTIST_NAME"),
