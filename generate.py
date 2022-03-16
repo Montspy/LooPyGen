@@ -30,6 +30,11 @@ METADATA_FILE_NAME = dataPath + '/all-traits.json'
 STATS_FILENAME = dataPath + '/gen-stats.json'
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 
+if getenv("SOURCE_FILES") is None:
+    SOURCE_FILES = "./images/" + COLLECTION_LOWER
+else:
+    SOURCE_FILES = getenv("SOURCE_FILES")
+
 # Remove directories if asked to
 if args.empty:
     if os.path.exists(genPath):
@@ -77,14 +82,11 @@ if os.path.exists(METADATA_FILE_NAME):
 else:
     prev_batches = []
 
-## Top level image directory
-topLevel = "./images/source_layers"
-
 ## Generate folders and names list from layers available in traits
 n = 1
 for l in traits.layers:
     traits.layers[n]["names"] = list(traits.layers[n]["filenames"].keys())
-    traits.layers[n]["path"] = topLevel + "/layer0" + str(n) + "/"
+    traits.layers[n]["path"] = SOURCE_FILES + "/layer0" + str(n) + "/"
     n = n + 1
 
 # A recursive function to generate unique image combinations
