@@ -18,8 +18,8 @@ COLLECTION_PATH = os.path.join("./generated", COLLECTION_LOWER)
 DATA_PATH = os.path.join(COLLECTION_PATH, "metadata")
 IMAGES_PATH = os.path.join(COLLECTION_PATH, "images")
 
-METADATA_FILE_NAME = os.path.join(DATA_PATH, "all-traits.json")
-STATS_FILENAME = os.path.join(DATA_PATH, "gen-stats.json")
+METADATA_FILE_NAME = os.path.join(COLLECTION_PATH, "all-traits.json")
+STATS_FILENAME = os.path.join(COLLECTION_PATH, "gen-stats.json")
 
 # load .env file into memory
 load_dotenv()
