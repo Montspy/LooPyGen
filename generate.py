@@ -26,9 +26,9 @@ TOTAL_IMAGES = args.count[0]
 
 genPath = "./images/generated"
 dataPath = "./metadata"
-METADATA_FILE_NAME = dataPath + '/all-traits.json'
-STATS_FILENAME = dataPath + '/gen-stats.json'
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
+METADATA_FILE_NAME = dataPath + "/" + COLLECTION_LOWER + '/all-traits.json'
+STATS_FILENAME = dataPath + "/" + COLLECTION_LOWER + '/gen-stats.json'
 
 if getenv("SOURCE_FILES") is None:
     SOURCE_FILES = "./images/" + COLLECTION_LOWER

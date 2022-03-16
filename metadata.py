@@ -12,8 +12,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--cid", nargs=1, help="Specify starting ID for images", type=int)
 args = parser.parse_args()
 
+COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
+IMAGES_BASE_URL = "ipfs://" + cid + "/"
+
 dataPath = "./metadata"
-genPath = dataPath + "/generated"
+genPath = dataPath + "/" + COLLECTION_LOWER + "/generated"
 
 # Set starting ID
 if args.cid:
@@ -33,8 +36,6 @@ f = open(dataPath + '/all-traits.json')
 data = json.load(f)
 
 # Changes this IMAGES_BASE_URL to yours
-IMAGES_BASE_URL = "ipfs://" + cid + "/"
-COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
 
 def getAttribute(key, value):
     return {
