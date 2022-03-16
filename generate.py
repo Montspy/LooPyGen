@@ -72,7 +72,7 @@ class ImageGenerator(object):
             batch_with_id.append(img)
             batch_with_id[i]["ID"] = starting_id + i
         return batch_with_id
-        
+
 
 # Returns true if all images are unique
 def all_images_unique(all_images):
@@ -153,7 +153,7 @@ def main():
 
     else:
         prev_batches = []
-    
+
     # Remove IDs that will get replaced
 
 
@@ -217,7 +217,7 @@ def main():
             composite = Image.alpha_composite(composite, p)
 
         # # Convert to RGB (uncomment section)
-        # backgroun_color = (128, 128, 128)
+        # background_color = (128, 128, 128)
         # background = Image.new(mode="RGB", size=composite.size, color=backgroun_color)
         # background.paste(composite, mask=composite.split()[3])  # Drop the alpha channel
         # composite = background
@@ -225,7 +225,7 @@ def main():
         file_path = os.path.join(GEN_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
         composite.save(file_path)
         print(f"Generated {file_path}")
-    
+
     # Close images
     [img.close() for l in traits.layers if "image" in l for _,img in l["image"].items()]
 
