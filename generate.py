@@ -1,3 +1,6 @@
+from copy import deepcopy
+from pprint import pprint
+from tracemalloc import start
 from PIL import Image, ImageDraw, ImageFont
 from IPython.display import display
 from base64 import b64encode
@@ -5,200 +8,236 @@ import random
 import time
 import json
 import os
-import torch
-import torchvision
-import torchvision.transforms as T
+import sys
 import re
 import argparse
 import shutil
+
+from aiohttp import ServerDisconnectedError
 import traits
 
-# check for command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--count", nargs=1, help="Total number of images to generate", type=int)
-parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
-parser.add_argument("--id", nargs=1, help="Specify starting ID for images", type=int)
-parser.add_argument("--seed", nargs=1, help="Randomness seed", type=str, default=None)
-args = parser.parse_args()
-
-# Define amount of images to generate
-TOTAL_IMAGES = args.count[0]
-
+# Paths generation
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
-dataPath = os.path.join("./metadata", COLLECTION_LOWER)
-genPath = os.path.join("./images", COLLECTION_LOWER, "generated")
+DATA_PATH = os.path.join("./metadata", COLLECTION_LOWER)
+GEN_PATH = os.path.join("./images", COLLECTION_LOWER, "generated")
 
-METADATA_FILE_NAME = os.path.join(dataPath, "all-traits.json")
-STATS_FILENAME = os.path.join(dataPath, "gen-stats.json")
+METADATA_FILE_NAME = os.path.join(DATA_PATH, "all-traits.json")
+STATS_FILENAME = os.path.join(DATA_PATH, "gen-stats.json")
 
 if os.getenv("SOURCE_FILES") is None:
-    SOURCE_FILES = "./images/" + COLLECTION_LOWER
+    SOURCE_FILES = os.path.join("./images", COLLECTION_LOWER)
 else:
     SOURCE_FILES = os.getenv("SOURCE_FILES")
 
-# Remove directories if asked to
-if args.empty:
-    if os.path.exists(genPath):
-        shutil.rmtree(genPath)
-    if os.path.exists(METADATA_FILE_NAME):
-        os.remove(METADATA_FILE_NAME)
-    if os.path.exists(STATS_FILENAME):
-        os.remove(STATS_FILENAME)
+# Image generation class
+class ImageGenerator(object):
+    seed: str               # Randomness seed
+    prev_batches: list      # Pre-existing images
+    this_batch: list        # New images
+    dup_cnt_limit: int      # Maximum number of tries to create a unique image
 
-# Make paths if they don't exist
-if not os.path.exists(genPath):
-    os.makedirs(genPath)
-if not os.path.exists(dataPath):
-    os.makedirs(dataPath)
+    def __init__(self, seed: str, prev_batches: list, dup_cnt_limit: int):
+        self.seed = seed
+        # Remove IDs to make comparison to new image easier
+        self.prev_batches = deepcopy(prev_batches)
+        for img in self.prev_batches:
+            img.pop("ID", None)
+        self.this_batch = []
+        self.dup_cnt_limit = dup_cnt_limit
 
-# Set starting ID
-if args.id:
-    startingId = args.id[0]
-    print("Starting at ID: " + str(startingId))
-else:
-    startingId = 1
+    # A recursive function to generate unique image combinations
+    def create_new_image(self, id: int, dup_cnt: int = 0):
+        # New, empty dictionary
+        new_image = {}
 
-# Randomness seed
-if args.seed is not None:
-    SEED = args.seed[0]
-elif args.seed is None and getenv("SEED") is not None:
-    SEED = os.getenv("SEED")
-else:
-    timestamp = time.time_ns().to_bytes(16, byteorder='big')
-    SEED = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
+        # Seed each image based on randomness seed and ID
+        image_seed = f"{self.seed}{id}{dup_cnt}"
+        random.seed(image_seed)
 
-print(f"Using randomness seed: {SEED}")
+        # For each trait category, select a random trait based on the weightings
+        for l in traits.layers:
+            new_image[l["layer_name"]] = random.choices(l["names"], l["weights"])[0]
 
-## Generate Traits
+        if new_image in self.this_batch or new_image in self.prev_batches:
+            if dup_cnt > self.dup_cnt_limit:
+                return new_image
+            return self.create_new_image(id, dup_cnt + 1)
+        else:
+            return new_image
 
-this_batch = []
-all_images = []
-
-# Check if all-traits.json exists
-if os.path.exists(METADATA_FILE_NAME):
-    print("Previous batches exist, pulling in their data.")
-    f = open(METADATA_FILE_NAME)
-    prev_batches = json.load(f)
-    f.close()
-else:
-    prev_batches = []
-
-## Generate folders and names list from layers available in traits
-n = 1
-for l in traits.layers:
-    traits.layers[n]["names"] = list(traits.layers[n]["filenames"].keys())
-    traits.layers[n]["path"] = SOURCE_FILES + "/layer0" + str(n) + "/"
-    n = n + 1
-
-# A recursive function to generate unique image combinations
-def create_new_image(dup_cnt: int = 0):
-
-    # New, empty dictionary
-    new_image = {"ID": startingId}
-    n = 1
-
-    # Seed each image based on randomness seed and ID
-    image_seed = f"{SEED}{new_image['ID']}{dup_cnt}"
-    random.seed(image_seed)
-
-    # For each trait category, select a random trait based on the weightings
-    for l in traits.layers:
-        new_image[traits.layers[n]["layer_name"]] = random.choices(traits.layers[n]["names"], traits.layers[n]["weights"])[0]
-        n = n + 1
-
-    if new_image in this_batch or new_image in prev_batches:
-        return create_new_image(dup_cnt + 1)
-    else:
-        return new_image
-
-# Generate the unique combinations based on layer weightings
-for i in range(TOTAL_IMAGES):
-
-    new_layer_image = create_new_image()
-
-    this_batch.append(new_layer_image)
-
-    startingId = startingId + 1
+    def generate_images(self, starting_id: int, image_cnt: int):
+        self.prev_batches.extend(self.this_batch)
+        self.this_batch = []
+        for i in range(image_cnt):
+            unique_image = self.create_new_image(id=starting_id + i)
+            self.this_batch.append(unique_image)
+        # Add IDs
+        batch_with_id = []
+        for i, img in enumerate(self.this_batch):
+            batch_with_id.append(img)
+            batch_with_id[i]["ID"] = starting_id + i
+        return batch_with_id
+        
 
 # Returns true if all images are unique
 def all_images_unique(all_images):
+    # Remove IDs to make comparison to new image easier
+    images = deepcopy(all_images)
+    for img in images:
+        img.pop("ID", None)
     seen = list()
-    return not any(i in seen or seen.append(i) for i in all_images)
+    return not any(i in seen or seen.append(i) for i in images)
 
 # Combine and sort the lists
 def sortID(e):
     return e["ID"]
 
-for i in prev_batches:
-    all_images.append(i)
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--count", help="Total number of images to generate", type=int, required=True)
+    parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
+    parser.add_argument("--id", help="Specify starting ID for images", type=int, default = 1)
+    parser.add_argument("--seed", help="Randomness seed", type=str, default=None)
+    args = parser.parse_args()
+    return args
 
-for i in this_batch:
-    all_images.append(i)
+def generate_paths(empty: bool):
+    if empty:
+        if os.path.exists(GEN_PATH):
+            shutil.rmtree(GEN_PATH)
+        if os.path.exists(METADATA_FILE_NAME):
+            os.remove(METADATA_FILE_NAME)
+        if os.path.exists(STATS_FILENAME):
+            os.remove(STATS_FILENAME)
 
-all_images.sort(key=sortID)
+    # Make paths if they don't exist
+    if not os.path.exists(GEN_PATH):
+        os.makedirs(GEN_PATH)
+    if not os.path.exists(DATA_PATH):
+        os.makedirs(DATA_PATH)
 
-# Couble check that all images are unique to the whole collection
-print("Are all images unique?", all_images_unique(all_images))
 
-# Get Trait Counts
-print("How many of each trait exist?")
+def main():
+    # check for command line arguments
+    args = parse_args()
 
-n = 1
-for l in traits.layers:
-    traits.layers[n]["count"] = {}
-    for item in traits.layers[n]["names"]:
-        traits.layers[n]["count"][item] = 0
-    n = n + 1
+    # Define amount of images to generate
+    total_image = args.count
 
-for image in all_images:
-    n = 1
+    if total_image > traits.get_variation_cnt():
+        sys.exit(f"count ({total_image}) cannot be greater than the number of variations ({traits.get_variation_cnt()})")
+
+    # Remove directories if asked to
+    generate_paths(args.empty)
+
+    # Set starting ID
+    starting_id = args.id
+    print("Starting at ID: " + str(starting_id))
+
+    # Randomness seed
+    if args.seed is not None:
+        SEED = args.seed
+    elif os.getenv("SEED") is not None:
+        SEED = str(os.getenv("SEED"))
+    else:
+        timestamp = time.time_ns().to_bytes(16, byteorder='big')
+        SEED = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
+    print(f"Using randomness seed: {SEED}")
+
+    ## Generate Traits
+    # Check if all-traits.json exists
+    if os.path.exists(METADATA_FILE_NAME):
+        print("Previous batches exist, pulling in their data.")
+        with open(METADATA_FILE_NAME, 'r') as f:
+            prev_batches = []
+            seen = set(range(starting_id, starting_id + total_image))
+            for img in json.load(f):    # Keep only IDs not being re-generated
+                if img["ID"] not in seen:
+                    seen.add(img["ID"])
+                    prev_batches.append(img)
+
+    else:
+        prev_batches = []
+    
+    # Remove IDs that will get replaced
+
+
+    ## Generate folders and names list from layers available in traits
+    for i, l in enumerate(traits.layers):
+        l["names"] = list(l["filenames"].keys())
+        l["path"] = os.path.join(SOURCE_FILES, f"layer{i + 1:02}")
+
+    # Generate the unique combinations based on layer weightings
+    img_gen = ImageGenerator(seed=SEED, prev_batches=prev_batches, dup_cnt_limit=traits.get_variation_cnt())
+    this_batch = img_gen.generate_images(starting_id=starting_id, image_cnt=total_image)
+
+    all_images = prev_batches
+    all_images.extend(this_batch)
+
+    all_images.sort(key=sortID)
+
+    # Couble check that all images are unique to the whole collection
+    print("Are all images unique?", all_images_unique(all_images))
+
+    # Get Trait Counts
+    print("How many of each trait exist?")
+
     for l in traits.layers:
-        traits.layers[n]["count"][image[traits.layers[n]["layer_name"]]] += 1
-        n = n + 1
+        l["count"] = {item: 0 for item in l["names"]}
 
-n = 1
-for c in traits.layers:
-    print(traits.layers[n]["count"])
-    n = n + 1
-
-## Store trait counts to json
-n = 1
-with open(STATS_FILENAME, 'w') as outfile:
-    gen_stats = {}
-    for l in traits.layers:
-        gen_stats[traits.layers[n]["layer_name"]] = traits.layers[n]["count"]
-        n = n + 1
-    json.dump(gen_stats, outfile, indent=4)
-
-#### Generate Images
-
-for item in this_batch:
-
-    n = 1
-    for l in traits.layers:
-        traits.layers[n]["file"] = Image.open(f'{traits.layers[n]["path"]}{traits.layers[n]["filenames"][item[traits.layers[n]["layer_name"]]]}').convert('RGBA')
-        n = n + 1
-
-    composite = Image.alpha_composite(traits.layers[1]["file"], traits.layers[2]["file"])
-
-    if len(traits.layers) > 2:
+    for image in all_images:
         n = 1
         for l in traits.layers:
-            if n < 3:
-                n = n + 1
-            else:
-                composite = Image.alpha_composite(composite, traits.layers[n]["file"])
-                n = n + 1
+            item = image[l["layer_name"]]
+            l["count"][item] += 1
 
-    #Convert to RGB
-    rgb_im = composite.convert('RGB')
-    file_name = COLLECTION_LOWER + "_" + str(item["ID"]) + ".png"
-    rgb_im.save(genPath + "/" + file_name)
-    print("Generated " + genPath + "/" + file_name)
+    for i, l in enumerate(traits.layers):
+        print(f"Layer {i + 1:02}: {l['count']}")
 
-#### Generate Metadata for all Traits
+    ## Store trait counts to json
+    with open(STATS_FILENAME, 'w') as outfile:
+        gen_stats = {l["layer_name"]: l["count"] for l in traits.layers}
+        json.dump(gen_stats, outfile, indent=4)
 
-with open(METADATA_FILE_NAME, 'w') as outfile:
-    json.dump(all_images, outfile, indent=4)
+    #### Generate Images
+    for item in this_batch:
+        # Open images as they are needed
+        parts = []
+        for l in traits.layers:
+            layer_pretty_name = item[l["layer_name"]]
+            layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
 
-print("Look in " + METADATA_FILE_NAME + " for an overview of all generated IDs and traits.")
+            try:
+                part = l["image"][layer_pretty_name]
+            except KeyError as e:   # Image needs to get loaded
+                if not "image" in l:
+                    l["image"] = {}
+                l["image"][layer_pretty_name] = Image.open(layer_file).convert('RGBA')
+                part = l["image"][layer_pretty_name]
+            parts.append(part)
+
+        # Composite all layers on top of each others
+        composite = parts[0].copy()
+        for p in parts:
+            composite = Image.alpha_composite(composite, p)
+
+        # Convert to RGB
+        background = Image.new(mode="RGB", size=composite.size, color=(255, 255, 255))
+        background.paste(composite, mask=composite.split()[3])  # Drop the alpha channel
+
+        file_path = os.path.join(GEN_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
+        composite.save(file_path)
+        print(f"Generated {file_path}")
+    
+    # Close images
+    [img.close() for l in traits.layers if "image" in l for _,img in l["image"].items()]
+
+    #### Generate Metadata for all Traits
+
+    with open(METADATA_FILE_NAME, 'w') as outfile:
+        json.dump(all_images, outfile, indent=4)
+
+    print("Look in " + METADATA_FILE_NAME + " for an overview of all generated IDs and traits.")
+
+if __name__ == "__main__":
+    main()
