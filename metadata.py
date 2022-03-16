@@ -10,6 +10,7 @@ load_dotenv()
 # check for command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--cid", nargs=1, help="Specify starting ID for images", type=int)
+parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
 args = parser.parse_args()
 
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
@@ -17,6 +18,11 @@ IMAGES_BASE_URL = "ipfs://" + cid + "/"
 
 dataPath = "./metadata"
 genPath = dataPath + "/" + COLLECTION_LOWER + "/generated"
+
+# Remove directories if asked to
+if args.empty:
+    if os.path.exists(genPath):
+        shutil.rmtree(genPath)
 
 # Set starting ID
 if args.cid:
