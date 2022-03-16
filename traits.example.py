@@ -17,7 +17,7 @@ Add as many "filenames" and "weights" as needed.
 
 An Example of 1 Layer:
 
-1: {
+{
     "layer_name": "Pretty Trait Name 0X",
     "filenames": {
         "Pretty Item Name 01": "item_01.png",
