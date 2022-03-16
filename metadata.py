@@ -14,7 +14,6 @@ parser.add_argument("-e", "--empty", help="Empty the generated directory", actio
 args = parser.parse_args()
 
 COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
-IMAGES_BASE_URL = "ipfs://" + cid + "/"
 
 dataPath = path.join("./metadata", COLLECTION_LOWER)
 genPath = path.join("./images", COLLECTION_LOWER, "generated")
@@ -42,6 +41,7 @@ f = open(dataPath + '/all-traits.json')
 data = json.load(f)
 
 # Changes this IMAGES_BASE_URL to yours
+IMAGES_BASE_URL = "ipfs://" + cid + "/"
 
 def getAttribute(key, value):
     return {
