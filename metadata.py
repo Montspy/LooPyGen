@@ -13,6 +13,9 @@ COLLECTION_PATH = path.join("./generated", COLLECTION_LOWER)
 DATA_PATH = path.join(COLLECTION_PATH, "metadata")
 IMAGE_PATH = path.join(COLLECTION_PATH, "images")
 
+# specify all-traits.json file
+METADATA_FILE_NAME = path.join(COLLECTION_PATH, "all-traits.json")
+
 def properties_to_attributes(properties: dict):
     attributes = []
     for key, value in properties.items():
@@ -54,7 +57,7 @@ def main():
 
     #### Generate Metadata for each Image
 
-    with open(path.join(DATA_PATH, 'all-traits.json')) as f:
+    with open(METADATA_FILE_NAME) as f:
         all_images = json.load(f)
 
     # Changes this IMAGES_BASE_URL to yours
