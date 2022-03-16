@@ -19,7 +19,9 @@ This README has some command info, but the [Wiki pages](https://github.com/sk33z
 1. Copy the `traits.example.py` file and rename it to `traits.py`.
 2. Edit the file according to the comments and examples to match your collection traits and items.
 3. Copy the `.env.example` file and rename it to `.env`.
-4. Add your information to the file. `MINTER` should be set to the wallet address that mints the collection. Some times this is not the same as the artist.
+4. Add your information to the file.
+    * `MINTER` should be set to the wallet address that mints the collection. Some times this is not the same as the artist.
+    * `SEED` can be set to any string as a basis for generation. If you don't specify one here or in the `.env` file, one will be generated for you and stored in the `all-traits.json` file.
 
 ## Docker Setup on Linux, Mac, and Windows with WSL 2 enabled
 
@@ -69,6 +71,12 @@ Should you need to clear out generated images and metadata to start over from sc
 
 ```shell
 $ ./docker.sh generate --empty --count 100
+```
+
+The seed can also be specified on the command line. If you have a seed set in your `.env`, the command line argument takes precedence.
+
+```shell
+$ ./docker.sh generate --seed SomEBullMeSS --count 100
 ```
 
 ### Generating Metadata
@@ -131,4 +139,10 @@ You can also pass the CID on the command line if you want to put this into a for
 
 ```shell
 $ metadata --cid Qmeq2WXT5obb1WxU6aWbgFAqMmgmjZmVsLuL25GTLdYcQD
+```
+
+The seed can also be specified on the command line. If you have a seed set in your `.env`, the command line argument takes precedence.
+
+```shell
+$ generate --seed SomEBullMeSS --count 100
 ```
