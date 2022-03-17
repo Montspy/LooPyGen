@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd /loopymint2
-python generate.py $@
+cd /var/www/html
+python3 generator/generate.py $@
