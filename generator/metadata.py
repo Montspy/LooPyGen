@@ -63,6 +63,7 @@ def main():
     # Changes this IMAGES_BASE_URL to yours
     for image in all_images:
         token_id = image['ID']
+        json_path = path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json")
 
         if getenv("COLLECTION_DESCRIPTION") is None:
             DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
@@ -84,7 +85,9 @@ def main():
             "properties": image
         }
 
-        with open(path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json"), 'w') as outfile:
+        print(f"Generating metadata for #{token_id:03} to {json_path}")
+
+        with open(json_path, 'w') as outfile:
             json.dump(token, outfile, indent=4)
 
 if __name__ == "__main__":
