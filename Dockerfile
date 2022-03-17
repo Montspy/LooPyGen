@@ -26,6 +26,8 @@ RUN apt-get install -y python3 npm
 # get compiled modules from previous stages
 COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
 COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
+# copy nginx.conf in
+COPY dockerfiles/nginx.conf /etc/nginx/conf.d/default.conf
 # add the python files for the game
 ADD dockerfiles/generate.sh /usr/local/bin/generate
 ADD dockerfiles/metadata.sh /usr/local/bin/metadata
