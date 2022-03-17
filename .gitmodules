@@ -1,0 +1,3 @@
+[submodule "minter"]
+	path = minter
+	url = git@github.com:Montspy/LoopMintPy.git

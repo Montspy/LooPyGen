@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
-name="loopymint2"
+name="loopygen"
 
 case $1 in
-    build) docker build --tag $name .;;
-    *) docker run -it --rm --name $name -v /${PWD}:/$name:rw $name $@;;
+    build) docker-compose build;;
+    reload) docker-compose up -d --build --force-recreate;;
+    up) docker-compose up -d;;
+    *) docker-compose exec php $@;;
 esac

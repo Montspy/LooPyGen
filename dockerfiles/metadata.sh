@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd /loopymint2
-python metadata.py $@
+cd /var/www/html
+python3 generator/metadata.py $@
