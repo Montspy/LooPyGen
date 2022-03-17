@@ -198,6 +198,7 @@ def main():
     ## Store trait counts to json
     with open(STATS_FILENAME, 'w') as outfile:
         gen_stats = {l["layer_name"]: l["count"] for l in traits.layers}
+        gen_stats['seed'] = SEED
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Images
