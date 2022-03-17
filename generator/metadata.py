@@ -73,9 +73,10 @@ def main():
         all_images = json.load(f)
 
     # Calculate image CIDs
-    all_cids = asyncio.run(get_image_cids(all_images))
+    all_images_cids = asyncio.run(get_image_cids(all_images))
+    all_metadata_cids = []
 
-    for cid, image in zip(all_cids, all_images):
+    for cid, image in zip(all_images_cids, all_images):
         token_id = image['ID']
         json_path = path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json")
 
@@ -105,6 +106,14 @@ def main():
 
         with open(json_path, 'w') as outfile:
             json.dump(token, outfile, indent=4)
+
+        # Calculate metadata CIDs
+        all_metadata_cids.append(asyncio.run(get_file_cid(json_path)))
+
+    metadata_cids_path = path.join(COLLECTION_PATH, f"metadata-cids.json")
+    print(metadata_cids_path)
+    with open(metadata_cids_path, 'w') as outfile:
+        json.dump(all_metadata_cids, outfile, indent=4)
 
 if __name__ == "__main__":
     main()
