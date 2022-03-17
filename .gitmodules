@@ -1,3 +1,3 @@
 [submodule "minter"]
 	path = minter
-	url = git@github.com:Montspy/LoopMintPy.git
+	url = https://github.com/Montspy/LooPyMinty.git
