@@ -12,3 +12,35 @@ The system utilizes a few parts:
 Checkout the [Wiki pages](https://github.com/sk33z3r/loopymint2/wiki/Getting-Started) for up to date info on using the app!
 
 Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to report any problems, make feature requests, or keep up with our progress!
+
+## Basic Usage
+
+### Build the Environment
+
+```plaintext
+./docker.sh up
+```
+
+### Run the image generator
+
+```plaintext
+./docker.sh generator --count XXX
+```
+
+### Run the metadata generator
+
+```plaintext
+./docker.sh metadata
+```
+
+### Run the CID calculator
+
+```plaintext
+./docker.sh cid --cid-version=0 ./path/to/file/in/repo
+```
+
+or
+
+```plaintext
+./docker.sh cid --cid-version=1 ./path/to/file/in/repo
+```
