@@ -13,22 +13,13 @@ import shutil
 import traits
 
 # Paths generation
-COLLECTION_LOWER = traits.COLLECTION_NAME.replace(" ", "_").lower()
+COLLECTION_LOWER =  "".join(map(lambda c: c if c.isalnum() else '_', traits.COLLECTION_NAME)).lower()
 COLLECTION_PATH = os.path.join("./generated", COLLECTION_LOWER)
 DATA_PATH = os.path.join(COLLECTION_PATH, "metadata")
 IMAGES_PATH = os.path.join(COLLECTION_PATH, "images")
 
 METADATA_FILE_NAME = os.path.join(COLLECTION_PATH, "all-traits.json")
 STATS_FILENAME = os.path.join(COLLECTION_PATH, "gen-stats.json")
-
-# load .env file into memory
-load_dotenv()
-
-# set the SOURCE_FILES if it's not specified in .env
-if os.getenv("SOURCE_FILES") is None:
-    SOURCE_FILES = os.path.join("./images", COLLECTION_LOWER)
-else:
-    SOURCE_FILES = os.getenv("SOURCE_FILES")
 
 # Image generation class
 class ImageGenerator(object):
@@ -39,10 +30,12 @@ class ImageGenerator(object):
 
     def __init__(self, seed: str, prev_batches: list, dup_cnt_limit: int):
         self.seed = seed
-        # Remove IDs to make comparison to new image easier
-        self.prev_batches = deepcopy(prev_batches)
-        for img in self.prev_batches:
-            img.pop("ID", None)
+        # Keep trait properties only, to make comparison to new image easier
+        self.prev_batches = []
+        for image in prev_batches:
+            layer_names = [l["layer_name"] for l in traits.layers]
+            self.prev_batches.append({name: image[name] for name in layer_names})
+
         self.this_batch = []
         self.dup_cnt_limit = dup_cnt_limit
 
@@ -117,8 +110,10 @@ def generate_paths(empty: bool):
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
 
-
 def main():
+    # load .env file into memory
+    load_dotenv()
+
     # check for command line arguments
     args = parse_args()
 
@@ -131,6 +126,12 @@ def main():
     # Remove directories if asked to
     generate_paths(args.empty)
 
+    # set the SOURCE_FILES if it's not specified in .env
+    if os.getenv("SOURCE_FILES") is not None and os.getenv("SOURCE_FILES") != "":
+        SOURCE_FILES = os.getenv("SOURCE_FILES")
+    else:
+        SOURCE_FILES = os.path.join("./images", COLLECTION_LOWER)
+
     # Set starting ID
     starting_id = args.id
     print("Starting at ID: " + str(starting_id))
@@ -138,7 +139,7 @@ def main():
     # Randomness seed
     if args.seed is not None:
         SEED = args.seed
-    elif os.getenv("SEED") is not None:
+    elif os.getenv("SEED") is not None and os.getenv("SEED") != "":
         SEED = str(os.getenv("SEED"))
     else:
         timestamp = time.time_ns().to_bytes(16, byteorder='big')
