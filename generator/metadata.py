@@ -2,6 +2,7 @@ from copy import deepcopy
 import json
 import argparse
 from os import path, getenv, makedirs
+from shutil import copy2
 from pprint import pprint
 from dotenv import load_dotenv
 import traits
@@ -108,12 +109,13 @@ def main():
             json.dump(token, outfile, indent=4)
 
         # Calculate metadata CIDs
-        all_metadata_cids.append(asyncio.run(get_file_cid(json_path)))
+        all_metadata_cids.append({"ID": token_id, "CID": asyncio.run(get_file_cid(json_path))})
 
-    metadata_cids_path = path.join(COLLECTION_PATH, f"metadata-cids.json")
-    print(metadata_cids_path)
+    metadata_cids_path = path.join(COLLECTION_PATH, "metadata-cids.json")
+    minter_cids_path = path.join("./minter", "metadata-cids.json")
     with open(metadata_cids_path, 'w') as outfile:
         json.dump(all_metadata_cids, outfile, indent=4)
+    copy2(metadata_cids_path, minter_cids_path)
 
 if __name__ == "__main__":
     main()
