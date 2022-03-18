@@ -39,12 +39,14 @@ layers = [
     {   # Background color
         "layer_name": "Background color",
         "rgba": {
-            "Black": (  0,   0,   0, 255)
+            # Uncomment Black for black background
+            # "Black":       (  0,   0,   0, 255),
+            "Transparent": (  0,   0,   0,   0),
         },
         "weights": [
             100
         ],
-        "size": (640, 640)
+        "size": (640, 640)  # Adjust to the size of your images
     },
     {   # layer01
         "layer_name": "Pretty Trait Name 01",
