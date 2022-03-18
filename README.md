@@ -33,6 +33,18 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 ./docker.sh metadata
 ```
 
+### Batch mint the generated collection
+
+```plaintext
+./docker.sh mintcollection --count 100 --start 1 --end 50
+```
+
+### Mint only one CID
+
+```plaintext
+./docker.sh mint --cid Qmau1Sx2hLTkLmXsu2dD28yMZtL3Pzs2uKqP2MeHZPm93V --count 100
+```
+
 ### Run the CID calculator
 
 ```plaintext
