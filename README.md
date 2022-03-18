@@ -42,7 +42,7 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 ### Mint only one CID
 
 ```plaintext
-./docker.sh mint --cid Qmau1Sx2hLTkLmXsu2dD28yMZtL3Pzs2uKqP2MeHZPm93V --count 100
+./docker.sh mint --cid Qmau1Sx2hLTkLmXsu2dD28yMZtL3Pzs2uKqP2MeHZPm93V --amount 100
 ```
 
 ### Run the CID calculator
