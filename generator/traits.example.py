@@ -36,6 +36,16 @@ COLLECTION_NAME="Collection Name"
 
 ## Layers dictionary
 layers = [
+    {   # Background color
+        "layer_name": "Background color",
+        "rgba": {
+            "Black": (  0,   0,   0, 255)
+        },
+        "weights": [
+            100
+        ],
+        "size": (640, 640)
+    },
     {   # layer01
         "layer_name": "Pretty Trait Name 01",
         "filenames": {
