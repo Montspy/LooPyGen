@@ -90,8 +90,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--count", help="Total number of images to generate", type=int, required=True)
     parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
-    parser.add_argument("--id", help="Specify starting ID for images", type=int, default = 1)
-    parser.add_argument("--seed", help="Randomness seed", type=str, default=None)
+    parser.add_argument("--id", help="Specify starting ID for images", type=int, default=1)
+    parser.add_argument("--seed", help="Specify the randomness seed", type=str, default=None)
     args = parser.parse_args()
     return args
 
@@ -152,6 +152,7 @@ def main():
         print("Previous batches exist, pulling in their data.")
         with open(METADATA_FILE_NAME, 'r') as f:
             prev_batches = []
+            # Remove IDs that will get replaced
             seen = set(range(starting_id, starting_id + total_image))
             for img in json.load(f):    # Keep only IDs not being re-generated
                 if img["ID"] not in seen:
@@ -161,13 +162,11 @@ def main():
     else:
         prev_batches = []
 
-    # Remove IDs that will get replaced
-
-
     ## Generate folders and names list from layers available in traits
     for i, l in enumerate(traits.layers):
-        l["names"] = list(l["filenames"].keys())
-        l["path"] = os.path.join(SOURCE_FILES, f"layer{i + 1:02}")
+        l["type"] = "filenames" if "filenames" in l else "rgba"
+        l["names"] = list(l[l["type"]].keys())
+        l["path"] = os.path.join(SOURCE_FILES, f"layer{i:02}")
 
     # Generate the unique combinations based on layer weightings
     img_gen = ImageGenerator(seed=SEED, prev_batches=prev_batches, dup_cnt_limit=traits.get_variation_cnt())
@@ -194,7 +193,7 @@ def main():
             l["count"][item] += 1
 
     for i, l in enumerate(traits.layers):
-        print(f"Layer {i + 1:02}: {l['count']}")
+        print(f"Layer {i:02}: {l['count']}")
 
     ## Store trait counts to json
     with open(STATS_FILENAME, 'w') as outfile:
@@ -208,27 +207,28 @@ def main():
         parts = []
         for l in traits.layers:
             layer_pretty_name = item[l["layer_name"]]
-            layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
-
             try:
                 part = l["image"][layer_pretty_name]
             except KeyError as e:   # Image needs to get loaded
                 if not "image" in l:
                     l["image"] = {}
-                l["image"][layer_pretty_name] = Image.open(layer_file).convert('RGBA')
+
+                if l["type"] == "filenames":
+                    layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
+                    l["image"][layer_pretty_name] = Image.open(layer_file).convert('RGBA')
+                elif l["type"] == "rgba":
+                    if not "size" in l:
+                        sys.exit(f"Missing image size for {l['layer_name']}")
+                    l["image"][layer_pretty_name] = Image.new(mode="RGBA", size=l["size"], color=l["rgba"][layer_pretty_name])
+                
                 part = l["image"][layer_pretty_name]
+
             parts.append(part)
 
         # Composite all layers on top of each others
         composite = parts[0].copy()
         for p in parts:
             composite = Image.alpha_composite(composite, p)
-
-        # # Convert to RGB (uncomment section)
-        # background_color = (128, 128, 128)
-        # background = Image.new(mode="RGB", size=composite.size, color=background_color)
-        # background.paste(composite, mask=composite.split()[3])  # Drop the alpha channel
-        # composite = background
 
         file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
         composite.save(file_path)
