@@ -36,7 +36,7 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 ### Batch mint the generated collection
 
 ```plaintext
-./docker.sh mintcollection --count 100
+./docker.sh mintcollection --amount 100
 ```
 
 ### Mint only one CID
