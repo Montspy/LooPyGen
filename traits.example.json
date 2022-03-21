@@ -1,0 +1,41 @@
+{
+    "collection_name": "My First NFT",
+    "metadata_description": "Some descriptive text about your collection that will appear in the metadata JSON files.",
+    "artist_name": "Your name or ENS!",
+    "royalty_percentage": 0,
+    "wallet_address": "",
+    "image_layers": [
+        {
+            "layer_name": "Background Color",
+            "rgba": {
+                "Transparent": [0,0,0,0]
+            },
+            "weights": [
+                100
+            ],
+            "size": [640, 640]
+        },
+        {
+            "layer_name": "Trait Display Name 01",
+            "filenames": {
+                "Item Display Name 01": "item_01.png",
+                "Item Display Name 02": "item_02.png"
+            },
+            "weights": [
+                50,
+                50
+            ]
+        },
+        {
+            "layer_name": "Trait Display Name 02",
+            "filenames": {
+                "Item Display Name 01": "item_01.png",
+                "Item Display Name 02": "item_02.png"
+            },
+            "weights": [
+                50,
+                50
+            ]
+        }
+    ]
+}
