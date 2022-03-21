@@ -26,13 +26,13 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 **Basic run:**
 
 ```shell
-./docker.sh generator --count XXX
+./docker.sh generate --count XXX
 ```
 
 **Delete previously generated images before generating a new set:**
 
 ```shell
-./docker.sh generator --empty --count XXX
+./docker.sh generate --empty --count XXX
 ```
 
 ### Metadata JSON Generator Commands
