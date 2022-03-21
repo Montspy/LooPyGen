@@ -11,8 +11,10 @@ checkDotenv() {
 getIDs() {
     uid=$(id -u)
     gid=$(id -g)
-    cat .env | sed "s/^UID=.*$/UID=$uid/g" > .env
-    cat .env | sed "s/^GID=.*$/GID=$gid/g" > .env
+    cat .env | sed "s/^UID=.*$/UID=$uid/g" > .temp1
+    cat .temp1 | sed "s/^GID=.*$/GID=$gid/g" > .temp2
+    mv .temp2 .env
+    rm .temp1
 }
 
 checkDotenv
