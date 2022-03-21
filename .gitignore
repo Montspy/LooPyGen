@@ -4,6 +4,7 @@ generated
 all-traits.json
 gen-stats.json
 traits.py
+traits.json
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
