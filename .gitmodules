@@ -1,3 +1,4 @@
 [submodule "minter"]
 	path = minter
 	url = https://github.com/Montspy/LooPyMinty.git
+	branch = rel/LooPyGen
