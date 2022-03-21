@@ -23,13 +23,13 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 
 ### Image Generator Commands
 
-**Basic run:**
+Basic run:
 
 ```shell
 ./docker.sh generate --count XXX
 ```
 
-**Delete previously generated images before generating a new set:**
+Delete previously generated images before generating a new set:
 
 ```shell
 ./docker.sh generate --empty --count XXX
@@ -37,13 +37,13 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 
 ### Metadata JSON Generator Commands
 
-**Basic run, after generating images:**
+Basic run, after generating images:
 
 ```shell
 ./docker.sh metadata
 ```
 
-**Delete previously generated metadata before generating a new set:**
+Delete previously generated metadata before generating a new set:
 
 ```shell
 ./docker.sh --empty metadata
@@ -51,25 +51,25 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 
 ### Minting Commands
 
-**Batch mint a collection:**
+Batch mint a collection:
 
 ```shell
 ./docker.sh mintcollection --amount 1
 ```
 
-**Mint a specific set of IDs:**
+Mint a specific set of IDs:
 
 ```shell
 ./docker.sh mintcollection --start startID --end endID --amount 1
 ```
 
-**Mint a single CID:**
+Mint a single CID:
 
 ```shell
 ./docker.sh mint --cid Qmau1Sx2hLTkLmXsu2dD28yMZtL3Pzs2uKqP2MeHZPm93V --amount 100
 ```
 
-**Test run a mint (shows only what the script _would_ do, but doesn't actually do it):**
+Test run a mint (shows only what the script _would_ do, but doesn't actually do it):
 
 ```shell
 ./docker.sh mintcollection --testmint --amount 100
@@ -77,13 +77,13 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 
 ### CID Calculator Commands
 
-**CIDv0:**
+CIDv0:
 
 ```shell
 ./docker.sh cid ./path/to/file/in/repo
 ```
 
-**CIDv1:**
+CIDv1:
 
 ```shell
 ./docker.sh cid --cid-version=1 ./path/to/file/in/repo
