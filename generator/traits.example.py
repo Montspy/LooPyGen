@@ -75,5 +75,5 @@ layers = [
 def get_variation_cnt():
     cnt = 1
     for l in layers:
-        cnt *= len(l["filenames"])
+        cnt *= len(l["weights"])
     return cnt
