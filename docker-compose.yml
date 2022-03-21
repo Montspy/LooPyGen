@@ -16,7 +16,10 @@ services:
   php:
     container_name: "loopygen.php"
     build: .
+    user: ${UID}:${GID}
     volumes:
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
       - ./:/var/www/html:rw
     networks:
       loopygen:
