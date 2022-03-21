@@ -4,6 +4,8 @@ Consider the lowest number to be your background layer. Then you are adding new 
 
 You must have at least 2 layers to run this script.
 
+The "Background Color" layer must be present, even if the only color is "Transparent": (0,0,0,0).
+
 Only change the values and layer numbers in the layers dictionary.
 
 Add as many layers as you need, just remember to increase the layer number when copying a new section.
@@ -36,8 +38,8 @@ COLLECTION_NAME="Collection Name"
 
 ## Layers dictionary
 layers = [
-    {   # Background color
-        "layer_name": "Background color",
+    {   # Background Color
+        "layer_name": "Background Color",
         "rgba": {
             # Uncomment Black for black background
             # "Black":       (  0,   0,   0, 255),
