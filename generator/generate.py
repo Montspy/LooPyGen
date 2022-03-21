@@ -166,10 +166,11 @@ def main():
     for i, l in enumerate(traits.layers):
         l["type"] = "filenames" if "filenames" in l else "rgba"
         l["names"] = list(l[l["type"]].keys())
-        if i == 0 and l["layer_name"].lower() != "background color":
-            raise Exception("Missing 'Background Color' object")
+        if traits.layers[0]["layer_name"].lower() != "background color":
+            n = i + 1
         else:
-            l["path"] = os.path.join(SOURCE_FILES, f"layer{i:02}")
+            n = i
+        l["path"] = os.path.join(SOURCE_FILES, f"layer{n:02}")
 
     # Generate the unique combinations based on layer weightings
     img_gen = ImageGenerator(seed=SEED, prev_batches=prev_batches, dup_cnt_limit=traits.get_variation_cnt())
