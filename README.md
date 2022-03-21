@@ -127,17 +127,3 @@ Copy `.env.example` and rename it to `.env`, then edit the fields to match your 
 | ACCT_ID                | `accountId`                                                                                                      | See your account export             |
 | NFT_TYPE               | EIP1155 or EIP721                                                                                                | 0 (1155) or 1 (721)                 |
 | FEE_TOKEN_ID           | ETH or LRC                                                                                                       | 0 (ETH) or 1 (LRC)                  |
-
-### A note about updating the submodule for `minter`
-
-You need to run this set of commands to get the submodule to track a specific branch other than the default:
-
-```shell
-cd minter
-git fetch origin
-git switch --detach origin/rel/LooPyGen
-cd ..
-git add minter
-git commit -m "chore: update minter HEAD"
-git push
-```
