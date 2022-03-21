@@ -29,10 +29,7 @@ COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
 # copy nginx.conf in
 COPY dockerfiles/nginx.conf /etc/nginx/conf.d/default.conf
 # add the python files for the game
-ADD dockerfiles/generate.sh /usr/local/bin/generate
-ADD dockerfiles/metadata.sh /usr/local/bin/metadata
-ADD dockerfiles/mint.sh /usr/local/bin/mint
-ADD dockerfiles/mintcollection.sh /usr/local/bin/mintcollection
+ADD dockerfiles/scripts/* /usr/local/bin/
 # link cid calculator
 RUN ln -s /usr/src/app/node_modules/pure-ipfs-only-hash/cli.js /usr/bin/cid
 # finish up container
