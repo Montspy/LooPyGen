@@ -11,18 +11,23 @@ checkDotenv() {
 getIDs() {
     uid=$(id -u)
     gid=$(id -g)
-    cat .env | sed "s/^UID=.*$/UID=$uid/g" > .temp1
-    cat .temp1 | sed "s/^GID=.*$/GID=$gid/g" > .env
-    rm .temp1
+    cat .env | sed "s/^UID=.*$/UID=$uid/g" > .temp
+    cat .temp | sed "s/^GID=.*$/GID=$gid/g" > .env
+    rm .temp
 }
-
-checkDotenv
-getIDs
 
 case $1 in
     build) docker-compose build;;
-    reload) docker-compose up -d --build --force-recreate;;
-    up) docker-compose up -d;;
+    reload)
+        checkDotenv
+        getIDs
+        docker-compose up -d --build --force-recreate
+    ;;
+    up)
+        checkDotenv
+        getIDs
+        docker-compose up -d
+    ;;
     down) docker-compose down;;
     *) docker-compose exec php $@;;
 esac
