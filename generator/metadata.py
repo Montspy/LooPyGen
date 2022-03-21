@@ -95,7 +95,7 @@ def main():
             "image": path.join(IMAGES_BASE_URL, cid),
             "animation_url": path.join(IMAGES_BASE_URL, cid),
             "description": DESCRIPTION,
-            "royalty_percentage": getenv("ROYALTY_PERCENTAGE"),
+            "royalty_percentage": int(getenv("ROYALTY_PERCENTAGE")),
             "tokenId": token_id,
             "artist": getenv("ARTIST_NAME"),
             "minter": getenv("MINTER"),
