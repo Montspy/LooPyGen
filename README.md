@@ -15,45 +15,77 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 
 ## Basic Usage
 
-### Build the Environment
+### Building the Environment
 
-```plaintext
+```shell
 ./docker.sh up
 ```
 
-### Run the image generator
+### Image Generator Commands
 
-```plaintext
+**Basic run:**
+
+```shell
 ./docker.sh generator --count XXX
 ```
 
-### Run the metadata generator
+**Delete previously generated images before generating a new set:**
 
-```plaintext
+```shell
+./docker.sh generator --empty --count XXX
+```
+
+### Metadata JSON Generator Commands
+
+**Basic run, after generating images:**
+
+```shell
 ./docker.sh metadata
 ```
 
-### Batch mint the generated collection
+**Delete previously generated metadata before generating a new set:**
 
-```plaintext
-./docker.sh mintcollection --amount 100
+```shell
+./docker.sh --empty metadata
 ```
 
-### Mint only one CID
+### Minting Commands
 
-```plaintext
+**Batch mint a collection:**
+
+```shell
+./docker.sh mintcollection --amount 1
+```
+
+**Mint a specific set of IDs:**
+
+```shell
+./docker.sh mintcollection --start startID --end endID --amount 1
+```
+
+**Mint a single CID:**
+
+```shell
 ./docker.sh mint --cid Qmau1Sx2hLTkLmXsu2dD28yMZtL3Pzs2uKqP2MeHZPm93V --amount 100
 ```
 
-### Run the CID calculator
+**Test run a mint (shows only what the script _would_ do, but doesn't actually do it):**
 
-```plaintext
-./docker.sh cid --cid-version=0 ./path/to/file/in/repo
+```shell
+./docker.sh mintcollection --testmint --amount 100
 ```
 
-or
+### CID Calculator Commands
 
-```plaintext
+**CIDv0:**
+
+```shell
+./docker.sh cid ./path/to/file/in/repo
+```
+
+**CIDv1:**
+
+```shell
 ./docker.sh cid --cid-version=1 ./path/to/file/in/repo
 ```
 
@@ -95,3 +127,17 @@ Copy `.env.example` and rename it to `.env`, then edit the fields to match your 
 | ACCT_ID                | `accountId`                                                                                                      | See your account export             |
 | NFT_TYPE               | EIP1155 or EIP721                                                                                                | 0 (1155) or 1 (721)                 |
 | FEE_TOKEN_ID           | ETH or LRC                                                                                                       | 0 (ETH) or 1 (LRC)                  |
+
+### A note about updating the submodule for `minter`
+
+You need to run this set of commands to get the submodule to track a specific branch other than the default:
+
+```shell
+cd minter
+git fetch origin
+git switch --detach origin/rel/LooPyGen
+cd ..
+git add minter
+git commit -m "chore: update minter HEAD"
+git push
+```
