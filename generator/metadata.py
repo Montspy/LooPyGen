@@ -112,7 +112,7 @@ def main():
         all_metadata_cids.append({"ID": token_id, "CID": asyncio.run(get_file_cid(json_path))})
 
     metadata_cids_path = path.join(COLLECTION_PATH, "metadata-cids.json")
-    minter_cids_path = path.join("./minter", "metadata-cids.json")
+    minter_cids_path = path.join("./generated", "metadata-cids.json")   # Temporary bandage to allow minter to find the collection
     with open(metadata_cids_path, 'w') as outfile:
         json.dump(all_metadata_cids, outfile, indent=4)
     copy2(metadata_cids_path, minter_cids_path)
