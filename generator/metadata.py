@@ -1,4 +1,3 @@
-from copy import deepcopy
 import json
 import argparse
 from os import path, getenv, makedirs
@@ -48,6 +47,7 @@ async def get_image_cids(images: list):
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--preserve", help="Refresh CIDs but preserve all other metadata fields", action="store_true")
     parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
     args = parser.parse_args()
 
@@ -81,29 +81,48 @@ def main():
         token_id = image['ID']
         json_path = path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json")
 
-        if getenv("COLLECTION_DESCRIPTION") is None:
-            DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
-        else:
-            DESCRIPTION = getenv("COLLECTION_DESCRIPTION")
+        token = {}
+        update_token = False    # Is true if a valid metadata json file exists and 'preserve' flag is set
+        if args.preserve and path.exists(json_path):
+            try:
+                # Read all the info from file
+                with open(json_path, 'r') as infile:
+                    token = json.load(infile)
+                    update_token = True
+                print(f"Updating CIDs for #{token_id:03} in {json_path}")
+            except json.JSONDecodeError as err:
+                copy2(json_path, json_path + ".bak")
+                print(f"Invalid metadata for #{token_id:03} in {json_path}: ")
+                print("  " + str(err))
+                print(f"  Saving backup as {json_path + '.bak'}: ")
 
-       # Get trait properties only (remove ID, CID, etc...)
-        layer_names = [l["layer_name"] for l in traits.layers]
-        properties = {name: image[name] for name in layer_names}
+        if not update_token:    # metadata json doesn't exist or 'preserve' flag not set
+            print(f"Generating new metadata for #{token_id:03} to {json_path}")
+            if getenv("COLLECTION_DESCRIPTION") is None:
+                DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
+            else:
+                DESCRIPTION = getenv("COLLECTION_DESCRIPTION")
 
-        token = {
-            "name": f"{traits.COLLECTION_NAME} #{token_id:03}",
-            "image": path.join(IMAGES_BASE_URL, cid),
-            "animation_url": path.join(IMAGES_BASE_URL, cid),
-            "description": DESCRIPTION,
-            "royalty_percentage": int(getenv("ROYALTY_PERCENTAGE")),
-            "tokenId": token_id,
-            "artist": getenv("ARTIST_NAME"),
-            "minter": getenv("MINTER"),
-            "attributes": properties_to_attributes(properties),
-            "properties": properties
-        }
+            # Get trait properties only (remove ID, CID, etc...)
+            layer_names = [l["layer_name"] for l in traits.layers]
+            properties = {name: image[name] for name in layer_names}
 
-        print(f"Generating metadata for #{token_id:03} to {json_path}")
+            # Create all new info
+            token = {
+                "name": f"{traits.COLLECTION_NAME} #{token_id:03}",
+                "description": DESCRIPTION,
+                "royalty_percentage": int(getenv("ROYALTY_PERCENTAGE")),
+                "tokenId": token_id,
+                "artist": getenv("ARTIST_NAME"),
+                "minter": getenv("MINTER"),
+                "attributes": properties_to_attributes(properties),
+                "properties": properties
+            }
+        
+        # Update CID fields
+        # print()
+        token["image"] = path.join(IMAGES_BASE_URL, cid)
+        token["animation_url"] = path.join(IMAGES_BASE_URL, cid)
 
         with open(json_path, 'w') as outfile:
             json.dump(token, outfile, indent=4)
