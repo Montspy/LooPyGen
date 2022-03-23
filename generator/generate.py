@@ -2,7 +2,7 @@ from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
 from dotenv import load_dotenv
-from yaspin import kbi_safe_yaspin as yaspin
+import yaspin
 from ImageBuilder import ImageBuilder, ImageDescriptor, ImageType
 import random
 import time
@@ -10,6 +10,7 @@ import json
 import os
 import sys
 import argparse
+import asyncio
 import shutil
 
 import traits
@@ -112,6 +113,52 @@ def generate_paths(empty: bool):
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
 
+# Image builder functions
+async def build_and_save_image(item: dict, task_id: int):
+    with ImageBuilder() as img_builder:
+        for l in traits.layers:
+            layer_pretty_name = item[l["layer_name"]]
+        
+            if l["type"] == "filenames":
+                layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
+                img_builder.overlay_image(layer_file)
+            elif l["type"] == "rgba":
+                if not "size" in l:
+                    sys.exit(f"Missing image size for {l['layer_name']}")
+                img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
+
+        # Composite all layers on top of each others
+        composite = await img_builder.build()
+
+        if composite.type == ImageType.STATIC:
+            file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
+            composite.img.save(file_path)
+        elif composite.type == ImageType.DYNAMIC:
+            ext = os.path.splitext(composite.fp)[1]
+            file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
+            shutil.copy2(composite.fp, file_path)
+        
+        # print(f"Generated #{item['ID']:03}: {file_path}")
+    return task_id
+
+async def generate(batch: list): 
+    # return await asyncio.gather(*[build_and_save_image(item) for item in batch])
+    task_ids = [item['ID'] for item in batch]
+    results = []
+
+    with yaspin.kbi_safe_yaspin().line as spinner:
+        spinner.text = f"Generating {len(task_ids)} images..."
+        for task in asyncio.as_completed( [build_and_save_image(item, item['ID']) for item in batch] ):
+            result = await task
+            results.append(result)
+            task_ids.remove(result)
+            if len(task_ids) > 10:
+                spinner.text = f"Generating {len(task_ids)} images..."
+            else:
+                spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
+
+    return results
+
 def main():
     # load .env file into memory
     load_dotenv()
@@ -208,35 +255,8 @@ def main():
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Images
-    with ImageBuilder() as img_builder:
-        for item in this_batch:
-            # Open images as they are needed
-            img_builder.reset()
-            for l in traits.layers:
-                layer_pretty_name = item[l["layer_name"]]
-            
-                if l["type"] == "filenames":
-                    layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
-                    img_builder.overlay_image(layer_file)
-                elif l["type"] == "rgba":
-                    if not "size" in l:
-                        sys.exit(f"Missing image size for {l['layer_name']}")
-                    img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
-
-            # Composite all layers on top of each others
-            with yaspin().line as spinner:
-                spinner.text = f"Generating #{item['ID']:03}"
-                composite = img_builder.build()
-
-            if composite.type == ImageType.STATIC:
-                file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
-                composite.img.save(file_path)
-            elif composite.type == ImageType.DYNAMIC:
-                ext = os.path.splitext(composite.fp)[1]
-                file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
-                shutil.copy2(composite.fp, file_path)
-            
-            print(f"Generated #{item['ID']:03}: {file_path}")
+    composites = asyncio.run(generate(this_batch))
+    print(f"Generated {len(this_batch)} images!")
 
     #### Generate Metadata for all Traits
 
