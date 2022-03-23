@@ -147,13 +147,17 @@ async def generate(batch: list):
     results = []
 
     with yaspin.kbi_safe_yaspin().line as spinner:
-        spinner.text = f"Generating {len(task_ids)} images..."
+        if len(task_ids) > 10:
+            spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
+        else:
+            spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
         for task in asyncio.as_completed( [build_and_save_image(item, item['ID']) for item in batch] ):
             result = await task
             results.append(result)
             task_ids.remove(result)
             if len(task_ids) > 10:
-                spinner.text = f"Generating {len(task_ids)} images..."
+                spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
+                # spinner.text = f"Generating {len(task_ids)} images..."
             else:
                 spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
 
