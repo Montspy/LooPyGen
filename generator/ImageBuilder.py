@@ -1,8 +1,9 @@
 
 from os import path
-from functools import lru_cache, singledispatchmethod
+from functools import singledispatchmethod
 from PIL import Image
-from typing import IO, List, Tuple
+from typing import List, Tuple
+import asyncio
 import tempfile
 import subprocess
 
@@ -108,7 +109,7 @@ class ImageBuilder(object):
         self.descriptors.append(desc)
 
     # Build and return the image
-    def build(self) -> ImageDescriptor:
+    async def build(self) -> ImageDescriptor:
         assert len(self.descriptors) > 0
 
         # Make canvas
@@ -118,9 +119,9 @@ class ImageBuilder(object):
             self._make_canvas(self.descriptors[0].fp)
 
         for desc in self.descriptors:
-            self.img = self.composite(self.img, desc)
+            self.img = await self.composite(self.img, desc)
 
-        self.img = self.final_export(self.img)
+        self.img = await self.final_export(self.img)
 
         return self.img
 
@@ -140,7 +141,6 @@ class ImageBuilder(object):
         self.img = ImageDescriptor(type=ImageType.STATIC, img=Image.new(mode=self.STATIC_MODE, size=self._get_size(fp)))
 
     # Cached function to get images from 
-    @lru_cache
     def _get_image(self, fp: str) -> Image.Image:
         return Image.open(fp).convert('RGBA')
 
@@ -162,15 +162,15 @@ class ImageBuilder(object):
             return tuple(subprocess.run(cmd, capture_output=True).stdout.split(sep=','))
 
     # Compositers
-    def composite(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
+    async def composite(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
         if img1.type == ImageType.STATIC and img2.type == ImageType.STATIC:
             return ImageDescriptor(type=ImageType.STATIC, img=Image.alpha_composite(img1.img, img2.img))
         else:
             # Use ffmpeg
-            return self._composite_dynamic(img1, img2)
+            return await self._composite_dynamic(img1, img2)
 
     # Composite 2 dynamic images according to FFMPEG_MODE
-    def _composite_dynamic(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
+    async def _composite_dynamic(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
         # Ensure inputs have a file on the system
         if img1.fp is None:
             self._get_temp_filepath(img1)
@@ -203,20 +203,19 @@ class ImageBuilder(object):
         ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['ext']
         cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['cmd']
         with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=ext, delete=False) as f:
-            formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, codec1=codec1, src1=img1.fp, codec2=codec2, src2=img2.fp, out=f.name, ig1=ignore_loop1, ig2=ignore_loop2, shortest=shortest).split()
-            # print('--->' + ' '.join(formatted_cmd))
-            subprocess.run(formatted_cmd)
+            formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, codec1=codec1, src1=img1.fp, codec2=codec2, src2=img2.fp, out=f.name, ig1=ignore_loop1, ig2=ignore_loop2, shortest=shortest)
+            await self._run_async_ffmpeg(formatted_cmd)
         
         return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
 
     # Final exporter
-    def final_export(self, img: ImageDescriptor):
+    async def final_export(self, img: ImageDescriptor):
         if img.type == ImageType.STATIC:
             return img
         elif img.type == ImageType.DYNAMIC:
-            return self._final_export_dynamic(img)
+            return await self._final_export_dynamic(img)
 
-    def _final_export_dynamic(self, img: ImageDescriptor):
+    async def _final_export_dynamic(self, img: ImageDescriptor):
         assert img.type == ImageType.DYNAMIC
         final_ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['final_ext']
         final_cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['final_cmd']
@@ -224,9 +223,8 @@ class ImageBuilder(object):
             return img
         else:
             with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=final_ext, delete=False) as f:
-                formatted_cmd = final_cmd.format(ll=self.FFMPEG_LOGLEVEL, src=img.fp, out=f.name).split()
-                # print('--->' + ' '.join(formatted_cmd))
-                subprocess.run(formatted_cmd)
+                formatted_cmd = final_cmd.format(ll=self.FFMPEG_LOGLEVEL, src=img.fp, out=f.name)
+                await self._run_async_ffmpeg(formatted_cmd)
             return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
 
     # Save the image to a file in temp_dir
@@ -242,4 +240,16 @@ class ImageBuilder(object):
                 file.close()
 
         return img.fp
+
+    # Async command helper
+    async def _run_async_ffmpeg(self, cmd: str):
+        proc = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+        if proc.returncode > 0:
+            raise RuntimeError(f'Could not run ffmpeg command "{cmd}":\n\t{stderr.decode()}')
+        return
         
