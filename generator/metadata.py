@@ -47,7 +47,7 @@ async def get_image_cids(images: list):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--preserve", help="Refresh CIDs but preserve all other metadata fields", action="store_true")
+    parser.add_argument("--overwrite", help="Overwrite the metadata file and all metadata fields", action="store_true")
     parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
     args = parser.parse_args()
 
@@ -82,22 +82,24 @@ def main():
         json_path = path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json")
 
         token = {}
-        update_token = False    # Is true if a valid metadata json file exists and 'preserve' flag is set
-        if args.preserve and path.exists(json_path):
+        from_scratch = True    # Is true if 'overwrite' flag set or metadata json file is invalid
+        if not args.overwrite and path.exists(json_path):
             try:
                 # Read all the info from file
                 with open(json_path, 'r') as infile:
                     token = json.load(infile)
-                    update_token = True
+                    from_scratch = False
                 print(f"Updating CIDs for #{token_id:03} in {json_path}")
             except json.JSONDecodeError as err:
-                copy2(json_path, json_path + ".bak")
                 print(f"Invalid metadata for #{token_id:03} in {json_path}: ")
                 print("  " + str(err))
-                print(f"  Saving backup as {json_path + '.bak'}: ")
 
-        if not update_token:    # metadata json doesn't exist or 'preserve' flag not set
+        if from_scratch:    # metadata json doesn't exist or 'overwrite' flag set
             print(f"Generating new metadata for #{token_id:03} to {json_path}")
+            if path.exists(json_path):
+                copy2(json_path, json_path + ".bak")
+                print(f"  Saving backup as {json_path + '.bak'}: ")
+            
             if getenv("COLLECTION_DESCRIPTION") is None:
                 DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
             else:
@@ -120,7 +122,6 @@ def main():
             }
         
         # Update CID fields
-        # print()
         token["image"] = path.join(IMAGES_BASE_URL, cid)
         token["animation_url"] = path.join(IMAGES_BASE_URL, cid)
 
