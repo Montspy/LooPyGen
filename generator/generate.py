@@ -2,7 +2,7 @@ from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
 from dotenv import load_dotenv
-from ImageBuilder import ImageBuilder
+from ImageBuilder import ImageBuilder, ImageDescriptor, ImageType
 import random
 import time
 import json
@@ -207,30 +207,32 @@ def main():
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Images
-    img_builder = ImageBuilder()
-    for item in this_batch:
-        # Open images as they are needed
-        img_builder.reset()
-        for l in traits.layers:
-            layer_pretty_name = item[l["layer_name"]]
-        
-            if l["type"] == "filenames":
-                layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
-                img_builder.overlay_image(layer_file)
-            elif l["type"] == "rgba":
-                if not "size" in l:
-                    sys.exit(f"Missing image size for {l['layer_name']}")
-                img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
+    with ImageBuilder() as img_builder:
+        for item in this_batch:
+            # Open images as they are needed
+            img_builder.reset()
+            for l in traits.layers:
+                layer_pretty_name = item[l["layer_name"]]
+            
+                if l["type"] == "filenames":
+                    layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
+                    img_builder.overlay_image(layer_file)
+                elif l["type"] == "rgba":
+                    if not "size" in l:
+                        sys.exit(f"Missing image size for {l['layer_name']}")
+                    img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
 
-        # Composite all layers on top of each others
-        composite = img_builder.build()
+            # Composite all layers on top of each others
+            composite = img_builder.build()
 
-        file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
-        composite.save(file_path)
-        print(f"Generated {file_path}")
-
-    # Close images
-    [img.close() for l in traits.layers if "image" in l for _,img in l["image"].items()]
+            if composite.type == ImageType.STATIC:
+                file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
+                composite.img.save(file_path)
+            elif composite.type == ImageType.DYNAMIC:
+                file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{img_builder.FFMPEG_MODE}")
+                shutil.copy2(composite.fp, file_path)
+            
+            print(f"Generated {file_path}")
 
     #### Generate Metadata for all Traits
 
