@@ -28,10 +28,29 @@ class ImageDescriptor(object):
 # Build the image only when requested
 class ImageBuilder(object):
     STATIC_MODE = 'RGBA'
+    FFMPEG_LOGLEVEL = '-hide_banner -loglevel warning'
     FFMPEG_PARAMS = {
         '.gif': {
-            'ext': '.gif',
-            'cmd': 'ffmpeg -y -i {src1} {ig1} -i {src2} {ig2} -filter_complex [0][1]overlay=format=auto:shortest={shortest},split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse {out}'
+            # Command and extension for compositing
+            'ext': '.webm',
+            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex [0][1]overlay=format=auto:shortest={shortest} -c:v libvpx-vp9 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            # Command and extension for final export, if any
+            'final_ext': '.gif',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf fps=30,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle {out}',
+            # Command and extension for thumbnail export, if any (TODO: unused)
+            'thumb_ext': '.gif',
+            'thumb_cmd': 'ffmpeg {ll} -y -i {src} -vf fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle {out}',
+        },
+        '.webm': {
+            # Command and extension for compositing
+            'ext': '.webm',
+            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex [0][1]overlay=format=auto:shortest={shortest} -c:v libvpx-vp9 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            # Command and extension for final export, if any
+            'final_ext': '.webm',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
+            # Command and extension for thumbnail export, if any (TODO: unused)
+            'thumb_ext': '.gif',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle {out}',
         },
         # '.mp4': {
         #     'ext': '.mp4',
@@ -41,7 +60,7 @@ class ImageBuilder(object):
     FFMPEG_EXT = list(FFMPEG_PARAMS.keys())
 
     STATIC_EXT = '.png'
-    FFMPEG_MODE = '.gif'
+    FFMPEG_MODE = '.webm'
     img: ImageDescriptor                # Final result
     descriptors: list[ImageDescriptor]  # Queue of images required to build the final image
     temp_dir: tempfile.TemporaryDirectory
@@ -55,7 +74,7 @@ class ImageBuilder(object):
 
    # Context management for temp files
     def __enter__(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
+        self.temp_dir = tempfile.TemporaryDirectory(dir='./')
         return self
 
     def __exit__(self, *exc_info):
@@ -67,7 +86,7 @@ class ImageBuilder(object):
 
     @overlay_image.register
     def _(self, fp: str, **kwds):   # From file path
-        print(f"overlay_image for file path {fp} ({path.splitext(fp)[1]})")
+        # print(f"overlay_image for file path {fp} ({path.splitext(fp)[1]})")
         if path.splitext(fp)[1] in self.FFMPEG_EXT:
             desc = ImageDescriptor(type=ImageType.DYNAMIC, fp=fp)
         else:
@@ -100,6 +119,8 @@ class ImageBuilder(object):
 
         for desc in self.descriptors:
             self.img = self.composite(self.img, desc)
+
+        self.img = self.final_export(self.img)
 
         return self.img
 
@@ -143,23 +164,14 @@ class ImageBuilder(object):
     # Compositers
     def composite(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
         if img1.type == ImageType.STATIC and img2.type == ImageType.STATIC:
-            print('STATIC-STATIC')
             return ImageDescriptor(type=ImageType.STATIC, img=Image.alpha_composite(img1.img, img2.img))
-        elif img1.type == ImageType.STATIC and img2.type == ImageType.DYNAMIC:
-            print('STATIC-DYNAMIC')
-            # Use ffmpeg
-            return self._composite_dynamic(img1, img2)
-        elif img1.type == ImageType.DYNAMIC and img2.type == ImageType.STATIC:
-            print('DYNAMIC-STATIC')
-            # Use ffmpeg
-            return self._composite_dynamic(img1, img2)
-        elif img1.type == ImageType.DYNAMIC and img2.type == ImageType.DYNAMIC:
-            print('DYNAMIC-DYNAMIC')
+        else:
             # Use ffmpeg
             return self._composite_dynamic(img1, img2)
 
     # Composite 2 dynamic images according to FFMPEG_MODE
     def _composite_dynamic(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
+        # Ensure inputs have a file on the system
         if img1.fp is None:
             self._get_temp_filepath(img1)
         if img2.fp is None:
@@ -167,29 +179,55 @@ class ImageBuilder(object):
         
         # Determine parameters
         if img1.type == ImageType.DYNAMIC and img2.type == ImageType.DYNAMIC:
-            # 'ffmpeg -y -i img1.gif  -ignore_loop 0 -i img2.gif -filter_complex "[0][1]overlay=format=auto:shortest=1,split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse" ../out.gif'
             ignore_loop1 = '-ignore_loop 0'
             ignore_loop2 = ''
             shortest = '1'
         elif img1.type == ImageType.STATIC and img2.type == ImageType.DYNAMIC:
-            # 'ffmpeg -y -i img1.png -i img2.gif -ignore_loop 0 -filter_complex "[0][1]overlay=format=auto:shortest=0,split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse" ../out.gif'
             ignore_loop1 = ''
             ignore_loop2 = '-ignore_loop 0'
             shortest = '0'
         elif img1.type == ImageType.DYNAMIC and img2.type == ImageType.STATIC:
-            # 'ffmpeg -y -i img1.png -i img2.gif -ignore_loop 0 -filter_complex "[0][1]overlay=format=auto:shortest=0,split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse" ../out.gif'
             ignore_loop1 = ''
             ignore_loop2 = ''
             shortest = '0'
 
+        # Determine codecs
+        codec1 = ''
+        codec2 = ''
+        if path.splitext(img1.fp)[1] == '.webm':
+            codec1 = '-c:v libvpx-vp9'
+        if path.splitext(img2.fp)[1] == '.webm':
+            codec2 = '-c:v libvpx-vp9'
+
+        # Let ffmpeg rip
         ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['ext']
         cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['cmd']
         with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=ext, delete=False) as f:
-            formatted_cmd = cmd.format(src1=img1.fp, src2=img2.fp, out=f.name, ig1=ignore_loop1, ig2=ignore_loop2, shortest=shortest).split()
-            print(' '.join(formatted_cmd))
-            subprocess.run(cmd.format(src1=img1.fp, src2=img2.fp, out=f.name, ig1=ignore_loop1, ig2=ignore_loop2, shortest=shortest).split())
+            formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, codec1=codec1, src1=img1.fp, codec2=codec2, src2=img2.fp, out=f.name, ig1=ignore_loop1, ig2=ignore_loop2, shortest=shortest).split()
+            # print('--->' + ' '.join(formatted_cmd))
+            subprocess.run(formatted_cmd)
         
         return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
+
+    # Final exporter
+    def final_export(self, img: ImageDescriptor):
+        if img.type == ImageType.STATIC:
+            return img
+        elif img.type == ImageType.DYNAMIC:
+            return self._final_export_dynamic(img)
+
+    def _final_export_dynamic(self, img: ImageDescriptor):
+        assert img.type == ImageType.DYNAMIC
+        final_ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['final_ext']
+        final_cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['final_cmd']
+        if not final_cmd:
+            return img
+        else:
+            with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=final_ext, delete=False) as f:
+                formatted_cmd = final_cmd.format(ll=self.FFMPEG_LOGLEVEL, src=img.fp, out=f.name).split()
+                # print('--->' + ' '.join(formatted_cmd))
+                subprocess.run(formatted_cmd)
+            return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
 
     # Save the image to a file in temp_dir
     def _get_temp_filepath(self, img: ImageDescriptor) -> str:
