@@ -11,7 +11,11 @@ traits.json
 __pycache__/
 *.py[cod]
 *$py.class
+*.jpg
+*.jpeg
 *.png
+*.gif
+*.mp4
 *.json
 *.zip
 
