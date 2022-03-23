@@ -3,3 +3,4 @@ IPython
 torch
 torchvision
 python-dotenv
+yaspin

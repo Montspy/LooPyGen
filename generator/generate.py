@@ -2,6 +2,7 @@ from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
 from dotenv import load_dotenv
+from yaspin import kbi_safe_yaspin as yaspin
 from ImageBuilder import ImageBuilder, ImageDescriptor, ImageType
 import random
 import time
@@ -223,7 +224,9 @@ def main():
                     img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
 
             # Composite all layers on top of each others
-            composite = img_builder.build()
+            with yaspin().line as spinner:
+                spinner.text = f"Generating #{item['ID']:03}"
+                composite = img_builder.build()
 
             if composite.type == ImageType.STATIC:
                 file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
@@ -233,7 +236,7 @@ def main():
                 file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
                 shutil.copy2(composite.fp, file_path)
             
-            print(f"Generated {file_path}")
+            print(f"Generated #{item['ID']:03}: {file_path}")
 
     #### Generate Metadata for all Traits
 
