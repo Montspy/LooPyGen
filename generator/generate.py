@@ -229,7 +229,8 @@ def main():
                 file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
                 composite.img.save(file_path)
             elif composite.type == ImageType.DYNAMIC:
-                file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{img_builder.FFMPEG_MODE}")
+                ext = os.path.splitext(composite.fp)[1]
+                file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
                 shutil.copy2(composite.fp, file_path)
             
             print(f"Generated {file_path}")
