@@ -41,7 +41,7 @@ async def get_file_cid(path: str, version: int=0):
     return stdout.decode().strip()
 
 def make_image_path(image: dict):
-    return path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}.png")
+    return path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}.*")
 
 async def get_image_cids(images: list):
     return await asyncio.gather(*[get_file_cid(make_image_path(image)) for image in images])
