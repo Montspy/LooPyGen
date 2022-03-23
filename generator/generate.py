@@ -2,6 +2,7 @@ from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
 from dotenv import load_dotenv
+from ImageBuilder import ImageBuilder
 import random
 import time
 import json
@@ -206,33 +207,23 @@ def main():
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Images
+    img_builder = ImageBuilder()
     for item in this_batch:
         # Open images as they are needed
-        parts = []
+        img_builder.reset()
         for l in traits.layers:
             layer_pretty_name = item[l["layer_name"]]
-            try:
-                part = l["image"][layer_pretty_name]
-            except KeyError as e:   # Image needs to get loaded
-                if not "image" in l:
-                    l["image"] = {}
-
-                if l["type"] == "filenames":
-                    layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
-                    l["image"][layer_pretty_name] = Image.open(layer_file).convert('RGBA')
-                elif l["type"] == "rgba":
-                    if not "size" in l:
-                        sys.exit(f"Missing image size for {l['layer_name']}")
-                    l["image"][layer_pretty_name] = Image.new(mode="RGBA", size=l["size"], color=l["rgba"][layer_pretty_name])
-
-                part = l["image"][layer_pretty_name]
-
-            parts.append(part)
+        
+            if l["type"] == "filenames":
+                layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
+                img_builder.overlay_image(layer_file)
+            elif l["type"] == "rgba":
+                if not "size" in l:
+                    sys.exit(f"Missing image size for {l['layer_name']}")
+                img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
 
         # Composite all layers on top of each others
-        composite = parts[0].copy()
-        for p in parts:
-            composite = Image.alpha_composite(composite, p)
+        composite = img_builder.build()
 
         file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
         composite.save(file_path)
