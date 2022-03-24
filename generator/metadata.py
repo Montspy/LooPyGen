@@ -97,7 +97,7 @@ def main():
             "description": DESCRIPTION,
             "royalty_percentage": int(getenv("ROYALTY_PERCENTAGE")),
             "tokenId": token_id,
-            "artist": getenv("ARTIST_NAME"),
+            "artist": getenv("ARTIST"),
             "minter": getenv("MINTER"),
             "attributes": properties_to_attributes(properties),
             "properties": properties
