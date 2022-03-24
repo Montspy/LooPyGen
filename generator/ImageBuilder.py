@@ -34,24 +34,24 @@ class ImageBuilder(object):
         '.gif': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex [0][1]overlay=format=auto:shortest={shortest} -c:v libvpx-vp9 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex "[0][1]overlay=format=auto:shortest={shortest}" -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
             # Command and extension for final export, if any
             'final_ext': '.gif',
-            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf fps=30,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=30,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -i {src} -vf fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
         '.webm': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex [0][1]overlay=format=auto:shortest={shortest} -c:v libvpx-vp9 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex "[0][1]overlay=format=auto:shortest={shortest}" -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
             # Command and extension for final export, if any
             'final_ext': '.webm',
-            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
         # '.mp4': {
         #     'ext': '.mp4',
