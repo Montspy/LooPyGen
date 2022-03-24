@@ -116,13 +116,12 @@ Copy `.env.example` and rename it to `.env`, then edit the fields to match your 
 
 | Variable               | Description                                                                                                      | Accepted Values                     |
 |------------------------|------------------------------------------------------------------------------------------------------------------|-------------------------------------|
-| ARTIST_NAME            | Some name so people know who you are                                                                             | String of words, spaces, or numbers |
+| ARTIST                 | Some name so people know who you are                                                                             | String of words, spaces, or numbers |
 | MINTER                 | `address`                                                                                                        | See your account export             |
 | ROYALTY_PERCENTAGE     | Percentage for royalty payouts to the minter                                                                     | 0 - 10                              |
 | COLLECTION_DESCRIPTION | A description to put into metadata                                                                               | String of words, spaces, or numbers |
 | SEED                   | A custom generation seed, generated for you if you leave it blank                                                | String of words, spaces, or numbers |
 | SOURCE_FILES           | Custom folder where your source layers are. If blank, defaults to lowercase, no space version of COLLECTION_NAME | Path to a folder                    |
-| LOOPRING_API_KEY       | `apiKey`                                                                                                         | See your account export             |
 | LOOPRING_PRIVATE_KEY   | `privateKey`                                                                                                     | See your account export             |
 | ACCT_ID                | `accountId`                                                                                                      | See your account export             |
 | NFT_TYPE               | EIP1155 or EIP721                                                                                                | 0 (1155) or 1 (721)                 |
