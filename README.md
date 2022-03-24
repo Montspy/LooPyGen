@@ -116,7 +116,7 @@ Copy `.env.example` and rename it to `.env`, then edit the fields to match your 
 
 | Variable               | Description                                                                                                      | Accepted Values                     |
 |------------------------|------------------------------------------------------------------------------------------------------------------|-------------------------------------|
-| ARTIST_NAME            | Some name so people know who you are                                                                             | String of words, spaces, or numbers |
+| ARTIST                 | Some name so people know who you are                                                                             | String of words, spaces, or numbers |
 | MINTER                 | `address`                                                                                                        | See your account export             |
 | ROYALTY_PERCENTAGE     | Percentage for royalty payouts to the minter                                                                     | 0 - 10                              |
 | COLLECTION_DESCRIPTION | A description to put into metadata                                                                               | String of words, spaces, or numbers |
