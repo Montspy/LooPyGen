@@ -53,10 +53,17 @@ class ImageBuilder(object):
             'thumb_ext': '.gif',
             'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
-        # '.mp4': {
-        #     'ext': '.mp4',
-        #     'cmd': None
-        # }
+        '.mp4': {
+            # Command and extension for compositing
+            'ext': '.webm',
+            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex "[0][1]overlay=format=auto:shortest={shortest}" -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            # Command and extension for final export, if any
+            'final_ext': '.mp4',
+            'final_cmd': 'ffmpeg {ll} -y -i {src} -pix_fmt yuva420p {out}',
+            # Command and extension for thumbnail export, if any (TODO: unused)
+            'thumb_ext': '.gif',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+        },
     }
     FFMPEG_EXT = list(FFMPEG_PARAMS.keys())
 
