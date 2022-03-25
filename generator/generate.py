@@ -133,7 +133,7 @@ async def build_and_save_image(item: dict, task_id: int):
         if composite.type == ImageType.STATIC:
             file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
             composite.img.save(file_path)
-        elif composite.type == ImageType.DYNAMIC:
+        elif composite.type == ImageType.ANIMATED:
             ext = os.path.splitext(composite.fp)[1]
             file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
             shutil.copy2(composite.fp, file_path)
