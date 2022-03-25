@@ -113,7 +113,7 @@ def generate_paths(empty: bool):
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
 
-# Image builder functions (TODO: Improve with https://stackoverflow.com/a/61478547)
+# Image builder functions
 async def build_and_save_image(item: dict, task_id: int):
     with ImageBuilder() as img_builder:
         for l in traits.layers:
@@ -142,7 +142,11 @@ async def build_and_save_image(item: dict, task_id: int):
     return task_id
 
 async def generate(batch: list): 
-    # return await asyncio.gather(*[build_and_save_image(item) for item in batch])
+    semaphore = asyncio.Semaphore(16)   # Limit to 16 images building at once
+    async def sem_task(task):
+        async with semaphore:
+            return await task
+
     task_ids = [item['ID'] for item in batch]
     results = []
 
@@ -151,13 +155,12 @@ async def generate(batch: list):
             spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
         else:
             spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
-        for task in asyncio.as_completed( [build_and_save_image(item, item['ID']) for item in batch] ):
+        for task in asyncio.as_completed( [sem_task(build_and_save_image(item, item['ID'])) for item in batch] ):
             result = await task
             results.append(result)
             task_ids.remove(result)
             if len(task_ids) > 10:
                 spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
-                # spinner.text = f"Generating {len(task_ids)} images..."
             else:
                 spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
 
