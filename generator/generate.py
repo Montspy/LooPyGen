@@ -113,7 +113,7 @@ def generate_paths(empty: bool):
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
 
-# Image builder functions
+# Image builder functions (TODO: Improve with https://stackoverflow.com/a/61478547)
 async def build_and_save_image(item: dict, task_id: int):
     with ImageBuilder() as img_builder:
         for l in traits.layers:
@@ -137,7 +137,7 @@ async def build_and_save_image(item: dict, task_id: int):
             ext = os.path.splitext(composite.fp)[1]
             file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
             shutil.copy2(composite.fp, file_path)
-        
+
         # print(f"Generated #{item['ID']:03}: {file_path}")
     return task_id
 

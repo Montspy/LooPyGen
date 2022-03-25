@@ -34,10 +34,10 @@ class ImageBuilder(object):
         '.gif': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex "[0][1]overlay=format=auto:shortest={shortest}" -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -filter_complex "{ov_order}overlay=shortest=1[ov]" -map [ov] -an -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
             # Command and extension for final export, if any
             'final_ext': '.gif',
-            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=30,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
             'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
@@ -45,7 +45,7 @@ class ImageBuilder(object):
         '.webm': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex "[0][1]overlay=format=auto:shortest={shortest}" -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
             # Command and extension for final export, if any
             'final_ext': '.webm',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
@@ -56,13 +56,13 @@ class ImageBuilder(object):
         '.mp4': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} -i {src1} {ig1} {codec2} -i {src2} {ig2} -filter_complex "[0][1]overlay=format=auto:shortest={shortest}" -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
             # Command and extension for final export, if any
             'final_ext': '.mp4',
-            'final_cmd': 'ffmpeg {ll} -y -i {src} -pix_fmt yuva420p {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -pix_fmt yuv420p {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -movflags +faststart {out}',
         },
     }
     FFMPEG_EXT = list(FFMPEG_PARAMS.keys())
@@ -185,32 +185,38 @@ class ImageBuilder(object):
             self._get_temp_filepath(img2)
         
         # Determine parameters
+        ignore_loop = ''    # For GIFs
+        image = ''          # For static images
+        ov_order = '[0][1]' # Overlay order (src 1 on top of src 0 is default)
+        src1 = img1.fp
+        src2 = img2.fp
         if img1.type == ImageType.DYNAMIC and img2.type == ImageType.DYNAMIC:
-            ignore_loop1 = '-ignore_loop 0'
-            ignore_loop2 = ''
-            shortest = '1'
+            if path.splitext(src2)[1] == '.gif':
+                ignore_loop = '-ignore_loop 0'
         elif img1.type == ImageType.STATIC and img2.type == ImageType.DYNAMIC:
-            ignore_loop1 = ''
-            ignore_loop2 = '-ignore_loop 0'
-            shortest = '0'
+            image = '-f image2 -pattern_type none -loop 0'
+            if path.splitext(src2)[1] == '.gif':
+                ignore_loop = '-ignore_loop 1'
         elif img1.type == ImageType.DYNAMIC and img2.type == ImageType.STATIC:
-            ignore_loop1 = ''
-            ignore_loop2 = ''
-            shortest = '0'
+            src1, src2 = src2, src1
+            ov_order = '[1][0]'
+            image = '-f image2 -pattern_type none -loop 0'
+            if path.splitext(src2)[1] == '.gif':
+                ignore_loop = '-ignore_loop 1'
 
         # Determine codecs
         codec1 = ''
         codec2 = ''
-        if path.splitext(img1.fp)[1] == '.webm':
+        if path.splitext(src1)[1] == '.webm':
             codec1 = '-c:v libvpx-vp9'
-        if path.splitext(img2.fp)[1] == '.webm':
+        if path.splitext(src2)[1] == '.webm':
             codec2 = '-c:v libvpx-vp9'
 
         # Let ffmpeg rip
         ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['ext']
         cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['cmd']
         with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=ext, delete=False) as f:
-            formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, codec1=codec1, src1=img1.fp, codec2=codec2, src2=img2.fp, out=f.name, ig1=ignore_loop1, ig2=ignore_loop2, shortest=shortest)
+            formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, image=image, codec1=codec1, src1=src1, ig=ignore_loop, codec2=codec2, src2=src2, ov_order=ov_order, out=f.name)
             await self._run_async_ffmpeg(formatted_cmd)
         
         return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
