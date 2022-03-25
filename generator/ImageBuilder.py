@@ -7,12 +7,12 @@ import asyncio
 import tempfile
 import subprocess
 
-# Type of image (png, jpg = STATIC - gif, mp4 = DYNAMIC)
+# Type of image (png, jpg = STATIC - gif, mp4 = ANIMATED)
 class ImageType():
     STATIC = 0
-    DYNAMIC = 1
+    ANIMATED = 1
 
-# TODO: split in 2: Static/Dynamic
+# TODO: split in 2: Static/Animated
 class ImageDescriptor(object):
     type: ImageType     # Type of image
     img: Image.Image    # static image in memory
@@ -96,7 +96,7 @@ class ImageBuilder(object):
     def _(self, fp: str, **kwds):   # From file path
         # print(f"overlay_image for file path {fp} ({path.splitext(fp)[1]})")
         if path.splitext(fp)[1] in self.FFMPEG_EXT:
-            desc = ImageDescriptor(type=ImageType.DYNAMIC, fp=fp)
+            desc = ImageDescriptor(type=ImageType.ANIMATED, fp=fp)
         else:
             desc = ImageDescriptor(type=ImageType.STATIC, img=self._get_image(fp), fp=fp)
         self.descriptors.append(desc)
@@ -122,7 +122,7 @@ class ImageBuilder(object):
         # Make canvas
         if self.descriptors[0].type == ImageType.STATIC:
             self._make_canvas(self.descriptors[0].img)
-        elif self.descriptors[0].type == ImageType.DYNAMIC:
+        elif self.descriptors[0].type == ImageType.ANIMATED:
             self._make_canvas(self.descriptors[0].fp)
 
         for desc in self.descriptors:
@@ -164,7 +164,7 @@ class ImageBuilder(object):
     def _(self, desc: ImageDescriptor) -> tuple[int]:
         if desc.type == ImageType.STATIC:
             return desc.img.size
-        elif desc.type == ImageType.DYNAMIC:
+        elif desc.type == ImageType.ANIMATED:
             cmd = 'ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {desc.fp}'
             return tuple(subprocess.run(cmd, capture_output=True).stdout.split(sep=','))
 
@@ -174,10 +174,10 @@ class ImageBuilder(object):
             return ImageDescriptor(type=ImageType.STATIC, img=Image.alpha_composite(img1.img, img2.img))
         else:
             # Use ffmpeg
-            return await self._composite_dynamic(img1, img2)
+            return await self._composite_animated(img1, img2)
 
-    # Composite 2 dynamic images according to FFMPEG_MODE
-    async def _composite_dynamic(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
+    # Composite 2 animated images according to FFMPEG_MODE
+    async def _composite_animated(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
         # Ensure inputs have a file on the system
         if img1.fp is None:
             self._get_temp_filepath(img1)
@@ -190,14 +190,14 @@ class ImageBuilder(object):
         ov_order = '[0][1]' # Overlay order (src 1 on top of src 0 is default)
         src1 = img1.fp
         src2 = img2.fp
-        if img1.type == ImageType.DYNAMIC and img2.type == ImageType.DYNAMIC:
+        if img1.type == ImageType.ANIMATED and img2.type == ImageType.ANIMATED:
             if path.splitext(src2)[1] == '.gif':
                 ignore_loop = '-ignore_loop 0'
-        elif img1.type == ImageType.STATIC and img2.type == ImageType.DYNAMIC:
+        elif img1.type == ImageType.STATIC and img2.type == ImageType.ANIMATED:
             image = '-f image2 -pattern_type none -loop 0'
             if path.splitext(src2)[1] == '.gif':
                 ignore_loop = '-ignore_loop 1'
-        elif img1.type == ImageType.DYNAMIC and img2.type == ImageType.STATIC:
+        elif img1.type == ImageType.ANIMATED and img2.type == ImageType.STATIC:
             src1, src2 = src2, src1
             ov_order = '[1][0]'
             image = '-f image2 -pattern_type none -loop 0'
@@ -219,17 +219,17 @@ class ImageBuilder(object):
             formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, image=image, codec1=codec1, src1=src1, ig=ignore_loop, codec2=codec2, src2=src2, ov_order=ov_order, out=f.name)
             await self._run_async_ffmpeg(formatted_cmd)
         
-        return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
+        return ImageDescriptor(type=ImageType.ANIMATED, fp=f.name)
 
     # Final exporter
     async def final_export(self, img: ImageDescriptor):
         if img.type == ImageType.STATIC:
             return img
-        elif img.type == ImageType.DYNAMIC:
-            return await self._final_export_dynamic(img)
+        elif img.type == ImageType.ANIMATED:
+            return await self._final_export_animated(img)
 
-    async def _final_export_dynamic(self, img: ImageDescriptor):
-        assert img.type == ImageType.DYNAMIC
+    async def _final_export_animated(self, img: ImageDescriptor):
+        assert img.type == ImageType.ANIMATED
         final_ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['final_ext']
         final_cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['final_cmd']
         if not final_cmd:
@@ -238,7 +238,7 @@ class ImageBuilder(object):
             with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=final_ext, delete=False) as f:
                 formatted_cmd = final_cmd.format(ll=self.FFMPEG_LOGLEVEL, src=img.fp, out=f.name)
                 await self._run_async_ffmpeg(formatted_cmd)
-            return ImageDescriptor(type=ImageType.DYNAMIC, fp=f.name)
+            return ImageDescriptor(type=ImageType.ANIMATED, fp=f.name)
 
     # Save the image to a file in temp_dir
     def _get_temp_filepath(self, img: ImageDescriptor) -> str:
