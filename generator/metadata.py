@@ -8,12 +8,14 @@ from dotenv import load_dotenv
 import traits
 import shutil
 import asyncio
+import glob
 
 # Paths generation
 COLLECTION_LOWER = "".join(map(lambda c: c if c.isalnum() else '_', traits.COLLECTION_NAME)).lower()
 COLLECTION_PATH = path.join("./generated", COLLECTION_LOWER)
 DATA_PATH = path.join(COLLECTION_PATH, "metadata")
 IMAGES_PATH = path.join(COLLECTION_PATH, "images")
+THUMBNAILS_PATH = path.join(COLLECTION_PATH, "thumbnails")
 IMAGES_BASE_URL = "ipfs://"
 
 # specify all-traits.json file
@@ -29,22 +31,33 @@ def properties_to_attributes(properties: dict):
     return attributes
 
 # CID pre-calc helper functions
-async def get_file_cid(path: str, version: int=0):
+async def get_file_cid(filepath: str, version: int=0):
+    # Find matching file
+    matching_file = glob.glob(filepath)
+    if len(matching_file) == 0:
+        return None
+    matching_file = sorted(matching_file, key=path.getmtime)[-1] # Sort by modified date, keep latest modified
+    if not path.exists(matching_file):
+        return None
+
     proc = await asyncio.create_subprocess_shell(
-        f"cid --cid-version={version} {path}",
+        f"cid --cid-version={version} {matching_file}",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
     if proc.returncode > 0:
-        raise RuntimeError(f"Could not get CIDv{version} of file '{path}':\n\t{stderr.decode()}")
+        raise RuntimeError(f"Could not get CIDv{version} of file '{filepath}':\n\t{stderr.decode()}")
     return stdout.decode().strip()
 
-def make_image_path(image: dict):
-    return path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}.*")
+def make_image_path(image: dict, thumbnail: bool):
+    if thumbnail:
+        return path.join(THUMBNAILS_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}_thumb.*")
+    else:
+        return path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}.*")
 
-async def get_image_cids(images: list):
-    return await asyncio.gather(*[get_file_cid(make_image_path(image)) for image in images])
+async def get_image_cids(images: list, thumbnail=False):
+    return await asyncio.gather(*[get_file_cid(make_image_path(image, thumbnail)) for image in images])
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -69,7 +82,6 @@ def main():
         makedirs(DATA_PATH)
 
     #### Generate Metadata for each Image
-
     with open(METADATA_FILE_NAME) as f:
         all_images = json.load(f)
 
@@ -77,7 +89,16 @@ def main():
     all_images_cids = asyncio.run(get_image_cids(all_images))
     all_metadata_cids = []
 
-    for cid, image in zip(all_images_cids, all_images):
+    # Calculate thumbnail CIDs (if they all exist)
+    all_thumbs_cids = asyncio.run(get_image_cids(all_images, thumbnail=True))
+    if any( [c is None for c in all_thumbs_cids] ):
+        if all( [c is None for c in all_thumbs_cids] ):
+            print("No thumbnail found, using full resolution image")
+        else:
+            print(f"Some thumbnail file(s) missing, using full resolution image")
+        all_thumbs_cids = all_images_cids
+
+    for cid, thumb_cid, image in zip(all_images_cids, all_thumbs_cids, all_images):
         token_id = image['ID']
         json_path = path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json")
 
@@ -92,7 +113,7 @@ def main():
 
         token = {
             "name": f"{traits.COLLECTION_NAME} #{token_id:03}",
-            "image": path.join(IMAGES_BASE_URL, cid),
+            "image": path.join(IMAGES_BASE_URL, thumb_cid),
             "animation_url": path.join(IMAGES_BASE_URL, cid),
             "description": DESCRIPTION,
             "royalty_percentage": int(getenv("ROYALTY_PERCENTAGE")),
