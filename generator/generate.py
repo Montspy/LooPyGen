@@ -115,7 +115,7 @@ def generate_paths(empty: bool):
 
 # Image builder functions
 async def build_and_save_image(item: dict, task_id: int):
-    with ImageBuilder() as img_builder:
+    with ImageBuilder(animated_format=traits.config.get("animated_format")) as img_builder:
         for l in traits.layers:
             layer_pretty_name = item[l["layer_name"]]
         

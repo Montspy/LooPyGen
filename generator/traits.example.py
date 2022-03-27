@@ -31,6 +31,12 @@ An Example of 1 Layer:
 
 END COMMENT SECTION """
 
+config = {
+    # Uncomment 'animated_format' to choose the format for animated NFTs. Default: .webm
+    # .webm: High quality with alpha, .mp4: High quality without alpha, .gif: Fastest
+    # "animated_format": ".gif",
+}
+
 ## Give the collection a name
 COLLECTION_NAME="Collection Name"
 

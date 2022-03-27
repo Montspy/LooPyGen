@@ -67,18 +67,17 @@ class ImageBuilder(object):
     }
     FFMPEG_EXT = list(FFMPEG_PARAMS.keys())
 
-    STATIC_EXT = '.png'
-    FFMPEG_MODE = '.webm'
+    STATIC_EXT = '.png'                 # Output format for static image NFT
+    FFMPEG_MODE = '.webm'               # Output format for animated NFT
     img: ImageDescriptor                # Final result
     descriptors: list[ImageDescriptor]  # Queue of images required to build the final image
     temp_dir: tempfile.TemporaryDirectory
 
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
+    def __init__(self, animated_format=None):
+        self.FFMPEG_MODE = animated_format or self.FFMPEG_MODE
         self.img = None
         self.descriptors = []
+        assert self.FFMPEG_MODE in self.FFMPEG_EXT, f"{animated_format} is not a supported format for animated NFT. Choose between {', '.join(self.FFMPEG_EXT)}."
 
    # Context management for temp files
     def __enter__(self):
