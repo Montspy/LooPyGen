@@ -35,7 +35,7 @@ config = {
     ## Uncomment 'animated_format' to choose the format for animated NFTs. Default: .webm
     ## .webm: High quality with alpha, .mp4: High quality without alpha, .gif: Fastest
     # "animated_format": ".gif",
-    ## Uncomment 'thumbnails' to generate thumbnails of resolution [x, y]. If only [x] is provided, calculates y based on aspect ratio
+    ## Uncomment 'thumbnails' to generate thumbnails of resolution [width, height]. If only [width] is provided, calculates y based on aspect ratio
     ## thumbnails are used in the 'image' metadata field
     # "thumbnails": [640],
 }
