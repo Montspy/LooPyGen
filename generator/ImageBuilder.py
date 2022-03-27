@@ -40,7 +40,7 @@ class ImageBuilder(object):
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
         '.webm': {
             # Command and extension for compositing
@@ -51,7 +51,7 @@ class ImageBuilder(object):
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
         '.mp4': {
             # Command and extension for compositing
@@ -62,14 +62,15 @@ class ImageBuilder(object):
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -pix_fmt yuv420p {out}',
             # Command and extension for thumbnail export, if any (TODO: unused)
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -movflags +faststart {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -movflags +faststart {out}',
         },
     }
     FFMPEG_EXT = list(FFMPEG_PARAMS.keys())
 
     STATIC_EXT = '.png'                 # Output format for static image NFT
     FFMPEG_MODE = '.webm'               # Output format for animated NFT
-    img: ImageDescriptor                # Final result
+    final: ImageDescriptor              # Final result, before export
+    img: ImageDescriptor                # Final exported result
     descriptors: list[ImageDescriptor]  # Queue of images required to build the final image
     temp_dir: tempfile.TemporaryDirectory
 
@@ -93,7 +94,6 @@ class ImageBuilder(object):
 
     @overlay_image.register
     def _(self, fp: str, **kwds):   # From file path
-        # print(f"overlay_image for file path {fp} ({path.splitext(fp)[1]})")
         if path.splitext(fp)[1] in self.FFMPEG_EXT:
             desc = ImageDescriptor(type=ImageType.ANIMATED, fp=fp)
         else:
@@ -102,13 +102,11 @@ class ImageBuilder(object):
 
     @overlay_image.register
     def _(self, src: Image.Image, **kwds):   # From PIL.Image
-        # print(f"overlay_image for Image {src}")
         desc = ImageDescriptor(type=ImageType.STATIC, img=src)
         self.descriptors.append(desc)
 
     @overlay_image.register
     def _(self, rgba: tuple, size: Tuple[int], **kwds):   # From RGBA
-        # print(f"overlay_image for rgba {rgba}, size {size}")
         assert len(rgba) == 4
         src = Image.new(mode="RGBA", size=size, color=rgba)
         desc = ImageDescriptor(type=ImageType.STATIC, img=src)
@@ -127,9 +125,29 @@ class ImageBuilder(object):
         for desc in self.descriptors:
             self.img = await self.composite(self.img, desc)
 
-        self.img = await self.final_export(self.img)
+        self.final = ImageDescriptor(type = self.img.type, img=self.img.img, fp=self.img.fp)
+        self.img = await self.final_export(self.final)
 
         return self.img
+
+    # Generate and return the thumbnail
+    async def thumbnail(self, size=None) -> ImageDescriptor:
+        if size is None or len(size) == 0:  # No size provided, use x = 640
+            thumb_size = [640]
+        else:
+            thumb_size = size
+        
+        if len(thumb_size) == 1:    # Only x provided, calculate y
+            full_size = self._get_size(self.img)
+            y = int(thumb_size[0] / full_size[0] * full_size[1])
+            thumb_size = [thumb_size[0], y]
+        elif len(thumb_size) == 2:  # x,y provided, find thumb_size that fits within size, with aspect ratio of full_size
+            full_size = self._get_size(self.img)
+            scale = min(thumb_size[0] / full_size[0], thumb_size[1] / full_size[1])
+            x, y = int(full_size[0] * scale), int(full_size[1] * scale)
+            thumb_size = [x, y]
+        
+        return await self._thumb(self.final, size=thumb_size)
 
     # Make new canvas
     @singledispatchmethod
@@ -164,8 +182,9 @@ class ImageBuilder(object):
         if desc.type == ImageType.STATIC:
             return desc.img.size
         elif desc.type == ImageType.ANIMATED:
-            cmd = 'ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {desc.fp}'
-            return tuple(subprocess.run(cmd, capture_output=True).stdout.split(sep=','))
+            # Get resolution from ffprobe
+            cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {desc.fp}"
+            return tuple( (int(x) for x in subprocess.run(cmd.split(), capture_output=True, text=True).stdout.split(sep=',')) )
 
     # Compositers
     async def composite(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
@@ -236,6 +255,29 @@ class ImageBuilder(object):
         else:
             with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=final_ext, delete=False) as f:
                 formatted_cmd = final_cmd.format(ll=self.FFMPEG_LOGLEVEL, src=img.fp, out=f.name)
+                await self._run_async_ffmpeg(formatted_cmd)
+            return ImageDescriptor(type=ImageType.ANIMATED, fp=f.name)
+
+    # Thumbnail exporters
+    async def _thumb(self, img: ImageDescriptor, size: list[int]):
+        if img.type == ImageType.STATIC:
+            return self._thumb_static(img=img, size=size)
+        elif img.type == ImageType.ANIMATED:
+            return await self._thumb_animated(img=img, size=size)
+
+    def _thumb_static(self, img: ImageDescriptor, size: list[int]):
+        assert img.type == ImageType.STATIC
+        return ImageDescriptor(type=ImageType.STATIC, img=img.img.resize(size, resample=Image.LANCZOS))
+
+    async def _thumb_animated(self, img: ImageDescriptor, size: list[int]):
+        assert img.type == ImageType.ANIMATED
+        thumb_ext = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['thumb_ext']
+        thumb_cmd = self.FFMPEG_PARAMS[self.FFMPEG_MODE]['thumb_cmd']
+        if not thumb_cmd:
+            return img
+        else:
+            with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=thumb_ext, delete=False) as f:
+                formatted_cmd = thumb_cmd.format(ll=self.FFMPEG_LOGLEVEL, src=img.fp, out=f.name, w=size[0], h=size[1])
                 await self._run_async_ffmpeg(formatted_cmd)
             return ImageDescriptor(type=ImageType.ANIMATED, fp=f.name)
 

@@ -20,6 +20,7 @@ COLLECTION_LOWER =  "".join(map(lambda c: c if c.isalnum() else '_', traits.COLL
 COLLECTION_PATH = os.path.join("./generated", COLLECTION_LOWER)
 DATA_PATH = os.path.join(COLLECTION_PATH, "metadata")
 IMAGES_PATH = os.path.join(COLLECTION_PATH, "images")
+THUMBNAILS_PATH = os.path.join(COLLECTION_PATH, "thumbnails")
 
 METADATA_FILE_NAME = os.path.join(COLLECTION_PATH, "all-traits.json")
 STATS_FILENAME = os.path.join(COLLECTION_PATH, "gen-stats.json")
@@ -102,6 +103,8 @@ def generate_paths(empty: bool):
     if empty:
         if os.path.exists(IMAGES_PATH):
             shutil.rmtree(IMAGES_PATH)
+        if os.path.exists(THUMBNAILS_PATH):
+            shutil.rmtree(THUMBNAILS_PATH)
         if os.path.exists(METADATA_FILE_NAME):
             os.remove(METADATA_FILE_NAME)
         if os.path.exists(STATS_FILENAME):
@@ -110,6 +113,8 @@ def generate_paths(empty: bool):
     # Make paths if they don't exist
     if not os.path.exists(IMAGES_PATH):
         os.makedirs(IMAGES_PATH)
+    if "thumbnails" in traits.config and not os.path.exists(THUMBNAILS_PATH):
+        os.makedirs(THUMBNAILS_PATH)
     if not os.path.exists(DATA_PATH):
         os.makedirs(DATA_PATH)
 
@@ -129,14 +134,23 @@ async def build_and_save_image(item: dict, task_id: int):
 
         # Composite all layers on top of each others
         composite = await img_builder.build()
+        if "thumbnails" in traits.config:
+            thumbnail = await img_builder.thumbnail(size=traits.config["thumbnails"])
 
         if composite.type == ImageType.STATIC:
             file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
             composite.img.save(file_path)
+            if "thumbnails" in traits.config:
+                thumb_path = os.path.join(THUMBNAILS_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}_thumb.png")
+                thumbnail.img.save(thumb_path)
         elif composite.type == ImageType.ANIMATED:
             ext = os.path.splitext(composite.fp)[1]
             file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
             shutil.copy2(composite.fp, file_path)
+            if "thumbnails" in traits.config:
+                ext = os.path.splitext(thumbnail.fp)[1]
+                thumb_path = os.path.join(THUMBNAILS_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}_thumb{ext}")
+                shutil.copy2(thumbnail.fp, thumb_path)
 
         # print(f"Generated #{item['ID']:03}: {file_path}")
     return task_id
