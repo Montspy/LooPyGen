@@ -1,40 +1,86 @@
 {
-    "collection_name": "My First NFT",
-    "metadata_description": "Some descriptive text about your collection that will appear in the metadata JSON files.",
-    "artist_name": "Your name or ENS!",
-    "royalty_percentage": 0,
-    "wallet_address": "",
+    "collection_name": "Sacred Bodies",
+    "description": "Sacred bodies in the universe.",
+    "artist_name": "sk33z3r",
+    "artist_address": "sk33z3r.eth",
+    "mint_address": "0x0F6EF4F04F14af17140d329C769F936776B4C36F",
+    "royalty_percentage": 5,
+    "trait_count": 3,
+    "background_color": 0,
     "image_layers": [
         {
-            "layer_name": "Background Color",
-            "rgba": {
-                "Transparent": [0,0,0,0]
-            },
-            "weights": [
-                100
+            "variations": 3,
+            "layer_name": "Color",
+            "size": [
+                250,
+                250
             ],
-            "size": [640, 640]
-        },
-        {
-            "layer_name": "Trait Display Name 01",
-            "filenames": {
-                "Item Display Name 01": "item_01.png",
-                "Item Display Name 02": "item_02.png"
+            "rgba": {
+                "Green": [
+                    0,
+                    255,
+                    0,
+                    255
+                ],
+                "Red": [
+                    255,
+                    0,
+                    0,
+                    255
+                ],
+                "Blue": [
+                    0,
+                    0,
+                    255,
+                    255
+                ]
             },
             "weights": [
-                50,
-                50
+                4,
+                2,
+                1
             ]
         },
         {
-            "layer_name": "Trait Display Name 02",
+            "variations": 3,
+            "layer_name": "Shoes",
             "filenames": {
-                "Item Display Name 01": "item_01.png",
-                "Item Display Name 02": "item_02.png"
+                "Sneakers": "sneakers.png",
+                "Slip-ons": "slip-ons.png",
+                "Loafers": "loafers.png"
             },
             "weights": [
-                50,
-                50
+                4,
+                3,
+                1
+            ]
+        },
+        {
+            "variations": 3,
+            "layer_name": "Glasses",
+            "filenames": {
+                "Sun": "sunglasses.png",
+                "Monocle": "monocle.png",
+                "Prescription": "prescription.png"
+            },
+            "weights": [
+                3,
+                1,
+                4
+            ]
+        },
+        {
+            "variations": 3,
+            "layer_name": "Nose",
+            "filenames": {
+                "Honker": "honker.png",
+                "Skinny": "skinny.png",
+                "Hairy": "hairy.png"
+            },
+            "weights": [
+                1,
+                3,
+                4
             ]
         }
     ]
