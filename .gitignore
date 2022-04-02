@@ -6,6 +6,8 @@ gen-stats.json
 traits.py
 traits.json
 images
+.tempfile
+config.json
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
