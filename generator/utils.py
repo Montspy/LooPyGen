@@ -62,6 +62,7 @@ def generate_paths(traits: Struct):
 
     paths.all_traits = os.path.join(paths.collection, "all-traits.json")
     paths.gen_stats = os.path.join(paths.collection, "gen-stats.json")
+    paths.metadata_cids = os.path.join(paths.collection, "metadata-cids.json")
 
     return paths
 
