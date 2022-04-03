@@ -22,8 +22,8 @@
         </div>
         <h3>Setup your Traits</h3>
         <form method="post" action="/2">
-            <?php $i = $traits['background_color']; while ($i <= $traits['trait_count']) {
-                if ($i == 0) { ?>
+            <?php $i = 0; while ($i <= $traits['trait_count']) {
+                if ($traits['background_color'] === true and $i == 0) { ?>
                     <h4>Setup Background Color Trait:</h4>
                     <div class="trait-row">
                         <input required type="text" class="form med" id="trait<?php echo $i ?>_name" name="trait<?php echo $i ?>_name" placeholder="Background Display Name" />
@@ -57,12 +57,12 @@
             <input class="form btn" type="submit" name="submit" value="STEP 03" />
         </form>
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
-        $i = $traits['background_color'];
+        $i = 0;
         $traits["image_layers"] = array();
         while ($i <= $traits['trait_count']) {
             $traits["image_layers"][$i]["variations"] = (int)$_POST["trait${i}_vars"];
             $traits["image_layers"][$i]["layer_name"] = $_POST["trait${i}_name"];
-            if ($i == 0) {
+            if ($traits['background_color'] === true and $i == 0) {
                 $traits["image_layers"][$i]["size"] = array((int)$_POST["trait${i}_x"], (int)$_POST["trait${i}_y"]);
             }
             $i = $i + 1;
