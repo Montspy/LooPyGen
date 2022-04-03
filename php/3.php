@@ -21,9 +21,9 @@
             </div>
         </div>
         <form method="post" action="/3">
-            <?php $t = $traits['background_color'];
+            <?php $t = 0;
             while ($t <= $traits['trait_count']) {
-                if ($t == 0) { ?>
+                if ($t == 0 and $traits['background_color'] === true) { ?>
                     <h3 class="trait-title">Setup Background Colors:</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
                         $trait_var = $t . "_" . $v; ?>
@@ -76,9 +76,9 @@
             <input class="form btn" type="submit" name="submit" value="STEP 04" />
         </form>
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
-        $t = $traits['background_color'];
+        $t = 0;
         while ($t <= $traits['trait_count']) {
-            if ($t == 0) {
+            if ($t == 0 and $traits['background_color'] === true) {
                 $v = 1;
                 $traits["image_layers"][$t]['rgba'] = array();
                 $traits["image_layers"][$t]['weights'] = array();

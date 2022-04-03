@@ -43,7 +43,7 @@
         $trait_count = $_POST['trait_count'];
         $royalty_percentage = $_POST['royalty_percentage'];
         if (!empty($_POST['artist_address'])) { $artist_address = $_POST['artist_address']; } else { $artist_address = false; }
-        if (!empty($_POST['background_color'])) { $background_color = 0; } else { $background_color = 1; }
+        if (!empty($_POST['background_color'])) { $background_color = true; } else { $background_color = false; }
         $collection_lower = str_replace(' ', '_', strtolower($collection_name));
         $traits_file = "./images/${collection_lower}/traits.json";
         $config_file = "./config.json";
@@ -58,7 +58,7 @@
                                  "mint_address"=>$mint_address,
                                  "royalty_percentage"=>(int)$royalty_percentage,
                                  "trait_count"=>(int)$trait_count,
-                                 "background_color"=>(int)$background_color);
+                                 "background_color"=>$background_color);
 
         if ($artist_address != false) {
             $traits_data['artist_address'] = $artist_address;
