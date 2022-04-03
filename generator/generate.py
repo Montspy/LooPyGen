@@ -219,7 +219,7 @@ def main():
                 elif l["type"] == "rgba":
                     if not "size" in l:
                         sys.exit(f"Missing image size for {l['layer_name']}")
-                    l["image"][layer_pretty_name] = Image.new(mode="RGBA", size=l["size"], color=l["rgba"][layer_pretty_name])
+                    l["image"][layer_pretty_name] = Image.new(mode="RGBA", size=tuple(l["size"]), color=tuple(l["rgba"][layer_pretty_name]))
 
                 part = l["image"][layer_pretty_name]
 
