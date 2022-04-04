@@ -3,7 +3,11 @@
         <h3>Getting Your Private Key</h3>
         <div id="guide">
             <div>
-                <p>Export your account info from the web or mobile wallet and paste your Private Key into the field below.</p>
+                <p>STEP 01 - Export your account info to get your Private Key.</p>
+                <ol>
+                    <li>Login to the <a href="https://loopring.io/#" target="_blank">Loopring Wallet</a></li>
+                    <li>Go to <b>L2 Wallet -> Security -> Export Account</b></p></li>
+                </ol>
             </div>
         </div>
         <form method="post" action="/config/1">
