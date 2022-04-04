@@ -1,4 +1,6 @@
-<?php $short_hash = shell_exec('git rev-parse --short HEAD');
+<?php
+
+    $short_hash = shell_exec('git rev-parse --short HEAD');
 
     if (!empty($_GET['page'])) {
         $page = $_GET['page'];
@@ -32,4 +34,5 @@
     }
 
     include "php/footer.html";
+
 ?>

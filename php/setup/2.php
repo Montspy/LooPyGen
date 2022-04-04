@@ -78,4 +78,5 @@
     } else {
         Redirect('/setup/1', false);
     }
+
 ?>
