@@ -114,7 +114,7 @@ def main():
 
     # Load traits.json
     traits = utils.load_traits(args.name)
-    
+
     # Generate paths
     paths = utils.generate_paths(traits)
 
@@ -162,11 +162,12 @@ def main():
         prev_batches = []
 
     ## Generate folders and names list from layers available in traits
+    first_layer = 0 if traits.background_color else 1
     for i, l in enumerate(traits.image_layers):
         l["type"] = "filenames" if "filenames" in l else "rgba"
         l["names"] = list(l[l["type"]].keys())
         
-        l["path"] = os.path.join(paths.source, f"layer{(i + traits.background_color):02}")
+        l["path"] = os.path.join(paths.source, f"layer{(first_layer + i):02}")
 
     # Generate the unique combinations based on layer weightings
     img_gen = ImageGenerator(layers=traits.image_layers, seed=SEED, prev_batches=prev_batches, dup_cnt_limit=utils.get_variation_cnt(traits.image_layers))
