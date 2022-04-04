@@ -38,10 +38,10 @@
                         <div class="trait-row">
                             <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                             <select required class="form small" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
-                                <option value="1">Legendary</option>
-                                <option value="2">Rare</option>
-                                <option value="3">Uncommon</option>
                                 <option value="4">Common</option>
+                                <option value="3">Uncommon</option>
+                                <option value="2">Rare</option>
+                                <option value="1">Legendary</option>
                             </select>
                             <label for="trait<?php echo $trait_var ?>_r">Color:&nbsp;&nbsp;</label>
                             <input required type="color" class="form med" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" />
@@ -54,14 +54,14 @@
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
                         $trait_var = $s . "_" . $v; ?>
                         <h4>Variation #<?php echo $v ?>:</h4>
-                        <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation Name" />
+                        <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" />
                         <div class="trait-row">
                             <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                             <select required class="form med" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
-                                <option value="1">Legendary</option>
-                                <option value="2">Rare</option>
-                                <option value="3">Uncommon</option>
                                 <option value="4">Common</option>
+                                <option value="3">Uncommon</option>
+                                <option value="2">Rare</option>
+                                <option value="1">Legendary</option>
                             </select>
                             <label for="trait<?php echo $trait_var ?>_r">Filename:&nbsp;&nbsp;</label>
                             <input required type="file" class="form file" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
