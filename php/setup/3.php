@@ -3,6 +3,7 @@
     $collection_lower = file_get_contents(".tempfile");
     $traits_file = file_get_contents("./images/${collection_lower}/traits.json");
     $traits = json_decode($traits_file, true);
+    $s = 1;
 
     if (!empty($traits) and $redirect !== "TRUE") { ?>
         <h2>Collection Info</h2>
@@ -15,10 +16,10 @@
                 <?php if (array_key_exists('royalty_address', $traits)) {
                     echo "<p><b>Royalty Address</b>: " . $traits['royalty_address'] . "</p>";
                 } ?>
-                <p><b>Minter's Address</b>: <?php echo $traits['mint_address'] ?></p>
                 <p><b>Traits</b>: <?php echo $traits['trait_count'] ?></p>
-                <?php if ($traits['background_color'] == 0) {
+                <?php if ($traits['background_color'] === true) {
                     echo "<p><b>Generate Background Colors</b>: YES</p>";
+                    $s = 0;
                 } ?>
             </div>
         </div>
@@ -28,7 +29,7 @@
                 if ($t == 0 and $traits['background_color'] === true) { ?>
                     <h3 class="trait-title">Setup Background Colors:</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
-                        $trait_var = $t . "_" . $v; ?>
+                        $trait_var = $s . "_" . $v; ?>
                         <h4>Color #<?php echo $v ?>:</h4>
                         <div class="trait-row">
                             <input required type="text" class="form med" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation Name" />
@@ -54,7 +55,7 @@
                 } else { ?>
                     <h3 class="trait-title">Setup "<?php echo $traits['image_layers'][$t]['layer_name'] ?>" Trait:</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
-                        $trait_var = $t . "_" . $v; ?>
+                        $trait_var = $s . "_" . $v; ?>
                         <h4>Variation #<?php echo $v ?>:</h4>
                         <div class="trait-row">
                             <input required type="text" class="form med" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation Name" />
@@ -73,19 +74,21 @@
                     <?php $v = $v + 1; }
                 }
                 $t = $t + 1;
+                $s = $s + 1;
             } ?>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
             <input class="form btn" type="submit" name="submit" value="STEP 04" />
         </form>
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
         $t = 0;
+        if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
         while ($t <= $traits['trait_count']) {
             if ($t == 0 and $traits['background_color'] === true) {
                 $v = 1;
                 $traits["image_layers"][$t]['rgba'] = array();
                 $traits["image_layers"][$t]['weights'] = array();
                 while ($v <= $traits['image_layers'][$t]['variations']) {
-                    $trait_var = $t . "_" . $v;
+                    $trait_var = $s . "_" . $v;
                     $traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array((int)$_POST["trait${trait_var}_r"], (int)$_POST["trait${trait_var}_g"], (int)$_POST["trait${trait_var}_b"], (int)$_POST["trait${trait_var}_a"]);
                     array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
                     $v = $v + 1;
@@ -95,13 +98,14 @@
                 $traits["image_layers"][$t]['filenames'] = array();
                 $traits["image_layers"][$t]['weights'] = array();
                 while ($v <= $traits['image_layers'][$t]['variations']) {
-                    $trait_var = $t . "_" . $v;
+                    $trait_var = $s . "_" . $v;
                     $traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_POST["trait${trait_var}_file"];
                     array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
                     $v = $v + 1;
                 }
             }
             $t = $t + 1;
+            $s = $s + 1;
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents("./images/${collection_lower}/traits.json", $traits_json);

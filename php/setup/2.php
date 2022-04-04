@@ -3,6 +3,7 @@
     $collection_lower = file_get_contents(".tempfile");
     $traits_file = file_get_contents("./images/${collection_lower}/traits.json");
     $traits = json_decode($traits_file, true);
+    $s = 1;
 
     if (!empty($traits) and $redirect !== "TRUE") { ?>
         <h3>Collection Info</h3>
@@ -18,6 +19,7 @@
                 <p><b>Traits</b>: <?php echo $traits['trait_count'] ?></p>
                 <?php if ($traits['background_color'] === true) {
                     echo "<p><b>Generate Background Colors</b>: YES</p>";
+                    $s = 0;
                 } ?>
             </div>
         </div>
@@ -27,12 +29,12 @@
                 if ($traits['background_color'] === true and $i == 0) { ?>
                     <h4>Setup Background Color Trait:</h4>
                     <div class="trait-row">
-                        <input required type="text" class="form med" id="trait<?php echo $i ?>_name" name="trait<?php echo $i ?>_name" placeholder="Background Display Name" />
+                        <input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Background Display Name" />
                         <div class="labeled">
-                            <label for="trait<?php echo $i ?>_vars">
+                            <label for="trait<?php echo $s ?>_vars">
                                 How many colors will the background have?
                             </label>
-                            <input required type="number" class="form number" id="trait<?php echo $i ?>_vars" min="1" name="trait<?php echo $i ?>_vars" placeholder="1" />
+                            <input required type="number" class="form number" id="trait<?php echo $s ?>_vars" min="1" name="trait<?php echo $s ?>_vars" placeholder="1" />
                         </div>
                     </div>
                     <div class="trait-row">
@@ -40,33 +42,35 @@
                             Size of your images:
                         </label>
                         <div class="labeled">
-                            <input required type="number" class="form size" id="trait<?php echo $i ?>_x" min="1" name="trait<?php echo $i ?>_x" placeholder="WIDTH" />x
-                            <input required type="number" class="form size" id="trait<?php echo $i ?>_y" min="1" name="trait<?php echo $i ?>_y" placeholder="HEIGHT" />
+                            <input required type="number" class="form size" id="trait<?php echo $s ?>_x" min="1" name="trait<?php echo $s ?>_x" placeholder="WIDTH" />x
+                            <input required type="number" class="form size" id="trait<?php echo $s ?>_y" min="1" name="trait<?php echo $s ?>_y" placeholder="HEIGHT" />
                         </div>
                     </div>
                 <?php } else { ?>
-                    <h4>Setup Trait #<?php echo $i ?>:</h4>
+                    <h4>Setup Trait #<?php echo $s ?>:</h4>
                     <div class="trait-row">
-                        <input required type="text" class="form med" id="trait<?php echo $i ?>_name" name="trait<?php echo $i ?>_name" placeholder="Trait #<?php echo $i ?> Display Name" />
-                        <label for="trait<?php echo $i ?>_vars">
+                        <input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Trait #<?php echo $s ?> Display Name" />
+                        <label for="trait<?php echo $s ?>_vars">
                             How many variations?
                         </label>
-                        <input required type="number" class="form number" id="trait<?php echo $i ?>_vars" min="1" name="trait<?php echo $i ?>_vars" placeholder="1" />
+                        <input required type="number" class="form number" id="trait<?php echo $s ?>_vars" min="1" name="trait<?php echo $s ?>_vars" placeholder="1" />
                     </div>
-            <?php } $i = $i + 1; } ?>
+            <?php } $i = $i + 1; $s = $s + 1; } ?>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
             <input class="form btn" type="submit" name="submit" value="STEP 03" />
         </form>
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
         $i = 0;
+        if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
         $traits["image_layers"] = array();
         while ($i <= $traits['trait_count']) {
-            $traits["image_layers"][$i]["variations"] = (int)$_POST["trait${i}_vars"];
-            $traits["image_layers"][$i]["layer_name"] = $_POST["trait${i}_name"];
+            $traits["image_layers"][$i]["variations"] = (int)$_POST["trait${s}_vars"];
+            $traits["image_layers"][$i]["layer_name"] = $_POST["trait${s}_name"];
             if ($traits['background_color'] === true and $i == 0) {
-                $traits["image_layers"][$i]["size"] = array((int)$_POST["trait${i}_x"], (int)$_POST["trait${i}_y"]);
+                $traits["image_layers"][$i]["size"] = array((int)$_POST["trait${s}_x"], (int)$_POST["trait${s}_y"]);
             }
             $i = $i + 1;
+            $s = $s + 1;
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents("./images/${collection_lower}/traits.json", $traits_json);
