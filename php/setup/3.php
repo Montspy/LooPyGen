@@ -73,7 +73,7 @@
                 $s = $s + 1;
             } ?>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
-            <input class="form btn" type="submit" name="submit" value="STEP 04" />
+            <input class="form btn" type="submit" name="submit" value="FINISH" />
         </form>
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
         $t = 0;
