@@ -157,10 +157,16 @@ form {
     width: 225px;
 }
 
-.btn {
+.btn, .btn:active {
     padding: 15px;
     width: 500px;
     font-size: 20px;
+    font-family: monospace;
+    border: 1px solid #000;
+    border-radius: 5px;
+    color: #fff;
+    margin: 10px 0;
+    background: #22243a;
 }
 
 .btn:hover, .btn:focus {
