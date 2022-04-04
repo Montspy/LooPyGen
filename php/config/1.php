@@ -2,7 +2,7 @@
     if ($redirect !== "TRUE") { ?>
         <h3>Getting Your Private Key</h3>
         <div id="guide">
-            <div class="section">
+            <div>
                 <p>Export your account info from the web wallet UI and paste your PrivateKey into the field below.</p>
             </div>
         </div>
@@ -11,7 +11,6 @@
             <div id="artist" class="section">
                 <input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" />
                 <input required type="text" class="form wide" id="private_key" name="private_key" placeholder="Private Key" />
-                <input required type="number" class="form wide" size="8" id="acct_id" name="acct_id" placeholder="Acct ID" />
                 <div class="row">
                     <select required class="form med" id="nft_type" name="nft_type">
                         <option value="0">EIP-1155</option>
