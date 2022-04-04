@@ -42,14 +42,10 @@
                             </select>
                         </div>
                         <div class="trait-row">
-                            <label for="trait<?php echo $trait_var ?>_r">Red:&nbsp;&nbsp;</label>
-                            <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_r" min="0" max="255" name="trait<?php echo $trait_var ?>_r" placeholder="0-255" />
-                            <label for="trait<?php echo $trait_var ?>_g">Green:&nbsp;&nbsp;</label>
-                            <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_g" min="0" max="255" name="trait<?php echo $trait_var ?>_g" placeholder="0-255" />
-                            <label for="trait<?php echo $trait_var ?>_b">Blue:&nbsp;&nbsp;</label>
-                            <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_b" min="0" max="255" name="trait<?php echo $trait_var ?>_b" placeholder="0-255" />
+                            <label for="trait<?php echo $trait_var ?>_r">Color:&nbsp;&nbsp;</label>
+                            <input required type="color" class="form number" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" />
                             <label for="trait<?php echo $trait_var ?>_a">Opacity:&nbsp;&nbsp;</label>
-                            <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_a" min="0" max="255" name="trait<?php echo $trait_var ?>_a" placeholder="0-255" />
+                            <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" />
                         </div>
                     <?php $v = $v + 1; }
                 } else { ?>
@@ -89,7 +85,8 @@
                 $traits["image_layers"][$t]['weights'] = array();
                 while ($v <= $traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
-                    $traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array((int)$_POST["trait${trait_var}_r"], (int)$_POST["trait${trait_var}_g"], (int)$_POST["trait${trait_var}_b"], (int)$_POST["trait${trait_var}_a"]);
+                    $rgb = str_split(str_replace("#", "", $_POST["trait${trait_var}_color"]), 2);
+                    $traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array(hexdec($rgb[0]), hexdec($rgb[1]), hexdec($rgb[2]), (int)$_POST["trait${trait_var}_alpha"]);
                     array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
                     $v = $v + 1;
                 }
@@ -113,4 +110,5 @@
     } else {
         Redirect('/setup/1', false);
     }
+
 ?>
