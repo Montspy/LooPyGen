@@ -3,7 +3,7 @@
         <h3>Setup Info</h3>
         <div id="guide">
             <div class="section">
-                <p>Fill in the following information to start setting up your collection.</p>
+                <p>STEP 01 - Fill in the following artist and collection information.</p>
             </div>
         </div>
         <form method="post" action="/setup/1">

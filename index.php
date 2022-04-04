@@ -26,7 +26,7 @@
     if ($redirect !== "TRUE") {
         include "php/header.html"; ?>
         <div class="content">
-            <h2>LooPyGen UI ( <?php echo $short_hash ?>)</h2>
+            <h1><a href="/">LooPyGen UI</a> ( <?php echo $short_hash ?>)</h1>
             <?php include "php/$page.php"; ?>
         </div>
     <?php } else {
