@@ -24,7 +24,7 @@
                 </div>
             </div>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
-            <input class="form btn" type="submit" name="submit" value="STEP 02" />
+            <input class="form btn" type="submit" name="submit" value="FINISH" />
         </form>
     <?php } else {
         $minter = $_POST['minter'];
