@@ -21,6 +21,10 @@ Checkout the [issues section](https://github.com/sk33z3r/loopymint2/issues) to r
 ./docker.sh up
 ```
 
+### Setup your config and collection
+
+Open a browser and go to: [https://localhost:8080](https://localhost:8080)
+
 ### Image Generator Commands
 
 Basic run:
