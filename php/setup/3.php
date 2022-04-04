@@ -65,7 +65,7 @@
                         </div>
                         <div class="trait-row">
                             <label for="trait<?php echo $trait_var ?>_r">Filename:</label>
-                            <input required type="text" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" placeholder="variation_file_name.png" />
+                            <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
                         </div>
                     <?php $v = $v + 1; }
                 }
