@@ -9,7 +9,7 @@
         <form method="post" action="/config/1">
             <h3>Artist Info</h3>
             <div id="artist" class="section">
-                <input required type="text" class="form wide" id="mint_address" pattern="^0x[a-fA-F0-9]{40}$" name="mint_address" placeholder="Minter's Address (0x Address Only) " />
+                <input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" />
                 <input required type="text" class="form wide" id="private_key" name="private_key" placeholder="Private Key" />
                 <input required type="number" class="form wide" size="8" id="acct_id" name="acct_id" placeholder="Acct ID" />
                 <div class="row">
@@ -27,16 +27,14 @@
             <input class="form btn" type="submit" name="submit" value="STEP 02" />
         </form>
     <?php } else {
-        $mint_address = $_POST['mint_address'];
+        $minter = $_POST['minter'];
         $private_key = $_POST['private_key'];
-        $acct_id = $_POST['acct_id'];
         $nft_type = $_POST['nft_type'];
         $fee_token = $_POST['fee_token'];
         $config_file = "./config.json";
 
-        $config_data = array("mint_address"=>$mint_address,
+        $config_data = array("minter"=>$minter,
                              "private_key"=>$private_key,
-                             "acct_id"=>(int)$acct_id,
                              "nft_type"=>(int)$nft_type,
                              "fee_token"=>(int)$fee_token);
 
