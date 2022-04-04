@@ -1,11 +1,17 @@
 
+
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "minter")))
+from minter import get_account_info, retry_async
+from LoopringMintService import LoopringMintService
+from DataClasses import Struct
+
 from shutil import copy2
-from pprint import pprint
 from dotenv import load_dotenv
 import json
 import argparse
-import os
-import traits
 import shutil
 import asyncio
 
@@ -72,6 +78,13 @@ def main():
     # Make directories
     make_directories(paths, args.empty)
 
+    # Resolve royalty address
+    cfg = Struct()
+    cfg.royalty = traits.royalty_address
+    if cfg.royalty:
+        cfg.royaltyAccount, cfg.royaltyAddress = asyncio.run(retry_async(get_account_info, cfg.royalty, retries=3))
+        assert cfg.royaltyAddress and cfg.royaltyAccount, f"Invalid royalty account: {cfg.royalty} as {cfg.royaltyAddress} (account ID {cfg.royaltyAddress})"
+
     with open(paths.all_traits) as f:
         all_images = json.load(f)
 
@@ -112,13 +125,13 @@ def main():
                 "description": traits.description,
                 "royalty_percentage": int(traits.royalty_percentage),
                 "tokenId": token_id,
-                "minter": traits.mint_address,
-                "artist": traits.artist_name,
                 "attributes": properties_to_attributes(properties),
                 "properties": properties
             }
-            if traits.royalty_address is not None and traits.royalty_address != "":
-                token["royalty_address"] = traits.royalty_address
+            if cfg.royaltyAddress is not None and cfg.royaltyAddress != "":
+                token["royalty_address"] = cfg.royaltyAddress
+            if traits.artist_name is not None and traits.artist_name != "":
+                token["artist"] = traits.artist_name
         
         # Update CID fields
         token["image"] = os.path.join("ipfs://", cid)

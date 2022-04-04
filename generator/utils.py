@@ -53,6 +53,11 @@ def load_traits(name: str = None):
         traits_json = json.load(f)
     return Struct(traits_json)
 
+def load_config(paths: Struct):
+    with open(paths.config) as f:
+        config_json = json.load(f)
+    return Struct(config_json)
+
 def generate_paths(traits: Struct):
     paths = Struct()
     paths.collection = os.path.join("./generated", traits.collection_lower)
@@ -63,6 +68,7 @@ def generate_paths(traits: Struct):
     paths.all_traits = os.path.join(paths.collection, "all-traits.json")
     paths.gen_stats = os.path.join(paths.collection, "gen-stats.json")
     paths.metadata_cids = os.path.join(paths.collection, "metadata-cids.json")
+    paths.config = "./config.json"
 
     return paths
 
