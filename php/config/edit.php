@@ -11,9 +11,8 @@
         <h3>Configuration Settings</h3>
         <div id="guide">
             <div class="section">
-                <p><b>Minting Address</b>: <?php echo $config['mint_address'] ?></p>
+                <p><b>Minter (Address, ENS, or Account ID)</b>: <?php echo $config['minter'] ?></p>
                 <p><b>Private Key</b>: <?php echo $config['private_key'] ?></p>
-                <p><b>Account ID</b>: <?php echo $config['acct_id'] ?></p>
                 <p><b>NFT Type</b>: <?php echo $config['nft_type'] ?></p>
                 <p><b>Fee Token</b>: <?php echo $config['fee_token'] ?></p>
             </div>
