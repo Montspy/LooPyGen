@@ -21,6 +21,6 @@
             </div>
         </div>
     <?php } else {
-        Redirect('/1', false);
+        Redirect('/setup/1', false);
     }
 ?>

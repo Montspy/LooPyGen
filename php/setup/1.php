@@ -3,20 +3,20 @@
         <h3>Setup Info</h3>
         <div id="guide">
             <div class="section">
-                <p></p>
+                <p>Fill in the following information to start setting up your collection.</p>
             </div>
         </div>
-        <form method="post" action="/1">
+        <form method="post" action="/setup/1">
             <h3>Artist Info</h3>
             <div id="artist" class="section">
-                <input required type="text" class="form wide" id="mint_address" pattern="^0x[a-fA-F0-9]{40}$" name="mint_address" placeholder="Minter's Address (0x Address Only, used to mint) " />
-                <input required type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (shown in metadata)" />
+                <input required type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Shown in metadata)" />
                 <input type="text" class="form wide" id="artist_address" name="artist_address" placeholder="Artist's Address (Optional, shown in metadata)" />
             </div>
             <h3>Collection Info</h3>
             <div id="collection" class="section">
                 <input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" />
                 <input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" />
+                <input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" />
                 <div class="row">
                     <label for="trait_count">
                         Royalty Percentage:
@@ -39,35 +39,37 @@
         $collection_name = $_POST['collection_name'];
         $description = $_POST['description'];
         $artist_name = $_POST['artist_name'];
-        $mint_address = $_POST['mint_address'];
         $trait_count = $_POST['trait_count'];
         $royalty_percentage = $_POST['royalty_percentage'];
         if (!empty($_POST['artist_address'])) { $artist_address = $_POST['artist_address']; } else { $artist_address = false; }
         if (!empty($_POST['background_color'])) { $background_color = true; } else { $background_color = false; }
+        if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = str_replace(' ', '_', strtolower($collection_name));
         $traits_file = "./images/${collection_lower}/traits.json";
-        $config_file = "./config.json";
 
         if (!file_exists("./images/${collection_lower}")) {
             mkdir("./images/${collection_lower}", 0755, true);
         }
 
         $traits_data = array("collection_name"=>$collection_name,
-                                 "description"=>$description,
-                                 "artist_name"=>$artist_name,
-                                 "mint_address"=>$mint_address,
-                                 "royalty_percentage"=>(int)$royalty_percentage,
-                                 "trait_count"=>(int)$trait_count,
-                                 "background_color"=>$background_color);
+                             "description"=>$description,
+                             "artist_name"=>$artist_name,
+                             "royalty_percentage"=>(int)$royalty_percentage,
+                             "trait_count"=>(int)$trait_count,
+                             "background_color"=>$background_color);
 
         if ($artist_address != false) {
             $traits_data['artist_address'] = $artist_address;
+        }
+
+        if ($seed != false) {
+            $traits_data['seed'] = $seed;
         }
 
         $traits_json = json_encode($traits_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($traits_file, $traits_json);
         file_put_contents(".tempfile", $collection_lower);
 
-        Redirect('/2', false);
+        Redirect('/setup/2', false);
     }
 ?>

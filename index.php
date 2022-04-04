@@ -1,9 +1,9 @@
 <?php $short_hash = shell_exec('git rev-parse --short HEAD');
 
     if (!empty($_GET['page'])) {
-        $step = $_GET['page'];
+        $page = $_GET['page'];
     } else {
-        $step = 1;
+        $page = "home";
     }
 
     function Redirect($url, $permanent = false) {
@@ -17,14 +17,18 @@
         $redirect = "FALSE";
     }
 
+    if ($page === "config" or $page === "setup") {
+        $page = "$page/1";
+    }
+
     if ($redirect !== "TRUE") {
         include "php/header.html"; ?>
         <div class="content">
             <h2>LooPyGen UI ( <?php echo $short_hash ?>)</h2>
-            <?php include "php/$step.php"; ?>
+            <?php include "php/$page.php"; ?>
         </div>
     <?php } else {
-        include "php/$step.php";
+        include "php/$page.php";
     }
 
     include "php/footer.html";

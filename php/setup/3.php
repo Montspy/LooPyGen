@@ -20,7 +20,7 @@
                 } ?>
             </div>
         </div>
-        <form method="post" action="/3">
+        <form method="post" action="/setup/3">
             <?php $t = 0;
             while ($t <= $traits['trait_count']) {
                 if ($t == 0 and $traits['background_color'] === true) { ?>
@@ -103,8 +103,8 @@
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents("./images/${collection_lower}/traits.json", $traits_json);
-        Redirect('/4', false);
+        Redirect('/setup/edit', false);
     } else {
-        Redirect('/1', false);
+        Redirect('/setup/1', false);
     }
 ?>
