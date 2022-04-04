@@ -43,4 +43,5 @@
 
         Redirect('/config/edit', false);
     }
+
 ?>
