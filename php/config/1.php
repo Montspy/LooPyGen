@@ -3,7 +3,7 @@
         <h3>Getting Your Private Key</h3>
         <div id="guide">
             <div>
-                <p>Export your account info from the web wallet UI and paste your PrivateKey into the field below.</p>
+                <p>Export your account info from the web or mobile wallet and paste your Private Key into the field below.</p>
             </div>
         </div>
         <form method="post" action="/config/1">
@@ -17,8 +17,8 @@
                         <option value="1">EIP-721</option>
                     </select>
                     <select required class="form med" id="fee_token" name="fee_token">
-                        <option value="0">ETH</option>
                         <option value="1">LRC</option>
+                        <option value="0">ETH</option>
                     </select>
                 </div>
             </div>

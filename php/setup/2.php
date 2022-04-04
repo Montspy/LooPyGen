@@ -10,6 +10,7 @@
         <h3>Collection Info</h3>
         <div id="guide">
             <div class="section">
+                <p>STEP 02 - Define trait names and how many variations each will have.</p>
                 <p><b>Collection Name</b>: <?php echo $traits['collection_name'] ?></p>
                 <?php if (array_key_exists('artist_name', $traits)) {
                     echo "<p><b>Artist's Name</b>: " . $traits['artist_name'] . "</p>";
