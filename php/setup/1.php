@@ -52,6 +52,7 @@
         }
 
         $traits_data = array("collection_name"=>$collection_name,
+                             "collection_lower"=>$collection_lower,
                              "description"=>$description,
                              "artist_name"=>$artist_name,
                              "royalty_percentage"=>(int)$royalty_percentage,
