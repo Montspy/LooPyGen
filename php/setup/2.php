@@ -15,9 +15,8 @@
                 <?php if (array_key_exists('royalty_address', $traits)) {
                     echo "<p><b>Royalty Address</b>: " . $traits['royalty_address'] . "</p>";
                 } ?>
-                <p><b>Minter's Address</b>: <?php echo $traits['mint_address'] ?></p>
                 <p><b>Traits</b>: <?php echo $traits['trait_count'] ?></p>
-                <?php if ($traits['background_color'] == 0) {
+                <?php if ($traits['background_color'] === true) {
                     echo "<p><b>Generate Background Colors</b>: YES</p>";
                 } ?>
             </div>
