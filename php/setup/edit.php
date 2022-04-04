@@ -9,9 +9,11 @@
         <div id="guide">
             <div class="section">
                 <p><b>Collection Name</b>: <?php echo $traits['collection_name'] ?></p>
-                <p><b>Artist</b>: <?php echo $traits['artist_name'] ?></p>
-                <?php if (array_key_exists('artist_address', $traits)) {
-                    echo "<p><b>Artist's Address</b>: " . $traits['artist_address'] . "</p>";
+                <?php if (array_key_exists('artist_name', $traits)) {
+                    echo "<p><b>Artist's Name</b>: " . $traits['artist_name'] . "</p>";
+                } ?>
+                <?php if (array_key_exists('royalty_address', $traits)) {
+                    echo "<p><b>Royalty Address</b>: " . $traits['royalty_address'] . "</p>";
                 } ?>
                 <p><b>Minter's Address</b>: <?php echo $traits['mint_address'] ?></p>
                 <p><b>Traits</b>: <?php echo $traits['trait_count'] ?></p>

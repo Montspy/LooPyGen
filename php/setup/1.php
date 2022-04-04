@@ -9,8 +9,8 @@
         <form method="post" action="/setup/1">
             <h3>Artist Info</h3>
             <div id="artist" class="section">
-                <input required type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Shown in metadata)" />
-                <input type="text" class="form wide" id="artist_address" name="artist_address" placeholder="Artist's Address (Optional, shown in metadata)" />
+                <input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" />
+                <input type="text" class="form wide" id="royalty_address" name="royalty_address" placeholder="Royalty Address (Optional)" />
             </div>
             <h3>Collection Info</h3>
             <div id="collection" class="section">
@@ -38,10 +38,10 @@
     <?php } else {
         $collection_name = $_POST['collection_name'];
         $description = $_POST['description'];
-        $artist_name = $_POST['artist_name'];
         $trait_count = $_POST['trait_count'];
         $royalty_percentage = $_POST['royalty_percentage'];
-        if (!empty($_POST['artist_address'])) { $artist_address = $_POST['artist_address']; } else { $artist_address = false; }
+        if (!empty($_POST['artist_name'])) { $artist_name = $_POST['artist_name']; } else { $artist_name = false; }
+        if (!empty($_POST['royalty_address'])) { $royalty_address = $_POST['royalty_address']; } else { $royalty_address = false; }
         if (!empty($_POST['background_color'])) { $background_color = true; } else { $background_color = false; }
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = str_replace(' ', '_', strtolower($collection_name));
@@ -58,8 +58,12 @@
                              "trait_count"=>(int)$trait_count,
                              "background_color"=>$background_color);
 
-        if ($artist_address != false) {
-            $traits_data['artist_address'] = $artist_address;
+        if ($artist_name != false) {
+            $traits_data['artist_name'] = $artist_name;
+        }
+
+        if ($royalty_address != false) {
+            $traits_data['royalty_address'] = $royalty_address;
         }
 
         if ($seed != false) {
