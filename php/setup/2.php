@@ -21,7 +21,7 @@
             </div>
         </div>
         <h3>Setup your Traits</h3>
-        <form method="post" action="/2">
+        <form method="post" action="/setup/2">
             <?php $i = 0; while ($i <= $traits['trait_count']) {
                 if ($traits['background_color'] === true and $i == 0) { ?>
                     <h4>Setup Background Color Trait:</h4>
@@ -69,8 +69,8 @@
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents("./images/${collection_lower}/traits.json", $traits_json);
-        Redirect('/3', false);
+        Redirect('/setup/3', false);
     } else {
-        Redirect('/1', false);
+        Redirect('/setup/1', false);
     }
 ?>
