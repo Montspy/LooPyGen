@@ -25,7 +25,7 @@ Checkout the [issues section](https://github.com/sk33z3r/LooPyGen/issues) to rep
 
 ### Setup your config and collection
 
-Open a browser and go to: [https://localhost:8080](https://localhost:8080)
+Open a browser and go to: [http://localhost:8080](http://localhost:8080)
 
 ### Image Generator Commands
 
