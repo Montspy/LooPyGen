@@ -12,7 +12,7 @@
         <div id="guide">
             <div class="section">
                 <p><b>Minter (Address, ENS, or Account ID)</b>: <?php echo $config['minter'] ?></p>
-                <p><b>Private Key</b>: <?php echo $config['private_key'] ?></p>
+                <p><b>Private Key</b>: <?php echo str_repeat("*", strlen($config['private_key'])) ?></p>
                 <p><b>NFT Type</b>: <?php echo $config['nft_type'] ?></p>
                 <p><b>Fee Token</b>: <?php echo $config['fee_token'] ?></p>
             </div>
