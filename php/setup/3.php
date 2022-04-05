@@ -28,7 +28,7 @@
         </div>
         <form method="post" action="/setup/3">
             <?php $t = 0;
-            while ($t <= $traits['trait_count']) {
+            while ($s <= $traits['trait_count']) {
                 if ($t == 0 and $traits['background_color'] === true) { ?>
                     <h3 class="trait-title">Setup Background Colors:</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
@@ -77,7 +77,7 @@
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
         $t = 0;
         if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
-        while ($t <= $traits['trait_count']) {
+        while ($s <= $traits['trait_count']) {
             if ($t == 0 and $traits['background_color'] === true) {
                 $v = 1;
                 $traits["image_layers"][$t]['rgba'] = array();
