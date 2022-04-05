@@ -13,17 +13,7 @@ import argparse
 import asyncio
 import shutil
 
-import traits
-
-# Paths generation
-COLLECTION_LOWER =  "".join(map(lambda c: c if c.isalnum() else '_', traits.COLLECTION_NAME)).lower()
-COLLECTION_PATH = os.path.join("./generated", COLLECTION_LOWER)
-DATA_PATH = os.path.join(COLLECTION_PATH, "metadata")
-IMAGES_PATH = os.path.join(COLLECTION_PATH, "images")
-THUMBNAILS_PATH = os.path.join(COLLECTION_PATH, "thumbnails")
-
-METADATA_FILE_NAME = os.path.join(COLLECTION_PATH, "all-traits.json")
-STATS_FILENAME = os.path.join(COLLECTION_PATH, "gen-stats.json")
+import utils
 
 # Image generation class
 class ImageGenerator(object):
@@ -32,12 +22,15 @@ class ImageGenerator(object):
     this_batch: list        # New images
     dup_cnt_limit: int      # Maximum number of tries to create a unique image
 
-    def __init__(self, seed: str, prev_batches: list, dup_cnt_limit: int):
+    layers: list
+
+    def __init__(self, layers: list, seed: str, prev_batches: list, dup_cnt_limit: int):
+        self.layers = layers
         self.seed = seed
         # Keep trait properties only, to make comparison to new image easier
         self.prev_batches = []
         for image in prev_batches:
-            layer_names = [l["layer_name"] for l in traits.layers]
+            layer_names = [l["layer_name"] for l in self.layers]
             self.prev_batches.append({name: image[name] for name in layer_names})
 
         self.this_batch = []
@@ -53,7 +46,7 @@ class ImageGenerator(object):
         random.seed(image_seed)
 
         # For each trait category, select a random trait based on the weightings
-        for l in traits.layers:
+        for l in self.layers:
             new_image[l["layer_name"]] = random.choices(l["names"], l["weights"])[0]
 
         if new_image in self.this_batch or new_image in self.prev_batches:
@@ -94,34 +87,35 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--count", help="Total number of images to generate", type=int, required=True)
     parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
+    parser.add_argument("--name", help="Collection name (lowercase, ascii only)", type=str)
     parser.add_argument("--id", help="Specify starting ID for images", type=int, default=1)
     parser.add_argument("--seed", help="Specify the randomness seed", type=str, default=None)
     args = parser.parse_args()
     return args
 
-def generate_paths(empty: bool):
+def make_directories(paths: utils.Struct, traits: utils.Struct, empty: bool):
     if empty:
-        if os.path.exists(IMAGES_PATH):
-            shutil.rmtree(IMAGES_PATH)
-        if os.path.exists(THUMBNAILS_PATH):
-            shutil.rmtree(THUMBNAILS_PATH)
-        if os.path.exists(METADATA_FILE_NAME):
-            os.remove(METADATA_FILE_NAME)
-        if os.path.exists(STATS_FILENAME):
-            os.remove(STATS_FILENAME)
+        if os.path.exists(paths.images):
+            shutil.rmtree(paths.images)
+        if os.path.exists(paths.thumbnails):
+            shutil.rmtree(paths.thumbnails)
+        if os.path.exists(paths.all_traits):
+            os.remove(paths.all_traits)
+        if os.path.exists(paths.gen_stats):
+            os.remove(paths.gen_stats)
 
     # Make paths if they don't exist
-    if not os.path.exists(IMAGES_PATH):
-        os.makedirs(IMAGES_PATH)
-    if "thumbnails" in traits.config and not os.path.exists(THUMBNAILS_PATH):
-        os.makedirs(THUMBNAILS_PATH)
-    if not os.path.exists(DATA_PATH):
-        os.makedirs(DATA_PATH)
+    if not os.path.exists(paths.images):
+        os.makedirs(paths.images)
+    if not os.path.exists(paths.metadata):
+        os.makedirs(paths.metadata)
+    if not os.path.exists(paths.thumbnails) and traits.thumbnails:
+        os.makedirs(paths.thumbnails)
 
 # Image builder functions
-async def build_and_save_image(item: dict, task_id: int):
-    with ImageBuilder(animated_format=traits.config.get("animated_format")) as img_builder:
-        for l in traits.layers:
+async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: dict, task_id: int):
+    with ImageBuilder(animated_format=traits.animated_format) as img_builder:
+        for l in traits.image_layers:
             layer_pretty_name = item[l["layer_name"]]
         
             if l["type"] == "filenames":
@@ -130,32 +124,32 @@ async def build_and_save_image(item: dict, task_id: int):
             elif l["type"] == "rgba":
                 if not "size" in l:
                     sys.exit(f"Missing image size for {l['layer_name']}")
-                img_builder.overlay_image(l["rgba"][layer_pretty_name], size=l["size"])
+                img_builder.overlay_image(tuple(l["rgba"][layer_pretty_name]), size=l["size"])
 
         # Composite all layers on top of each others
         composite = await img_builder.build()
-        if "thumbnails" in traits.config:
-            thumbnail = await img_builder.thumbnail(size=traits.config["thumbnails"])
+        if traits.thumbnails:
+            thumbnail = await img_builder.thumbnail(size=traits.thumbnail_size)
 
         if composite.type == ImageType.STATIC:
-            file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}.png")
+            file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}.png")
             composite.img.save(file_path)
-            if "thumbnails" in traits.config:
-                thumb_path = os.path.join(THUMBNAILS_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}_thumb.png")
+            if traits.thumbnails:
+                thumb_path = os.path.join(paths.thumbnails, f"{traits.collection_lower}_{item['ID']:03}_thumb.png")
                 thumbnail.img.save(thumb_path)
         elif composite.type == ImageType.ANIMATED:
             ext = os.path.splitext(composite.fp)[1]
-            file_path = os.path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}{ext}")
+            file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}{ext}")
             shutil.copy2(composite.fp, file_path)
-            if "thumbnails" in traits.config:
+            if traits.thumbnails:
                 ext = os.path.splitext(thumbnail.fp)[1]
-                thumb_path = os.path.join(THUMBNAILS_PATH, f"{COLLECTION_LOWER}_{item['ID']:03}_thumb{ext}")
+                thumb_path = os.path.join(paths.thumbnails, f"{traits.collection_lower}_{item['ID']:03}_thumb{ext}")
                 shutil.copy2(thumbnail.fp, thumb_path)
 
         # print(f"Generated #{item['ID']:03}: {file_path}")
     return task_id
 
-async def generate(batch: list): 
+async def generate(paths: utils.Struct, traits: utils.Struct, batch: list): 
     semaphore = asyncio.Semaphore(16)   # Limit to 16 images building at once
     async def sem_task(task):
         async with semaphore:
@@ -169,7 +163,7 @@ async def generate(batch: list):
             spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
         else:
             spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
-        for task in asyncio.as_completed( [sem_task(build_and_save_image(item, item['ID'])) for item in batch] ):
+        for task in asyncio.as_completed( [sem_task(build_and_save_image(paths, traits, item, item['ID'])) for item in batch] ):
             result = await task
             results.append(result)
             task_ids.remove(result)
@@ -187,20 +181,24 @@ def main():
     # check for command line arguments
     args = parse_args()
 
+    # Load traits.json
+    traits = utils.load_traits(args.name)
+
+    # Generate paths
+    paths = utils.generate_paths(traits)
+
+    # Remove directories if asked to
+    make_directories(paths, traits, args.empty)
+
     # Define amount of images to generate
     total_image = args.count
 
-    if total_image > traits.get_variation_cnt():
-        sys.exit(f"count ({total_image}) cannot be greater than the number of variations ({traits.get_variation_cnt()})")
-
-    # Remove directories if asked to
-    generate_paths(args.empty)
+    if total_image > utils.get_variation_cnt(traits.image_layers):
+        sys.exit(f"count ({total_image}) cannot be greater than the number of variations ({utils.get_variation_cnt(traits.image_layers)})")
 
     # set the SOURCE_FILES if it's not specified in .env
     if os.getenv("SOURCE_FILES") is not None and os.getenv("SOURCE_FILES") != "":
-        SOURCE_FILES = os.getenv("SOURCE_FILES")
-    else:
-        SOURCE_FILES = os.path.join("./images", COLLECTION_LOWER)
+        paths.source = os.getenv("SOURCE_FILES")
 
     # Set starting ID
     starting_id = args.id
@@ -218,9 +216,9 @@ def main():
 
     ## Generate Traits
     # Check if all-traits.json exists
-    if os.path.exists(METADATA_FILE_NAME):
+    if os.path.exists(paths.all_traits):
         print("Previous batches exist, pulling in their data.")
-        with open(METADATA_FILE_NAME, 'r') as f:
+        with open(paths.all_traits, 'r') as f:
             prev_batches = []
             # Remove IDs that will get replaced
             seen = set(range(starting_id, starting_id + total_image))
@@ -233,17 +231,15 @@ def main():
         prev_batches = []
 
     ## Generate folders and names list from layers available in traits
-    for i, l in enumerate(traits.layers):
+    first_layer = 0 if traits.background_color else 1
+    for i, l in enumerate(traits.image_layers):
         l["type"] = "filenames" if "filenames" in l else "rgba"
         l["names"] = list(l[l["type"]].keys())
-        if traits.layers[0]["layer_name"].lower() != "background color":
-            n = i + 1
-        else:
-            n = i
-        l["path"] = os.path.join(SOURCE_FILES, f"layer{n:02}")
+        
+        l["path"] = os.path.join(paths.source, f"layer{(first_layer + i):02}")
 
     # Generate the unique combinations based on layer weightings
-    img_gen = ImageGenerator(seed=SEED, prev_batches=prev_batches, dup_cnt_limit=traits.get_variation_cnt())
+    img_gen = ImageGenerator(layers=traits.image_layers, seed=SEED, prev_batches=prev_batches, dup_cnt_limit=utils.get_variation_cnt(traits.image_layers))
     this_batch = img_gen.generate_images(starting_id=starting_id, image_cnt=total_image)
 
     all_images = prev_batches
@@ -257,34 +253,34 @@ def main():
     # Get Trait Counts
     print("How many of each trait exist?")
 
-    for l in traits.layers:
+    for l in traits.image_layers:
         l["count"] = {item: 0 for item in l["names"]}
 
     for image in all_images:
         n = 1
-        for l in traits.layers:
+        for l in traits.image_layers:
             item = image[l["layer_name"]]
             l["count"][item] += 1
 
-    for i, l in enumerate(traits.layers):
+    for i, l in enumerate(traits.image_layers):
         print(f"Layer {i:02}: {l['count']}")
 
     ## Store trait counts to json
-    with open(STATS_FILENAME, 'w') as outfile:
-        gen_stats = {l["layer_name"]: l["count"] for l in traits.layers}
+    with open(paths.gen_stats, 'w') as outfile:
+        gen_stats = {l["layer_name"]: l["count"] for l in traits.image_layers}
         gen_stats['seed'] = SEED
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Images
-    composites = asyncio.run(generate(this_batch))
+    composites = asyncio.run(generate(paths, traits, this_batch))
     print(f"Generated {len(this_batch)} images!")
 
     #### Generate Metadata for all Traits
 
-    with open(METADATA_FILE_NAME, 'w') as outfile:
+    with open(paths.all_traits, 'w') as outfile:
         json.dump(all_images, outfile, indent=4)
 
-    print("Look in " + METADATA_FILE_NAME + " for an overview of all generated IDs and traits.")
+    print("Look in " + paths.all_traits + " for an overview of all generated IDs and traits.")
 
 if __name__ == "__main__":
     main()
