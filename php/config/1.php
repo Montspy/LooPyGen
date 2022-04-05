@@ -11,19 +11,23 @@
             </div>
         </div>
         <form method="post" action="/config/1">
-            <h3>Artist Info</h3>
+            <h3>Minter Info</h3>
             <div id="artist" class="section">
-                <input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" />
-                <input required type="text" class="form wide" id="private_key" name="private_key" placeholder="Private Key" />
+                <div data-tooltip="Minter Address: The L2 wallet address or ENS or Account ID of the minter"><input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" /></div>
+                <div data-tooltip="Minter Private Key: The Loopring private key of the minter [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Private Key" /></div>
                 <div class="row">
-                    <select required class="form med" id="nft_type" name="nft_type">
-                        <option value="0">EIP-1155</option>
-                        <option value="1">EIP-721</option>
-                    </select>
-                    <select required class="form med" id="fee_token" name="fee_token">
-                        <option value="1">LRC</option>
-                        <option value="0">ETH</option>
-                    </select>
+                    <div data-tooltip="NFT Type: EIP-1155 (recommended) or EIP-721">
+                        <select required class="form med" id="nft_type" name="nft_type">
+                            <option value="0">EIP-1155</option>
+                            <option value="1">EIP-721</option>
+                        </select>
+                    </div>
+                    <div data-tooltip="Fee Token: The token to be used to pay protocol fees">
+                        <select required class="form med" id="fee_token" name="fee_token">
+                            <option value="1">LRC</option>
+                            <option value="0">ETH</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
