@@ -92,6 +92,7 @@
             } else {
                 $thumbnail_size = array($_POST['thumbnail_width'], $_POST['thumbnail_width']);
             }
+            $traits['thumbnail_size'] = $thumbnail_size;
         }
         while ($s <= $traits['trait_count']) {
             $traits["image_layers"][$i]["variations"] = (int)$_POST["trait${s}_vars"];
