@@ -8,7 +8,8 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./:/var/www/html:rw
+      - ./:/var/www/html:ro
+      - ./dockerfiles/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
       loopygen:
         ipv4_address: 172.101.0.100

@@ -3,8 +3,10 @@
 generated
 all-traits.json
 gen-stats.json
-traits.py
 traits.json
+images
+.tempfile
+config.json
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
@@ -16,6 +18,7 @@ __pycache__/
 *.png
 *.gif
 *.mp4
+*.webm
 *.json
 *.zip
 

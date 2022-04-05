@@ -1,25 +1,22 @@
-from copy import deepcopy
+
+
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "minter")))
+from minter import get_account_info, retry_async
+from LoopringMintService import LoopringMintService
+from DataClasses import Struct
+
+from shutil import copy2
+from dotenv import load_dotenv
 import json
 import argparse
-from os import path, getenv, makedirs
-from shutil import copy2
-from pprint import pprint
-from dotenv import load_dotenv
-import traits
 import shutil
 import asyncio
 import glob
 
-# Paths generation
-COLLECTION_LOWER = "".join(map(lambda c: c if c.isalnum() else '_', traits.COLLECTION_NAME)).lower()
-COLLECTION_PATH = path.join("./generated", COLLECTION_LOWER)
-DATA_PATH = path.join(COLLECTION_PATH, "metadata")
-IMAGES_PATH = path.join(COLLECTION_PATH, "images")
-THUMBNAILS_PATH = path.join(COLLECTION_PATH, "thumbnails")
-IMAGES_BASE_URL = "ipfs://"
-
-# specify all-traits.json file
-METADATA_FILE_NAME = path.join(COLLECTION_PATH, "all-traits.json")
+import utils
 
 def properties_to_attributes(properties: dict):
     attributes = []
@@ -36,8 +33,8 @@ async def get_file_cid(filepath: str, version: int=0):
     matching_file = glob.glob(filepath)
     if len(matching_file) == 0:
         return None
-    matching_file = sorted(matching_file, key=path.getmtime)[-1] # Sort by modified date, keep latest modified
-    if not path.exists(matching_file):
+    matching_file = sorted(matching_file, key=os.path.getmtime)[-1] # Sort by modified date, keep latest modified
+    if not os.path.exists(matching_file):
         return None
 
     proc = await asyncio.create_subprocess_shell(
@@ -50,21 +47,33 @@ async def get_file_cid(filepath: str, version: int=0):
         raise RuntimeError(f"Could not get CIDv{version} of file '{filepath}':\n\t{stderr.decode()}")
     return stdout.decode().strip()
 
-def make_image_path(image: dict, thumbnail: bool):
+def make_image_path(paths: utils.Struct, traits: utils.Struct, image: dict, thumbnail: bool):
     if thumbnail:
-        return path.join(THUMBNAILS_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}_thumb.*")
+        return os.path.join(paths.thumbnails, f"{traits.collection_lower}_{image['ID']:03}_thumb.*")
     else:
-        return path.join(IMAGES_PATH, f"{COLLECTION_LOWER}_{image['ID']:03}.*")
+        return os.path.join(paths.images, f"{traits.collection_lower}_{image['ID']:03}.*")
 
-async def get_image_cids(images: list, thumbnail=False):
-    return await asyncio.gather(*[get_file_cid(make_image_path(image, thumbnail)) for image in images])
+async def get_image_cids(paths: utils.Struct, traits: utils.Struct, images: list, thumbnail: bool=False):
+    return await asyncio.gather(*[get_file_cid(make_image_path(paths, traits, image, thumbnail)) for image in images])
 
 def parse_args():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--overwrite", help="Overwrite the metadata file and all metadata fields", action="store_true")
     parser.add_argument("-e", "--empty", help="Empty the generated directory", action="store_true")
+    parser.add_argument("--name", help="Collection name (lowercase, ascii only)", type=str)
     args = parser.parse_args()
 
     return args
+
+def make_directories(paths: utils.Struct, empty: bool):
+    # Remove directories if asked to
+    if empty:
+        if os.path.exists(paths.metadata):
+            shutil.rmtree(paths.metadata)
+
+    # Make paths if they don't exist
+    if not os.path.exists(paths.metadata):
+        os.makedirs(paths.metadata)
 
 def main():
     load_dotenv()
@@ -72,25 +81,31 @@ def main():
     # check for command line arguments
     args = parse_args()
 
-    # Remove directories if asked to
-    if args.empty:
-        if path.exists(DATA_PATH):
-            shutil.rmtree(DATA_PATH)
+    # Load traits.json
+    traits = utils.load_traits(args.name)
+    
+    # Generate paths
+    paths = utils.generate_paths(traits)
 
-    # Make paths if they don't exist
-    if not path.exists(DATA_PATH):
-        makedirs(DATA_PATH)
+    # Make directories
+    make_directories(paths, args.empty)
 
-    #### Generate Metadata for each Image
-    with open(METADATA_FILE_NAME) as f:
+    # Resolve royalty address
+    cfg = Struct()
+    cfg.royalty = traits.royalty_address
+    if cfg.royalty:
+        cfg.royaltyAccount, cfg.royaltyAddress = asyncio.run(retry_async(get_account_info, cfg.royalty, retries=3))
+        assert cfg.royaltyAddress and cfg.royaltyAccount, f"Invalid royalty account: {cfg.royalty} as {cfg.royaltyAddress} (account ID {cfg.royaltyAddress})"
+
+    with open(paths.all_traits) as f:
         all_images = json.load(f)
 
     # Calculate image CIDs
-    all_images_cids = asyncio.run(get_image_cids(all_images))
+    all_images_cids = asyncio.run(get_image_cids(paths, traits, all_images))
     all_metadata_cids = []
 
     # Calculate thumbnail CIDs (if they all exist)
-    all_thumbs_cids = asyncio.run(get_image_cids(all_images, thumbnail=True))
+    all_thumbs_cids = asyncio.run(get_image_cids(paths, traits, all_images, thumbnail=True))
     if any( [c is None for c in all_thumbs_cids] ):
         if all( [c is None for c in all_thumbs_cids] ):
             print("No thumbnail found, using full resolution image")
@@ -100,31 +115,48 @@ def main():
 
     for cid, thumb_cid, image in zip(all_images_cids, all_thumbs_cids, all_images):
         token_id = image['ID']
-        json_path = path.join(DATA_PATH, f"{COLLECTION_LOWER}_{token_id:03}.json")
+        json_path = os.path.join(paths.metadata, f"{traits.collection_lower}_{token_id:03}.json")
 
-        if getenv("COLLECTION_DESCRIPTION") is None:
-            DESCRIPTION = traits.COLLECTION_NAME + " #" + str(token_id)
-        else:
-            DESCRIPTION = getenv("COLLECTION_DESCRIPTION")
+        token = {}
+        from_scratch = True    # Is true if 'overwrite' flag set or metadata json file is invalid
+        if not args.overwrite and os.path.exists(json_path):
+            try:
+                # Read all the info from file
+                with open(json_path, 'r') as infile:
+                    token = json.load(infile)
+                    from_scratch = False
+                print(f"Updating CIDs for #{token_id:03} in {json_path}")
+            except json.JSONDecodeError as err:
+                print(f"Invalid metadata for #{token_id:03} in {json_path}: ")
+                print("  " + str(err))
 
-       # Get trait properties only (remove ID, CID, etc...)
-        layer_names = [l["layer_name"] for l in traits.layers]
-        properties = {name: image[name] for name in layer_names}
+        if from_scratch:    # metadata json doesn't exist or 'overwrite' flag set
+            print(f"Generating new metadata for #{token_id:03} to {json_path}")
+            if os.path.exists(json_path):
+                copy2(json_path, json_path + ".bak")
+                print(f"  Saving backup as {json_path + '.bak'}: ")
 
-        token = {
-            "name": f"{traits.COLLECTION_NAME} #{token_id:03}",
-            "image": path.join(IMAGES_BASE_URL, thumb_cid),
-            "animation_url": path.join(IMAGES_BASE_URL, cid),
-            "description": DESCRIPTION,
-            "royalty_percentage": int(getenv("ROYALTY_PERCENTAGE")),
-            "tokenId": token_id,
-            "artist": getenv("ARTIST"),
-            "minter": getenv("MINTER"),
-            "attributes": properties_to_attributes(properties),
-            "properties": properties
-        }
+            # Get trait properties only (remove ID, CID, etc...)
+            layer_names = [l["layer_name"] for l in traits.image_layers]
+            properties = {name: image[name] for name in layer_names}
 
-        print(f"Generating metadata for #{token_id:03} to {json_path}")
+            # Create all new info
+            token = {
+                "name": f"{traits.collection_name} #{token_id:03}",
+                "description": traits.description,
+                "royalty_percentage": int(traits.royalty_percentage),
+                "tokenId": token_id,
+                "attributes": properties_to_attributes(properties),
+                "properties": properties
+            }
+            if cfg.royaltyAddress is not None and cfg.royaltyAddress != "":
+                token["royalty_address"] = cfg.royaltyAddress
+            if traits.artist_name is not None and traits.artist_name != "":
+                token["artist"] = traits.artist_name
+        
+        # Update CID fields
+        token["image"] = os.path.join("ipfs://", thumb_cid)
+        token["animation_url"] = os.path.join("ipfs://", cid)
 
         with open(json_path, 'w') as outfile:
             json.dump(token, outfile, indent=4)
@@ -132,11 +164,9 @@ def main():
         # Calculate metadata CIDs
         all_metadata_cids.append({"ID": token_id, "CID": asyncio.run(get_file_cid(json_path))})
 
-    metadata_cids_path = path.join(COLLECTION_PATH, "metadata-cids.json")
-    minter_cids_path = path.join("./generated", "metadata-cids.json")   # Temporary bandage to allow minter to find the collection
+    metadata_cids_path = paths.metadata_cids
     with open(metadata_cids_path, 'w') as outfile:
         json.dump(all_metadata_cids, outfile, indent=4)
-    copy2(metadata_cids_path, minter_cids_path)
 
 if __name__ == "__main__":
     main()
