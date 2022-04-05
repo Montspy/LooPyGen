@@ -26,10 +26,20 @@
                         How many Traits?
                     </label>
                     <input required type="number" class="form number" id="trait_count" min="2" name="trait_count" placeholder="2+" />
+                </div>
+                <div class="row">
                     <label for="background_color">
                         Pick background colors?
                     </label>
                     <input type="checkbox" id="background_color" name="background_color" />
+                    <label for="thumbnails">
+                        Generate thumbnails?
+                    </label>
+                    <input type="checkbox" id="thumbnails" name="thumbnails" />
+                    <label for="animation">
+                        Animated collection?
+                    </label>
+                    <input type="checkbox" id="animation" name="animation" />
                 </div>
             </div>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
@@ -43,6 +53,8 @@
         if (!empty($_POST['artist_name'])) { $artist_name = $_POST['artist_name']; } else { $artist_name = false; }
         if (!empty($_POST['royalty_address'])) { $royalty_address = $_POST['royalty_address']; } else { $royalty_address = false; }
         if (!empty($_POST['background_color'])) { $background_color = true; } else { $background_color = false; }
+        if (!empty($_POST['thumbnails'])) { $thumbnails = true; } else { $thumbnails = false; }
+        if (!empty($_POST['animation'])) { $animation = true; } else { $animation = false; }
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = str_replace(' ', '_', strtolower($collection_name));
         $traits_file = "./images/${collection_lower}/traits.json";
@@ -55,6 +67,8 @@
                              "collection_lower"=>$collection_lower,
                              "description"=>$description,
                              "artist_name"=>$artist_name,
+                             "thumbnails"=>$thumbnails,
+                             "animation"=>$animation,
                              "royalty_percentage"=>(int)$royalty_percentage,
                              "trait_count"=>(int)$trait_count,
                              "background_color"=>$background_color);
