@@ -21,7 +21,7 @@ FROM php:fpm-buster AS php
 # install python3.9
 RUN apt-get update; \
     apt-get -y upgrade
-RUN apt-get install -y --fix-missing python3 npm ffmpeg
+RUN apt-get install -y --fix-missing python3 npm ffmpeg git
 # get compiled modules from previous stages
 COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
 COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
