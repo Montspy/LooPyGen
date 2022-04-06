@@ -16,13 +16,12 @@ FROM node:16-alpine as node_modules
 WORKDIR /usr/src/app
 # Install the app from npm directly
 RUN npm i --only=production pure-ipfs-only-hash
-RUN ln -s /usr/src/app/node_modules/pure-ipfs-only-hash/cli.js /usr/bin/ipfs-hash
 
-FROM php:fpm AS php
+FROM php:fpm-buster AS php
 # install python3.9
 RUN apt-get update; \
     apt-get -y upgrade
-RUN apt-get install -y python3 npm ffmpeg
+RUN apt-get install -y --fix-missing python3 npm ffmpeg
 # get compiled modules from previous stages
 COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
 COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
