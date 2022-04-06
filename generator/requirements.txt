@@ -1,6 +1,4 @@
 pillow
 IPython
-torch
-torchvision
 python-dotenv
 yaspin
