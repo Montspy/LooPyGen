@@ -135,13 +135,13 @@ form {
 }
 
 .trait-row label {
-    width: 150px;
+    max-width: 150px;
     text-align: right;
+    padding-left: 5px;
 }
 
 .small {
     width: 140px;
-    margin: 10px 0;
 }
 
 .number {
@@ -163,7 +163,7 @@ form {
 }
 
 .file {
-    width: 450px;
+    width: 280px;
 }
 
 .btn, .btn:active {
@@ -180,4 +180,40 @@ form {
 
 .btn:hover, .btn:focus {
     background: #000;
+}
+
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::before {
+    pointer-events: none; /* Disable hover on the tooltip itself */
+
+    margin: 10px 0;
+    padding: 5px;
+
+    max-width: 490px;
+
+    position: absolute;
+    bottom: 1rem;
+    left: 0;
+
+    content: attr(data-tooltip);
+    color: #FFF;
+    background: #1F2033;
+    border: 1px solid #000;
+    border-radius: 5px;
+    opacity: 0;
+
+    transition: all 80ms ease-out;
+}
+
+[data-tooltip]:hover::before {
+    opacity: 1;
+    bottom: 2rem;
+}
+
+[data-tooltip]:focus-within::before {
+    opacity: 1;
+    bottom: 2rem;
 }
