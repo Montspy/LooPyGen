@@ -14,6 +14,7 @@ import json
 import argparse
 import shutil
 import asyncio
+import glob
 
 import utils
 
@@ -28,8 +29,16 @@ def properties_to_attributes(properties: dict):
 
 # CID pre-calc helper functions
 async def get_file_cid(filepath: str, version: int=0):
+    # Find matching file
+    matching_file = glob.glob(filepath)
+    if len(matching_file) == 0:
+        return None
+    matching_file = sorted(matching_file, key=os.path.getmtime)[-1] # Sort by modified date, keep latest modified
+    if not os.path.exists(matching_file):
+        return None
+
     proc = await asyncio.create_subprocess_shell(
-        f"cid --cid-version={version} {filepath}",
+        f"cid --cid-version={version} {matching_file}",
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -38,11 +47,14 @@ async def get_file_cid(filepath: str, version: int=0):
         raise RuntimeError(f"Could not get CIDv{version} of file '{filepath}':\n\t{stderr.decode()}")
     return stdout.decode().strip()
 
-def make_image_path(paths: utils.Struct, traits: utils.Struct, image: dict):
-    return os.path.join(paths.images, f"{traits.collection_lower}_{image['ID']:03}.png")
+def make_image_path(paths: utils.Struct, traits: utils.Struct, image: dict, thumbnail: bool):
+    if thumbnail:
+        return os.path.join(paths.thumbnails, f"{traits.collection_lower}_{image['ID']:03}_thumb.*")
+    else:
+        return os.path.join(paths.images, f"{traits.collection_lower}_{image['ID']:03}.*")
 
-async def get_image_cids(paths: utils.Struct, traits: utils.Struct, images: list):
-    return await asyncio.gather(*[get_file_cid(make_image_path(paths, traits, image)) for image in images])
+async def get_image_cids(paths: utils.Struct, traits: utils.Struct, images: list, thumbnail: bool=False):
+    return await asyncio.gather(*[get_file_cid(make_image_path(paths, traits, image, thumbnail)) for image in images])
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -92,7 +104,16 @@ def main():
     all_images_cids = asyncio.run(get_image_cids(paths, traits, all_images))
     all_metadata_cids = []
 
-    for cid, image in zip(all_images_cids, all_images):
+    # Calculate thumbnail CIDs (if they all exist)
+    all_thumbs_cids = asyncio.run(get_image_cids(paths, traits, all_images, thumbnail=True))
+    if any( [c is None for c in all_thumbs_cids] ):
+        if all( [c is None for c in all_thumbs_cids] ):
+            print("No thumbnail found, using full resolution image")
+        else:
+            print(f"Some thumbnail file(s) missing, using full resolution image")
+        all_thumbs_cids = all_images_cids
+
+    for cid, thumb_cid, image in zip(all_images_cids, all_thumbs_cids, all_images):
         token_id = image['ID']
         json_path = os.path.join(paths.metadata, f"{traits.collection_lower}_{token_id:03}.json")
 
@@ -134,7 +155,7 @@ def main():
                 token["artist"] = traits.artist_name
         
         # Update CID fields
-        token["image"] = os.path.join("ipfs://", cid)
+        token["image"] = os.path.join("ipfs://", thumb_cid)
         token["animation_url"] = os.path.join("ipfs://", cid)
 
         with open(json_path, 'w') as outfile:
@@ -144,10 +165,8 @@ def main():
         all_metadata_cids.append({"ID": token_id, "CID": asyncio.run(get_file_cid(json_path))})
 
     metadata_cids_path = paths.metadata_cids
-    minter_cids_path = os.path.join("./generated", "metadata-cids.json")   # Temporary bandage to allow minter to find the collection
     with open(metadata_cids_path, 'w') as outfile:
         json.dump(all_metadata_cids, outfile, indent=4)
-    copy2(metadata_cids_path, minter_cids_path)
 
 if __name__ == "__main__":
     main()

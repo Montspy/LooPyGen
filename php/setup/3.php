@@ -28,7 +28,7 @@
         </div>
         <form method="post" action="/setup/3">
             <?php $t = 0;
-            while ($t <= $traits['trait_count']) {
+            while ($s <= $traits['trait_count']) {
                 if ($t == 0 and $traits['background_color'] === true) { ?>
                     <h3 class="trait-title">Setup Background Colors:</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
@@ -36,8 +36,8 @@
                         <h4>Color #<?php echo $v ?>:</h4>
                         <div data-tooltip="Display Name: The pretty name of this variation"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" /></div>
                         <div class="trait-row wide">
-                            <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
-                            <div data-tooltip="Rarity: How rare this variation is">
+                            <div class="trait-row" data-tooltip="Rarity: How rare this variation is">
+                                <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                                 <select required class="form" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
                                     <option value="4">Common</option>
                                     <option value="3">Uncommon</option>
@@ -45,12 +45,12 @@
                                     <option value="1">Legendary</option>
                                 </select>
                             </div>
-                            <label for="trait<?php echo $trait_var ?>_r">Color:&nbsp;&nbsp;</label>
-                            <div data-tooltip="Color: The fill color of this background variation">
+                            <div class="trait-row" data-tooltip="Color: The fill color of this background variation">
+                                <label for="trait<?php echo $trait_var ?>_r">Color:&nbsp;&nbsp;</label>
                                 <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" />
                             </div>
-                            <label for="trait<?php echo $trait_var ?>_a">Opacity:&nbsp;&nbsp;</label>
-                            <div data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
+                            <div class="trait-row small" data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
+                                <label for="trait<?php echo $trait_var ?>_a">Opacity:&nbsp;&nbsp;</label>
                                 <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" />
                             </div>
                         </div>
@@ -62,8 +62,8 @@
                         <h4>Variation #<?php echo $v ?>:</h4>
                         <div data-tooltip="Display Name: The pretty name of this variation"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" /></div>
                         <div class="trait-row wide">
-                            <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                             <div data-tooltip="Rarity: How rare this variation is">
+                                <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                                 <select required class="form" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
                                     <option value="4">Common</option>
                                     <option value="3">Uncommon</option>
@@ -71,8 +71,8 @@
                                     <option value="1">Legendary</option>
                                 </select>
                             </div>
-                            <label for="trait<?php echo $trait_var ?>_r">Filename:&nbsp;&nbsp;</label>
                             <div data-tooltip="Filename: The exact name of the trait/layer file">
+                                <label for="trait<?php echo $trait_var ?>_r">Filename:&nbsp;&nbsp;</label>
                                 <input required type="file" class="form" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
                             </div>
                         </div>
@@ -87,7 +87,7 @@
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
         $t = 0;
         if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
-        while ($t <= $traits['trait_count']) {
+        while ($s <= $traits['trait_count']) {
             if ($t == 0 and $traits['background_color'] === true) {
                 $v = 1;
                 $traits["image_layers"][$t]['rgba'] = array();

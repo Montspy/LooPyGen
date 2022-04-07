@@ -26,9 +26,29 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </div>
         </div>
-        <h3>Setup your Traits</h3>
         <form method="post" action="/setup/2">
-            <?php $i = 0; while ($i <= $traits['trait_count']) {
+            <?php if ($traits['thumbnails'] === true) { ?>
+                <div class="trait-row">
+                    <label>
+                        Size of your thumbnails (height is optional):
+                    </label>
+                    <div class="labeled" data-tooltip="Thumbnail Size: The dimensions in pixels of your thumbnails [height: optional]">
+                        <input required type="number" class="form size" id="thumbnail_width" min="1" name="thumbnail_width" placeholder="WIDTH" />x
+                        <input type="number" class="form size" id="thumbnail_height" min="1" name="thumbnail_height" placeholder="HEIGHT" />
+                    </div>
+                </div>
+                <?php }
+            if ($traits['animation'] === true) { ?>
+                <div class="trait-row" data-tooltip="Animated file format: The file format of your animated NFTs (does not affect thumbnails). GIF: quickest export, largest file. WebM: Slower export, small file. MP4: Slower export, small file, no transparency">
+                    <label for="animated_format">Animation output format:&nbsp;&nbsp;</label>
+                    <select required class="form small" id="animated_format" name="animated_format">
+                        <option value=".gif">GIF</option>
+                        <option value=".webm">WEBM</option>
+                        <option value=".mp4">MP4</option>
+                    </select>
+                </div>
+                <h3>Setup your Traits</h3>
+            <?php } $i = 0; while ($s <= $traits['trait_count']) {
                 if ($traits['background_color'] === true and $i == 0) { ?>
                     <h4>Setup Background Color Trait:</h4>
                     <div class="trait-row">
@@ -44,7 +64,7 @@
                         <label>
                             Size of your images:
                         </label>
-                        <div class="labeled" data-tooltip="Image Size: The dimensions in pixels of your images [height: optional]">
+                        <div class="labeled" data-tooltip="Image Size: The dimensions in pixels of your images">
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_x" min="1" name="trait<?php echo $s ?>_x" placeholder="WIDTH" />x
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_y" min="1" name="trait<?php echo $s ?>_y" placeholder="HEIGHT" />
                         </div>
@@ -68,7 +88,15 @@
         $i = 0;
         if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
         $traits["image_layers"] = array();
-        while ($i <= $traits['trait_count']) {
+        if (!empty($_POST['thumbnail_width'])) {
+            if (!empty($_POST['thumbnail_height'])) {
+                $thumbnail_size = array($_POST['thumbnail_width'], $_POST['thumbnail_height']);
+            } else {
+                $thumbnail_size = array($_POST['thumbnail_width'], $_POST['thumbnail_width']);
+            }
+            $traits['thumbnail_size'] = $thumbnail_size;
+        }
+        while ($s <= $traits['trait_count']) {
             $traits["image_layers"][$i]["variations"] = (int)$_POST["trait${s}_vars"];
             $traits["image_layers"][$i]["layer_name"] = $_POST["trait${s}_name"];
             if ($traits['background_color'] === true and $i == 0) {
