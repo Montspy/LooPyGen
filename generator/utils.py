@@ -63,6 +63,7 @@ def generate_paths(traits: Struct):
     paths.collection = os.path.join("./generated", traits.collection_lower)
     paths.metadata = os.path.join(paths.collection, "metadata")
     paths.images = os.path.join(paths.collection, "images")
+    paths.thumbnails = os.path.join(paths.collection, "thumbnails")
     paths.source = os.path.join("./images", traits.collection_lower)
 
     paths.all_traits = os.path.join(paths.collection, "all-traits.json")

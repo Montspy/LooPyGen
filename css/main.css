@@ -187,6 +187,8 @@ form {
 }
 
 [data-tooltip]::before {
+    pointer-events: none; /* Disable hover on the tooltip itself */
+
     margin: 10px 0;
     padding: 5px;
 

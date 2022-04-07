@@ -2,12 +2,15 @@ from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
 from dotenv import load_dotenv
+import yaspin
+from ImageBuilder import ImageBuilder, ImageDescriptor, ImageType
 import random
 import time
 import json
 import os
 import sys
 import argparse
+import asyncio
 import shutil
 
 import utils
@@ -90,10 +93,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def make_directories(paths: utils.Struct, empty: bool):
+def make_directories(paths: utils.Struct, traits: utils.Struct, empty: bool):
     if empty:
         if os.path.exists(paths.images):
             shutil.rmtree(paths.images)
+        if os.path.exists(paths.thumbnails):
+            shutil.rmtree(paths.thumbnails)
         if os.path.exists(paths.all_traits):
             os.remove(paths.all_traits)
         if os.path.exists(paths.gen_stats):
@@ -104,6 +109,70 @@ def make_directories(paths: utils.Struct, empty: bool):
         os.makedirs(paths.images)
     if not os.path.exists(paths.metadata):
         os.makedirs(paths.metadata)
+    if not os.path.exists(paths.thumbnails) and traits.thumbnails:
+        os.makedirs(paths.thumbnails)
+
+# Image builder functions
+async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: dict, task_id: int):
+    with ImageBuilder(animated_format=traits.animated_format) as img_builder:
+        for l in traits.image_layers:
+            layer_pretty_name = item[l["layer_name"]]
+        
+            if l["type"] == "filenames":
+                layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
+                img_builder.overlay_image(layer_file)
+            elif l["type"] == "rgba":
+                if not "size" in l:
+                    sys.exit(f"Missing image size for {l['layer_name']}")
+                img_builder.overlay_image(tuple(l["rgba"][layer_pretty_name]), size=l["size"])
+
+        # Composite all layers on top of each others
+        composite = await img_builder.build()
+        if traits.thumbnails:
+            thumbnail = await img_builder.thumbnail(size=traits.thumbnail_size)
+
+        if composite.type == ImageType.STATIC:
+            file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}.png")
+            composite.img.save(file_path)
+            if traits.thumbnails:
+                thumb_path = os.path.join(paths.thumbnails, f"{traits.collection_lower}_{item['ID']:03}_thumb.png")
+                thumbnail.img.save(thumb_path)
+        elif composite.type == ImageType.ANIMATED:
+            ext = os.path.splitext(composite.fp)[1]
+            file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}{ext}")
+            shutil.copy2(composite.fp, file_path)
+            if traits.thumbnails:
+                ext = os.path.splitext(thumbnail.fp)[1]
+                thumb_path = os.path.join(paths.thumbnails, f"{traits.collection_lower}_{item['ID']:03}_thumb{ext}")
+                shutil.copy2(thumbnail.fp, thumb_path)
+
+        # print(f"Generated #{item['ID']:03}: {file_path}")
+    return task_id
+
+async def generate(paths: utils.Struct, traits: utils.Struct, batch: list): 
+    semaphore = asyncio.Semaphore(16)   # Limit to 16 images building at once
+    async def sem_task(task):
+        async with semaphore:
+            return await task
+
+    task_ids = [item['ID'] for item in batch]
+    results = []
+
+    with yaspin.kbi_safe_yaspin().line as spinner:
+        if len(task_ids) > 10:
+            spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
+        else:
+            spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
+        for task in asyncio.as_completed( [sem_task(build_and_save_image(paths, traits, item, item['ID'])) for item in batch] ):
+            result = await task
+            results.append(result)
+            task_ids.remove(result)
+            if len(task_ids) > 10:
+                spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
+            else:
+                spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
+
+    return results
 
 def main():
     # load .env file into memory
@@ -119,7 +188,7 @@ def main():
     paths = utils.generate_paths(traits)
 
     # Remove directories if asked to
-    make_directories(paths, args.empty)
+    make_directories(paths, traits, args.empty)
 
     # Define amount of images to generate
     total_image = args.count
@@ -203,40 +272,8 @@ def main():
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Images
-    for item in this_batch:
-        # Open images as they are needed
-        parts = []
-        for l in traits.image_layers:
-            layer_pretty_name = item[l["layer_name"]]
-            try:
-                part = l["image"][layer_pretty_name]
-            except KeyError as e:   # Image needs to get loaded
-                if not "image" in l:
-                    l["image"] = {}
-
-                if l["type"] == "filenames":
-                    layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
-                    l["image"][layer_pretty_name] = Image.open(layer_file).convert('RGBA')
-                elif l["type"] == "rgba":
-                    if not "size" in l:
-                        sys.exit(f"Missing image size for {l['layer_name']}")
-                    l["image"][layer_pretty_name] = Image.new(mode="RGBA", size=tuple(l["size"]), color=tuple(l["rgba"][layer_pretty_name]))
-
-                part = l["image"][layer_pretty_name]
-
-            parts.append(part)
-
-        # Composite all layers on top of each others
-        composite = parts[0].copy()
-        for p in parts:
-            composite = Image.alpha_composite(composite, p)
-
-        file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}.png")
-        composite.save(file_path)
-        print(f"Generated {file_path}")
-
-    # Close images
-    [img.close() for l in traits.image_layers if "image" in l for _,img in l["image"].items()]
+    composites = asyncio.run(generate(paths, traits, this_batch))
+    print(f"Generated {len(this_batch)} images!")
 
     #### Generate Metadata for all Traits
 
