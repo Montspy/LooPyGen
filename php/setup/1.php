@@ -9,37 +9,47 @@
         <form method="post" action="/setup/1">
             <h3>Artist Info</h3>
             <div id="artist" class="section">
-                <input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" />
-                <input type="text" class="form wide" id="royalty_address" name="royalty_address" placeholder="Royalty Address (Optional)" />
+                <div data-tooltip="Artist Name: The name of the artist to show in the metadata [optional]"><input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" /></div>
+                <div data-tooltip="Royalty Address: The address which will receive the royalties (L2, ENS or acccount ID) [optional]"><input type="text" class="form wide" id="royalty_address" name="royalty_address" placeholder="Royalty Address (Optional)" /></div>
             </div>
             <h3>Collection Info</h3>
             <div id="collection" class="section">
-                <input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" />
-                <input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" />
-                <input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" />
+                <div data-tooltip="Collection Name: A pretty name for your collection"><input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" /></div>
+                <div data-tooltip="Collection Description: A pretty description for your collection"><input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" /></div>
+                <div data-tooltip="Generation Seed: A seed for the random generator (use one for reproducible results) [optional]"><input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" /></div>
                 <div class="row">
-                    <label for="trait_count">
-                        Royalty Percentage:
-                    </label>
-                    <input required type="number" class="form number" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="0-10" />
-                    <label for="trait_count">
-                        How many Traits?
-                    </label>
-                    <input required type="number" class="form number" id="trait_count" min="2" name="trait_count" placeholder="2+" />
+                    <div data-tooltip="Royalty Percentage: Percentage of the price of a sale that will go to the Royalty Address">
+                        <label for="trait_count">
+                            Royalty Percentage:
+                        </label>
+                        <input required type="number" class="form number" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="0-10" />
+                    </div>
+                    <div data-tooltip="Traits Count: How many traits will your NFT have (excluding background color)">
+                        <label for="trait_count">
+                            How many Traits?
+                        </label>
+                        <input required type="number" class="form number" id="trait_count" min="2" name="trait_count" placeholder="2+" />
+                    </div>
                 </div>
                 <div class="row">
-                    <label for="background_color">
-                        Pick background colors?
-                    </label>
-                    <input type="checkbox" id="background_color" name="background_color" />
-                    <label for="thumbnails">
-                        Generate thumbnails?
-                    </label>
-                    <input type="checkbox" id="thumbnails" name="thumbnails" />
-                    <label for="animation">
-                        Animated collection?
-                    </label>
-                    <input type="checkbox" id="animation" name="animation" />
+                    <div data-tooltip="Background Color: Check this box to specify a set of background fill colors">
+                        <label for="background_color">
+                            Pick background colors?
+                        </label>
+                        <input type="checkbox" id="background_color" name="background_color" />
+                    </div>
+                    <div data-tooltip="Thumbnails: Check this box to include a thumbnail in your NFTs for faster previews and widest compatibility with dAPPs">
+                        <label for="thumbnails">
+                            Generate thumbnails?
+                        </label>
+                        <input type="checkbox" id="thumbnails" name="thumbnails" />
+                    </div>
+                    <div data-tooltip="Animated collection: Check this box to indicate that this collection contains animated traits (GIF, MP4 or WebM)">
+                        <label for="animation">
+                            Animated collection?
+                        </label>
+                        <input type="checkbox" id="animation" name="animation" />
+                    </div>
                 </div>
             </div>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
