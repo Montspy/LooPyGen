@@ -87,6 +87,9 @@
     <?php } else if (!empty($traits) and $redirect === "TRUE") {
         $i = 0;
         if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
+        if ($traits['animation'] === true) {
+            $traits['animated_format'] = $_POST['animated_format'];
+        }
         $traits["image_layers"] = array();
         if (!empty($_POST['thumbnail_width'])) {
             if (!empty($_POST['thumbnail_height'])) {
