@@ -152,7 +152,7 @@ class ImageBuilder(object):
     # Make new canvas
     @singledispatchmethod
     def _make_canvas(self, src) -> None:
-        raise NotImplementedError(f"Cannot make canvas from type: {type(src)}")
+        raise NotImplementedError(f"Cannot make canvas from type: {type(src)}, {src}")
 
     @_make_canvas.register
     def _(self, src: Image.Image) -> None:
@@ -171,20 +171,17 @@ class ImageBuilder(object):
     # Size getters
     @singledispatchmethod
     def _get_size(self, img) -> tuple[int]:
-        raise NotImplementedError(f"Cannot get size of type: {type(img)}")
+        raise NotImplementedError(f"Cannot get size of type: {type(img)}, {img}")
 
     @_get_size.register
     def _(self, img: Image.Image) -> tuple[int]:
         return img.size
 
     @_get_size.register
-    def _(self, desc: ImageDescriptor) -> tuple[int]:
-        if desc.type == ImageType.STATIC:
-            return desc.img.size
-        elif desc.type == ImageType.ANIMATED:
-            # Get resolution from ffprobe
-            cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {desc.fp}"
-            return tuple( (int(x) for x in subprocess.run(cmd.split(), capture_output=True, text=True).stdout.split(sep=',')) )
+    def _(self, fp: str) -> tuple[int]:
+        # Get resolution from ffprobe
+        cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {fp}"
+        return tuple( (int(x) for x in subprocess.run(cmd.split(), capture_output=True, text=True).stdout.split(sep=',')) )
 
     # Compositers
     async def composite(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
