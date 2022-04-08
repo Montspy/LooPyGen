@@ -23,6 +23,9 @@ class ImageDescriptor(object):
         self.img = img
         self.fp = fp
 
+    def __str__(self):
+        return f"{self.img}: fp={self.fp}, type={'STATIC' if self.type == ImageType.STATIC else 'ANIMATED'}"
+
 # Represents an image in memory
 # Able to overlay other images 
 # Able to "queue" overlaying images to reduce io overhead
@@ -34,11 +37,11 @@ class ImageBuilder(object):
         '.gif': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -filter_complex "{ov_order}overlay=shortest=1[ov]" -map [ov] -an -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
-            # Command and extension for final export, if any
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -filter_complex "{ov_order}overlay[ov]" -map [ov] -an -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
+            # Command and extension for final export
             'final_ext': '.gif',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
-            # Command and extension for thumbnail export, if any (TODO: unused)
+            # Command and extension for thumbnail export
             'thumb_ext': '.gif',
             'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
@@ -46,10 +49,10 @@ class ImageBuilder(object):
             # Command and extension for compositing
             'ext': '.webm',
             'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
-            # Command and extension for final export, if any
+            # Command and extension for final export
             'final_ext': '.webm',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
-            # Command and extension for thumbnail export, if any (TODO: unused)
+            # Command and extension for thumbnail export
             'thumb_ext': '.gif',
             'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
         },
@@ -57,10 +60,10 @@ class ImageBuilder(object):
             # Command and extension for compositing
             'ext': '.webm',
             'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
-            # Command and extension for final export, if any
+            # Command and extension for final export
             'final_ext': '.mp4',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -pix_fmt yuv420p {out}',
-            # Command and extension for thumbnail export, if any (TODO: unused)
+            # Command and extension for thumbnail export
             'thumb_ext': '.gif',
             'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -movflags +faststart {out}',
         },
