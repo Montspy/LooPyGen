@@ -271,14 +271,13 @@ def main():
         gen_stats['seed'] = SEED
         json.dump(gen_stats, outfile, indent=4)
 
+    #### Generate Metadata for all Traits
+    with open(paths.all_traits, 'w') as outfile:
+        json.dump(all_images, outfile, indent=4)
+
     #### Generate Images
     composites = asyncio.run(generate(paths, traits, this_batch))
     print(f"Generated {len(this_batch)} images!")
-
-    #### Generate Metadata for all Traits
-
-    with open(paths.all_traits, 'w') as outfile:
-        json.dump(all_images, outfile, indent=4)
 
     print("Look in " + paths.all_traits + " for an overview of all generated IDs and traits.")
 
