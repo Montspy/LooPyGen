@@ -20,7 +20,9 @@ checkDotenv() {
 case $1 in
     build) docker-compose build;;
     reload)
+        docker-compose down
         checkDotenv
+        docker system prune -f
         docker-compose up -d --build --force-recreate
     ;;
     up)
