@@ -19,9 +19,10 @@ RUN npm i --only=production pure-ipfs-only-hash
 
 FROM php:fpm AS php
 # install python3.9
+RUN dpkg --configure -a
 RUN apt-get update; \
     apt-get -y upgrade
-RUN apt-get install -y --fix-missing python3 npm ffmpeg
+RUN apt-get install -y python3 npm ffmpeg
 # get compiled modules from previous stages
 COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
 COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
