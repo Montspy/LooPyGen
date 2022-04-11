@@ -22,7 +22,7 @@ case $1 in
     reload)
         docker-compose down
         checkDotenv
-        docker system prune -f
+        docker builder prune -f
         docker-compose up -d --build --force-recreate
     ;;
     up)
