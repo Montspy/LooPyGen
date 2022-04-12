@@ -68,7 +68,10 @@ class ImageGenerator(object):
             batch_with_id.append(img)
             batch_with_id[i]["ID"] = starting_id + i
         return batch_with_id
-
+    
+    # Sort the list by ID
+    def sortID(e):
+        return e["ID"]
 
 # Returns true if all images are unique
 def all_images_unique(all_images):
@@ -79,9 +82,6 @@ def all_images_unique(all_images):
     seen = list()
     return not any(i in seen or seen.append(i) for i in images)
 
-# Combine and sort the lists
-def sortID(e):
-    return e["ID"]
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -245,10 +245,12 @@ def main():
     all_images = prev_batches
     all_images.extend(this_batch)
 
-    all_images.sort(key=sortID)
+    all_images.sort(key=ImageGenerator.sortID)
 
-    # Couble check that all images are unique to the whole collection
-    print("Are all images unique?", all_images_unique(all_images))
+    # Double check that all images are unique to the whole collection
+    if not all_images_unique(all_images):
+        print(f"Some images are not unique, aborting")
+        sys.exit(0)
 
     # Get Trait Counts
     print("How many of each trait exist?")
