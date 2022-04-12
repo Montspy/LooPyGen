@@ -120,10 +120,7 @@ class ImageBuilder(object):
         assert len(self.descriptors) > 0
 
         # Make canvas
-        if self.descriptors[0].type == ImageType.STATIC:
-            self._make_canvas(self.descriptors[0].img)
-        elif self.descriptors[0].type == ImageType.ANIMATED:
-            self._make_canvas(self.descriptors[0].fp)
+        self._make_canvas(self.descriptors[0])
 
         for desc in self.descriptors:
             self.img = await self.composite(self.img, desc)
@@ -139,13 +136,13 @@ class ImageBuilder(object):
             thumb_size = [640]
         else:
             thumb_size = size
-        
+            
+        full_size = self._get_size(self.img)
+
         if len(thumb_size) == 1:    # Only x provided, calculate y
-            full_size = self._get_size(self.img)
             y = int(thumb_size[0] / full_size[0] * full_size[1])
             thumb_size = [thumb_size[0], y]
         elif len(thumb_size) == 2:  # x,y provided, find thumb_size that fits within size, with aspect ratio of full_size
-            full_size = self._get_size(self.img)
             scale = min(thumb_size[0] / full_size[0], thumb_size[1] / full_size[1])
             x, y = int(full_size[0] * scale), int(full_size[1] * scale)
             thumb_size = [x, y]
@@ -153,19 +150,8 @@ class ImageBuilder(object):
         return await self._thumb(self.final, size=thumb_size)
 
     # Make new canvas
-    @singledispatchmethod
-    def _make_canvas(self, src) -> None:
-        raise NotImplementedError(f"Cannot make canvas from type: {type(src)}, {src}")
-
-    @_make_canvas.register
-    def _(self, src: Image.Image) -> None:
-        assert self.img is None
+    def _make_canvas(self, src: ImageDescriptor) -> None:
         self.img = ImageDescriptor(type=ImageType.STATIC, img=Image.new(mode=self.STATIC_MODE, size=self._get_size(src)))
-
-    @_make_canvas.register
-    def _(self, fp: str) -> None:
-        assert self.img is None
-        self.img = ImageDescriptor(type=ImageType.STATIC, img=Image.new(mode=self.STATIC_MODE, size=self._get_size(fp)))
 
     # Cached function to get images from 
     def _get_image(self, fp: str) -> Image.Image:
@@ -173,8 +159,15 @@ class ImageBuilder(object):
 
     # Size getters
     @singledispatchmethod
-    def _get_size(self, img) -> tuple[int]:
-        raise NotImplementedError(f"Cannot get size of type: {type(img)}, {img}")
+    def _get_size(self, src) -> tuple[int]:
+        raise NotImplementedError(f"Cannot get size of type: {type(src)}, {src}")
+
+    @_get_size.register
+    def _(self, src: ImageDescriptor) -> tuple[int]:
+        if src.type == ImageType.STATIC:
+            return self._get_size(src.img)
+        elif src.type == ImageType.ANIMATED:
+            return self._get_size(src.fp)
 
     @_get_size.register
     def _(self, img: Image.Image) -> tuple[int]:
