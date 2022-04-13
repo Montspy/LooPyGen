@@ -90,6 +90,7 @@ def parse_args():
     parser.add_argument("--name", help="Collection name (lowercase, ascii only)", type=str)
     parser.add_argument("--id", help="Specify starting ID for images", type=int, default=1)
     parser.add_argument("--seed", help="Specify the randomness seed", type=str, default=None)
+    parser.add_argument("-s", "--single", help="Only generate a single image at a time", action="store_true")
     args = parser.parse_args()
     return args
 
@@ -149,8 +150,11 @@ async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: 
         # print(f"Generated #{item['ID']:03}: {file_path}")
     return task_id
 
-async def generate(paths: utils.Struct, traits: utils.Struct, batch: list): 
-    semaphore = asyncio.Semaphore(16)   # Limit to 16 images building at once
+async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, single: bool): 
+    if single:
+        semaphore = asyncio.Semaphore(1)   # Limit to 16 images building at once
+    else:
+        semaphore = asyncio.Semaphore(16)   # Limit to 16 images building at once
     async def sem_task(task):
         async with semaphore:
             return await task
@@ -278,7 +282,7 @@ def main():
         json.dump(all_images, outfile, indent=4)
 
     #### Generate Images
-    composites = asyncio.run(generate(paths, traits, this_batch))
+    composites = asyncio.run(generate(paths, traits, this_batch, args.single))
     print(f"Generated {len(this_batch)} images!")
 
     print("Look in " + paths.all_traits + " for an overview of all generated IDs and traits.")
