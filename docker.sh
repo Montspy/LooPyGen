@@ -17,14 +17,17 @@ checkDotenv() {
     fi
 }
 
+reload() {
+    docker-compose down
+    checkDotenv
+    docker builder prune -f
+    docker-compose up -d --build --force-recreate
+}
+
 case $1 in
     build) docker-compose build;;
-    reload)
-        docker-compose down
-        checkDotenv
-        docker builder prune -f
-        docker-compose up -d --build --force-recreate
-    ;;
+    reload) reload;;
+    update) git pull --recurse-submodules && reload;;
     up)
         checkDotenv
         docker-compose up -d
