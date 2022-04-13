@@ -152,9 +152,9 @@ async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: 
 
 async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, single: bool): 
     if single:
-        semaphore = asyncio.Semaphore(1)   # Limit to 16 images building at once
+        semaphore = asyncio.Semaphore(1)   # Limit to 1 image building at once
     else:
-        semaphore = asyncio.Semaphore(16)   # Limit to 16 images building at once
+        semaphore = asyncio.Semaphore(4)   # Limit to 4 images building at once
     async def sem_task(task):
         async with semaphore:
             return await task
