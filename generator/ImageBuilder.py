@@ -3,6 +3,7 @@ from os import path
 from functools import singledispatchmethod
 from PIL import Image
 from typing import List, Tuple
+import shlex
 import asyncio
 import tempfile
 import subprocess
@@ -37,35 +38,35 @@ class ImageBuilder(object):
         '.gif': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
             # Command and extension for final export
             'final_ext': '.gif',
-            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" "{out}"',
             # Command and extension for thumbnail export
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" "{out}"',
         },
         '.webm': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
             # Command and extension for final export
             'final_ext': '.webm',
-            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p "{out}"',
             # Command and extension for thumbnail export
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" "{out}"',
         },
         '.mp4': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i {src1} {codec2} {ig} -i {src2} -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest {out}',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
             # Command and extension for final export
             'final_ext': '.mp4',
-            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -pix_fmt yuv420p {out}',
+            'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -pix_fmt yuv420p "{out}"',
             # Command and extension for thumbnail export
             'thumb_ext': '.gif',
-            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i {src} -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -movflags +faststart {out}',
+            'thumb_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -vf "fps=15,scale=w={w}:h={h}:flags=lanczos:force_original_aspect_ratio=decrease,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" -movflags +faststart "{out}"',
         },
     }
     FFMPEG_EXT = list(FFMPEG_PARAMS.keys())
@@ -176,8 +177,8 @@ class ImageBuilder(object):
     @_get_size.register
     def _(self, fp: str) -> tuple[int]:
         # Get resolution from ffprobe
-        cmd = f"ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 {fp}"
-        return tuple( (int(x) for x in subprocess.run(cmd.split(), capture_output=True, text=True).stdout.split(sep=',')) )
+        cmd = f'ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 "{fp}"'
+        return tuple( (int(x) for x in subprocess.run(shlex.split(cmd), capture_output=True, text=True).stdout.split(sep=',')) )
 
     # Compositers
     async def composite(self, img1: ImageDescriptor, img2: ImageDescriptor) -> ImageDescriptor:
