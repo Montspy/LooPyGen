@@ -208,15 +208,15 @@ def main():
     starting_id = args.id
     print("Starting at ID: " + str(starting_id))
 
-    # Randomness seed
-    if args.seed is not None:
-        SEED = args.seed
-    elif os.getenv("SEED") is not None and os.getenv("SEED") != "":
-        SEED = str(os.getenv("SEED"))
-    else:
+    # Randomness seed in order of priority: traits.json, .env, random seed
+    if args.seed is None and traits.seed is not None and traits.seed != "":
+        args.seed = str(traits.seed)
+    if args.seed is None and os.getenv("SEED") is not None and os.getenv("SEED") != "":
+        args.seed = str(os.getenv("SEED"))
+    if args.seed is None:
         timestamp = time.time_ns().to_bytes(16, byteorder='big')
-        SEED = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
-    print(f"Using randomness seed: {SEED}")
+        args.seed = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string
+    print(f"Using randomness seed: {args.seed}")
 
     ## Generate Traits
     # Check if all-traits.json exists
@@ -243,7 +243,7 @@ def main():
         l["path"] = os.path.join(paths.source, f"layer{(first_layer + i):02}")
 
     # Generate the unique combinations based on layer weightings
-    img_gen = ImageGenerator(layers=traits.image_layers, seed=SEED, prev_batches=prev_batches, dup_cnt_limit=utils.get_variation_cnt(traits.image_layers))
+    img_gen = ImageGenerator(layers=traits.image_layers, seed=args.seed, prev_batches=prev_batches, dup_cnt_limit=utils.get_variation_cnt(traits.image_layers))
     this_batch = img_gen.generate_images(starting_id=starting_id, image_cnt=total_image)
 
     all_images = prev_batches
@@ -274,7 +274,7 @@ def main():
     ## Store trait counts to json
     with open(paths.gen_stats, 'w') as outfile:
         gen_stats = {l["layer_name"]: l["count"] for l in traits.image_layers}
-        gen_stats['seed'] = SEED
+        gen_stats['seed'] = args.seed
         json.dump(gen_stats, outfile, indent=4)
 
     #### Generate Metadata for all Traits
