@@ -41,6 +41,18 @@ Delete previously generated images before generating a new set:
 ./docker.sh generate --empty --count XXX
 ```
 
+Start generating from a specific ID number:
+
+```shell
+./docker.sh generate --count XXX --id YY
+```
+
+If you have a beefy computer, you can try to generate images simultaneously to speed up the process:
+
+```shell
+./docker.sh generate --count XXX --threaded
+```
+
 ### Metadata JSON Generator Commands
 
 Basic run, after generating images:
