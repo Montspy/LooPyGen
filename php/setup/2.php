@@ -93,9 +93,9 @@
         $traits["image_layers"] = array();
         if (!empty($_POST['thumbnail_width'])) {
             if (!empty($_POST['thumbnail_height'])) {
-                $thumbnail_size = array($_POST['thumbnail_width'], $_POST['thumbnail_height']);
+                $thumbnail_size = array((int)$_POST['thumbnail_width'], (int)$_POST['thumbnail_height']);
             } else {
-                $thumbnail_size = array($_POST['thumbnail_width'], $_POST['thumbnail_width']);
+                $thumbnail_size = array((int)$_POST['thumbnail_width'], (int)$_POST['thumbnail_width']);
             }
             $traits['thumbnail_size'] = $thumbnail_size;
         }
