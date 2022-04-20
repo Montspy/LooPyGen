@@ -21,7 +21,7 @@ services:
     volumes:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
-      - ./:/usr/src/server:rw
+      - ./:/usr/src/python:rw
     networks:
       loopygen:
         ipv4_address: 172.101.0.110
