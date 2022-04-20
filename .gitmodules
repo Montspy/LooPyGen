@@ -2,3 +2,6 @@
 	path = minter
 	url = https://github.com/Montspy/LooPyMinty.git
 	branch = rel/LooPyGen
+[submodule "react"]
+	path = react
+	url = https://github.com/you3h/LoopMinterJs.git
