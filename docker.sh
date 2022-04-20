@@ -30,7 +30,11 @@ case $1 in
     update) git pull --recurse-submodules && reload;;
     up)
         checkDotenv
-        docker-compose up -d
+        if [ $2 = "prod" ]; then
+            docker-compose up -d react
+        else
+            docker-compose up -d
+        fi
     ;;
     down) docker-compose down;;
     *) docker-compose exec python $@;;

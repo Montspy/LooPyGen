@@ -17,18 +17,20 @@ WORKDIR /usr/src/app
 # Install the app from npm directly
 RUN npm i --only=production pure-ipfs-only-hash
 
-FROM python:3.9 as runner
+FROM python:3.9
 # install npm and ffmpeg
 RUN dpkg --configure -a
 RUN apt-get update; \
     apt-get -y upgrade
 RUN apt-get install -y npm ffmpeg
 # get compiled modules from previous stages
-COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
+COPY --from=python_modules /usr/local/lib/python3.9 /usr/local/lib/python3.9
 COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
 # add the python files for the game
 ADD dockerfiles/scripts/* /usr/local/bin/
 # link cid calculator
 RUN ln -s /usr/src/app/node_modules/pure-ipfs-only-hash/cli.js /usr/bin/cid
 # finish up container
-WORKDIR /var/www/html
+WORKDIR /app
+
+CMD [ "tail", "-f", "/dev/null" ]
