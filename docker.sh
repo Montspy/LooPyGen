@@ -33,5 +33,5 @@ case $1 in
         docker-compose up -d
     ;;
     down) docker-compose down;;
-    *) docker-compose exec php $@;;
+    *) docker-compose exec python $@;;
 esac
