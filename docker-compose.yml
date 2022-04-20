@@ -14,8 +14,20 @@ services:
       loopygen:
         ipv4_address: 172.101.0.100
 
-  php:
-    container_name: "loopygen.php"
+  react:
+    container_name: "loopygen.react"
+    build: ./react
+    user: ${UID}:${GID}
+    volumes:
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - ./:/usr/src/server:rw
+    networks:
+      loopygen:
+        ipv4_address: 172.101.0.110
+
+  python:
+    container_name: "loopygen.python"
     build: .
     user: ${UID}:${GID}
     volumes:
@@ -24,7 +36,7 @@ services:
       - ./:/var/www/html:rw
     networks:
       loopygen:
-        ipv4_address: 172.101.0.110
+        ipv4_address: 172.101.0.115
 
 networks:
   loopygen:
