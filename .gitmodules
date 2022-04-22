@@ -4,4 +4,5 @@
 	branch = rel/LooPyGen
 [submodule "react"]
 	path = react
-	url = https://github.com/you3h/LoopMinterJs.git
+	url = https://github.com/you3h/LooPyGen_Client.git
+	branch = main
