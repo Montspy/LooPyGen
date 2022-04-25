@@ -145,7 +145,7 @@ def main():
                 "name": f"{traits.collection_name} #{token_id:03}",
                 "description": traits.description,
                 "royalty_percentage": int(traits.royalty_percentage),
-                "tokenId": token_id,
+                "id": token_id,
                 "attributes": properties_to_attributes(properties),
                 "properties": properties
             }
