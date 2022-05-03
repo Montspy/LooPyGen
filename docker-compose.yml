@@ -18,7 +18,11 @@ services:
 
   react:
     container_name: "loopygen.react"
-    build: ./react
+    build:
+      context: ./react
+      args:
+        UID: ${UID}
+        GID: ${GID}
     restart: unless-stopped
     user: ${UID}:${GID}
     volumes:
