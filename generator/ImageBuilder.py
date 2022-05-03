@@ -38,7 +38,7 @@ class ImageBuilder(object):
         '.gif': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -filter_complex "{ov_order}overlay" -ac 2 -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
             # Command and extension for final export
             'final_ext': '.gif',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -vf "split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" "{out}"',
@@ -49,7 +49,7 @@ class ImageBuilder(object):
         '.webm': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -filter_complex "{ov_order}overlay" -ac 2 -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
             # Command and extension for final export
             'final_ext': '.webm',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -lag-in-frames 0 -b:v 0 -crf 20 -row-mt 1 -pix_fmt yuva420p "{out}"',
@@ -60,7 +60,7 @@ class ImageBuilder(object):
         '.mp4': {
             # Command and extension for compositing
             'ext': '.webm',
-            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -f lavfi -i anullsrc -f lavfi -i anullsrc -filter_complex "amerge=inputs=2,pan=stereo|c0<c0+c2|c1<c1+c3[a]" -filter_complex "{ov_order}overlay[ov]" -map [ov] -map [a] -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
+            'cmd': 'ffmpeg {ll} -y {codec1} {image} -i "{src1}" {codec2} {ig} -i "{src2}" -filter_complex "{ov_order}overlay" -ac 2 -c:v libvpx-vp9 -lag-in-frames 0 -lossless 1 -row-mt 1 -pix_fmt yuva420p -shortest "{out}"',
             # Command and extension for final export
             'final_ext': '.mp4',
             'final_cmd': 'ffmpeg {ll} -y -c:v libvpx-vp9 -i "{src}" -pix_fmt yuv420p "{out}"',
