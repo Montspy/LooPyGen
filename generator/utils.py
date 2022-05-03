@@ -28,15 +28,15 @@ class Struct(dict):
 def load_traits(name: str = None):
     traits_path = ""
     if name:
-        traits_path = os.path.join("./images", name, "traits.json")
+        traits_path = os.path.join("./collections", name, "config", "traits.json")
     else:
-        all_jsons = glob("./images/*/traits.json")
+        all_jsons = glob("./collections/*/config/traits.json")
         all_names = []
         for f in all_jsons:
             with open(f, 'r') as j:
                 all_names.append(json.load(j).get("collection_name", "Unknown collection name"))
-        assert len(all_names) > 0, "Found 0 existing collections in ./images"
-        
+        assert len(all_names) > 0, "Found 0 existing collections in ./collections"
+
         print(f"Found {len(all_names)} collections:\n  " + "\n  ".join( [ f"{i+1}. {n}" for i,n in enumerate(all_names)] ))
         while True:
             print(f"Pick one (1~{len(all_names)}): ", end="")
@@ -48,7 +48,7 @@ def load_traits(name: str = None):
             if (s > 0) and (s <= len(all_names)):
                 break
         traits_path = all_jsons[s - 1]
-    
+
     with open(traits_path) as f:
         traits_json = json.load(f)
     return Struct(traits_json)
@@ -60,15 +60,19 @@ def load_config(paths: Struct):
 
 def generate_paths(traits: Struct):
     paths = Struct()
-    paths.collection = os.path.join("./generated", traits.collection_lower)
+    paths.collection = os.path.join("./collections", traits.collection_lower)
     paths.metadata = os.path.join(paths.collection, "metadata")
     paths.images = os.path.join(paths.collection, "images")
     paths.thumbnails = os.path.join(paths.collection, "thumbnails")
-    paths.source = os.path.join("./images", traits.collection_lower)
 
-    paths.all_traits = os.path.join(paths.collection, "all-traits.json")
-    paths.gen_stats = os.path.join(paths.collection, "gen-stats.json")
-    paths.metadata_cids = os.path.join(paths.collection, "metadata-cids.json")
+    paths.py_conf = os.path.join(paths.collection, "config")
+    paths.source = os.path.join(paths.py_conf, "source_layers")
+    paths.metadata_cids = os.path.join(paths.py_conf, "metadata-cids.json")
+
+    paths.stats = os.path.join(paths.collection, "stats")
+    paths.all_traits = os.path.join(paths.stats, "all-traits.json")
+    paths.gen_stats = os.path.join(paths.stats, "gen-stats.json")
+
     paths.config = "./config.json"
 
     return paths
