@@ -24,6 +24,18 @@ reload() {
     docker-compose up -d --build --force-recreate
 }
 
+migrate() {
+    for i in $(ls images); do
+        mkdir -p collections/$i/{config,stats}
+        mv images/$i/*.json collections/$i/config/
+        mv images/$i collections/$i/config/source_layers
+        mv generated/$i/{gen-stats.json,all-traits.json} collections/$i/stats/
+        mv generated/$i/metadata-cids.json collections/$i/config/
+        mv generated/$i/{images,metadata} collections/$i/
+    done
+    rm -r images generated
+}
+
 case $1 in
     build) docker-compose build;;
     reload) reload;;
@@ -37,5 +49,6 @@ case $1 in
         fi
     ;;
     down) docker-compose down;;
+    migrate) migrate;;
     *) docker-compose exec python $@;;
 esac
