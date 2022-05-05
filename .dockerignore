@@ -15,5 +15,4 @@ __pycache__
 *.md
 *.yml
 *.bat
-generated
-images
+collections
