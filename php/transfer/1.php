@@ -17,7 +17,7 @@
         <form method="post" action="/transfer/1">
             <h3>Transfer Tool Info</h3>
             <div id="artist" class="section">
-                <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="from" name="from" placeholder="From Address, ENS, or Account ID" /></div>
+                <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address, ENS, or Account ID" /></div>
                 <div data-tooltip="Loopring L2 Private Key: The Loopring private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Loopring L2 Private Key (from step 01)" /></div>
                 <div data-tooltip="MetaMask L1 Private Key: The MetaMask private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="MetaMask L1 Private Key (from step 02)" /></div>
                 <div class="row">
@@ -36,7 +36,7 @@
             <input class="form btn" type="submit" name="submit" value="FINISH" />
         </form>
     <?php } else {
-        $from = $_POST['from'];
+        $sender = $_POST['sender'];
         $private_key = $_POST['private_key'];
         $private_key_mm = $_POST['private_key_mm'];
         $fee_token = $_POST['fee_token'];
@@ -45,7 +45,7 @@
         if(!str_starts_with($private_key_mm, '0x'))
             $private_key_mm = '0x' . $private_key_mm;
 
-        $config_data = array("from"=>$from,
+        $config_data = array("sender"=>$sender,
                              "private_key"=>$private_key,
                              "private_key_mm"=>$private_key_mm,
                              "fee_token"=>(int)$fee_token);
