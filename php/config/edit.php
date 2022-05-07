@@ -8,7 +8,7 @@
     }
 
     if (!empty($config)) { ?>
-        <h3>Configuration Settings</h3>
+        <h3>Configuration Settings Saved</h3>
         <div id="guide">
             <div class="section">
                 <p><b>Minter (Address, ENS, or Account ID)</b>: <?php echo $config['minter'] ?></p>

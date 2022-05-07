@@ -7,7 +7,7 @@
     $t_display = $traits['trait_count'];
 
     if (!empty($traits)) { ?>
-        <h3>Collection Info</h3>
+        <h3>Collection Info Saved</h3>
         <div id="guide">
             <div class="section">
                 <p><b>Collection Name</b>: <?php echo $traits['collection_name'] ?></p>
