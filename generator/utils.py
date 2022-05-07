@@ -61,13 +61,14 @@ def load_config(paths: Struct):
 def generate_paths(traits: Struct):
     paths = Struct()
     paths.collection = os.path.join("./collections", traits.collection_lower)
-    paths.metadata = os.path.join(paths.collection, "metadata")
-    paths.images = os.path.join(paths.collection, "images")
-    paths.thumbnails = os.path.join(paths.collection, "thumbnails")
+    paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
+    paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
+    paths.images = os.path.join(paths.ipfs_folder, "images")
+    paths.thumbnails = os.path.join(paths.ipfs_folder, "thumbnails")
 
-    paths.py_conf = os.path.join(paths.collection, "config")
-    paths.source = os.path.join(paths.py_conf, "source_layers")
-    paths.metadata_cids = os.path.join(paths.py_conf, "metadata-cids.json")
+    paths.gen_conf = os.path.join(paths.collection, "config")
+    paths.source = os.path.join(paths.gen_conf, "source_layers")
+    paths.metadata_cids = os.path.join(paths.gen_conf, "metadata-cids.json")
 
     paths.stats = os.path.join(paths.collection, "stats")
     paths.all_traits = os.path.join(paths.stats, "all-traits.json")
