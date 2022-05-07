@@ -7,6 +7,7 @@ traits.json
 images
 .tempfile
 config.json
+transfer_config.json
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
