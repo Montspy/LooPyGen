@@ -42,7 +42,7 @@ case $1 in
     update) git pull --recurse-submodules && reload;;
     up)
         checkDotenv
-        if [ $2 = "prod" ]; then
+        if [ "$2" = "prod" ]; then
             docker-compose up -d react
         else
             docker-compose up -d
