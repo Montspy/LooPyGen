@@ -18,8 +18,7 @@ checkDotenv() {
 }
 
 reload() {
-    docker-compose down
-    if $(docker ps -a | grep loopygen.php); then docker rm -f loopygen.php; fi
+    docker-compose down --remove-orphans
     checkDotenv
     docker builder prune -f
     docker-compose up -d --build --force-recreate
