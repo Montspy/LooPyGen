@@ -17,6 +17,13 @@ checkDotenv() {
     fi
 }
 
+update() {
+    git fetch &&
+    git pull &&
+    git submodule update --init --recursive &&
+    reload
+}
+
 reload() {
     docker-compose down --remove-orphans
     checkDotenv
@@ -39,7 +46,7 @@ migrate() {
 case $1 in
     build) docker-compose build;;
     reload) reload;;
-    update) git pull --recurse-submodules && reload;;
+    update) update;;
     up)
         checkDotenv
         if [ "$2" = "prod" ]; then
