@@ -50,5 +50,10 @@ case $1 in
     ;;
     down) docker-compose down;;
     migrate) migrate;;
-    *) docker-compose exec python $@;;
+    *)
+        if ! $(docker ps -q --filter "name=loopygen.python" | grep -q .); then
+            docker-compose up -d
+        fi
+        docker-compose exec python $@
+    ;;
 esac
