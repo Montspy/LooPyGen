@@ -2,7 +2,9 @@
 from dataclasses import dataclass
 from typing import TypeVar, Generic
 from collections import OrderedDict
+from tempfile import TemporaryDirectory
 from glob import glob
+import subprocess
 import json
 import os
 import re
@@ -29,6 +31,7 @@ class Struct(dict):
 
 
 def load_traits(name: str = None):
+    TRAITS_VERSION = "v1.0.0"
     traits_path = ""
     if name:
         traits_path = os.path.join("./collections", name, "config", "traits.json")
@@ -54,6 +57,15 @@ def load_traits(name: str = None):
 
     with open(traits_path) as f:
         traits_json = json.load(f)
+    
+    # Convert version if needed
+    if 'version' in traits_json and traits_json['version'] != TRAITS_VERSION:
+        with TemporaryDirectory() as tempdir:
+            converted_path = os.path.join(tempdir, 'traits_converted.json')
+            ret_code = subprocess.call(f"python3 generator/json-convert.py --file {traits_path} --version {TRAITS_VERSION} --output {converted_path}", shell=True)
+            assert ret_code == 0, f"Could not convert {traits_path} to version {TRAITS_VERSION}"
+            with open(converted_path, 'r') as f:
+                traits_json = json.load(f)
     return Struct(traits_json)
 
 def load_config(paths: Struct):
