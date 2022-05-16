@@ -1,8 +1,11 @@
 
 from dataclasses import dataclass
+from typing import TypeVar, Generic
+from collections import OrderedDict
 from glob import glob
 import json
 import os
+import re
 
 @dataclass
 class Struct(dict):
@@ -83,3 +86,91 @@ def get_variation_cnt(layers: list):
     for layer in layers:
         cnt *= len(layer["weights"])
     return cnt
+
+# JSON conversion
+class SemVerFilter(object):
+    regex = r"^(?P<major>x|0|[1-9]\d*)\.(?P<minor>x|0|[1-9]\d*)\.(?P<patch>x|0|[1-9]\d*)?$"
+    filter: str
+    elements: list
+    priority: int   # Lower number means higher priority
+    match_regex: str
+
+    def __init__(self, ver_filter: str):
+        self.filter = ver_filter.replace("v", "").strip()
+        # Extract major, minor, patch elements
+        m = re.match(self.regex, self.filter)
+        assert m is not None, f"Invalid version filter {ver_filter}"
+        self.elements = [m.group('major'), m.group('minor'), m.group('patch')]
+
+        # Validate wildcard position, calculate priority rank
+        wildcard_found = False
+        self.priority = 0
+        for i,el in enumerate(self.elements):
+            if wildcard_found and el != "x":
+                raise Exception(f"Invalid version filter, numeral found after wildcard {ver_filter}")
+            elif el == "x":
+                if not wildcard_found:
+                    self.priority = 3 - i
+                wildcard_found = True
+        
+        self.match_regex = r"^" + r"\.".join(self.elements).replace('x', r"(0|[1-9]\d*)") + r"$"
+
+        super().__init__()
+
+    def get_priority(self) -> int:
+        return self.priority
+
+    def match(self, ver: 'SemVerFilter') -> bool:
+        assert ver.get_priority() == 0, f"SemVerFilter cannot match to version with wildcard {ver}"
+        return re.match(self.match_regex, ver.filter) is not None
+
+    def __repr__(self) -> str:
+        return f"{self.elements[0]}.{self.elements[1]}.{self.elements[2]}"
+
+    def __hash__(self) -> int:
+        return hash((self.elements[0], self.elements[1], self.elements[2]))
+
+class FromToFilter(object):
+    def __init__(self, f: SemVerFilter, t: SemVerFilter) -> None:
+        self.f = f
+        self.t = t
+        super().__init__()
+
+    def get_priority(self) -> int:
+        return self.f.get_priority() + self.t.get_priority()
+    
+    def sort_func(self) -> int:
+        return self.get_priority()
+
+    def match(self, fromto: 'FromToFilter') -> bool:
+        return self.f.match(fromto.f) and self.t.match(fromto.t)
+
+    def __repr__(self) -> str:
+        return f"{self.f} -> {self.t}"
+
+    def __hash__(self):
+        return hash((self.f, self.t))
+
+Key = TypeVar('Key', bound=FromToFilter)
+Route = TypeVar('Route')
+
+class Router(Generic[Key, Route]):
+    routes: 'OrderedDict[Key, Route]'
+
+    def __init__(self) -> None:
+        self.routes = OrderedDict()
+        super().__init__()
+
+    def add_map(self, key: Key, route: Route) -> None:
+        self.routes[key] = route
+        s = sorted(self.routes.items(), key=lambda kv_pair: kv_pair[0].sort_func())
+        self.routes = OrderedDict(s)
+
+    def match_route(self, filter: FromToFilter) -> Route:
+        for key, route in self.routes.items():
+            if key.match(filter):
+                return route
+        
+        return None
+
+# [END] JSON conversion
