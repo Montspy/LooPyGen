@@ -36,31 +36,31 @@
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
             <div id="artist" class="section">
                 <div class="row">
-                    <div data-tooltip="Copies: (Required) How many copies of each NFT should be minted?">
-                        <label for="amount">
-                            How many copies?
-                        </label>
-                        <input required type="number" class="form small" id="amount" name="amount" />
-                    </div>
                     <div data-tooltip="Start ID: (Optional) Choose a token ID to start with.">
                         <label for="start_id">
                             Start ID:
                         </label>
                         <input type="number" class="form small" id="start_id" name="start_id" />
                     </div>
-                </div>
-                <div class="row">
                     <div data-tooltip="End ID: (Optional) Choose a token ID to end with.">
                         <label for="end_id">
                             End ID:
                         </label>
                         <input type="number" class="form small" id="end_id" name="end_id" />
                     </div>
+                </div>
+                <div class="row">
+                    <div data-tooltip="Copies: (Required) How many copies of each NFT should be minted?">
+                        <label for="amount">
+                            Copies:
+                        </label>
+                        <input required type="number" class="form small" id="amount" name="amount" />
+                    </div>
                     <div data-tooltip="Test: (Recommended) Run a test mint, but don't actually mint anything.">
                         <label for="testmint">
                             Run as a test?
                         </label>
-                        <input type="checkbox" class="form small" id="testmint" name="testmint" />
+                        <input type="checkbox" id="testmint" name="testmint" />
                     </div>
                 </div>
             </div>

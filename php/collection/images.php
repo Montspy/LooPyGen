@@ -3,6 +3,7 @@
     $path = "./collections";
     $collections = array_diff(scandir($path), array('.', '..'));
 
+    echo '<div class="section">';
     echo '<h1>Image Generation</h1>';
 
     if (empty($_GET['collection'])) {
@@ -49,13 +50,13 @@
                         <label for="empty">
                             Empty old images?
                         </label>
-                        <input type="checkbox" class="form small" id="empty" name="empty" />
+                        <input type="checkbox" id="empty" name="empty" />
                     </div>
                     <div data-tooltip="Threaded: (Optional) Compile 4 images at a time. ONLY USE IF YOU HAVE A POWERFUL COMPUTER!">
                         <label for="threaded">
-                            Generate multiple?
+                            Multi-threaded?
                         </label>
-                        <input type="checkbox" class="form small" id="threaded" name="threaded" />
+                        <input type="checkbox" id="threaded" name="threaded" />
                     </div>
                 </div>
             </div>
@@ -101,5 +102,7 @@ foreach ($list as $line) {
         <a href="/collection/metadata?collection=<?php echo $lower; ?>"><button class="btn">METADATA</button></a>
         <a href="/home"><button class="btn">MAIN MENU</button></a>
     <?php }
+
+    echo '</div>';
 
 ?>

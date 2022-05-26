@@ -36,13 +36,13 @@
                         <label for="empty">
                             Empty old metadata?
                         </label>
-                        <input type="checkbox" class="form small" id="empty" name="empty" />
+                        <input type="checkbox" id="empty" name="empty" />
                     </div>
                     <div data-tooltip="Overwrite: (Optional) Overwrite existing metadata files with new trait information.">
                         <label for="overwrite">
                             Overwrite metadata?
                         </label>
-                        <input type="checkbox" class="form small" id="overwrite" name="overwrite" />
+                        <input type="checkbox" id="overwrite" name="overwrite" />
                     </div>
                 </div>
             </div>
