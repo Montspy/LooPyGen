@@ -1,7 +1,7 @@
 <div class="section">
     <h3>Configuration Setup</h3>
     <a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>
-    <!-- <a href="/edit/1"><button class="btn">EDIT EXISTING COLLECTION</button></a> -->
+    <!-- <a href="/edit/view"><button class="btn">EDIT EXISTING COLLECTION</button></a> -->
     <a href="/config/1"><button class="btn">MINTING CONFIG SETUP</button></a>
 </div>
 
