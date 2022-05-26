@@ -48,7 +48,7 @@
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($config_file, $config_json);
 
-        Redirect('/config/edit', false);
+        Redirect('/config/finish', false);
     }
 
 ?>

@@ -17,6 +17,7 @@
                 <p><b>Fee Token</b>: <?php echo $config['fee_token'] ?></p>
             </div>
         </div>
+        <a href="/"><button class="btn">HOME</button></a>
     <?php } else {
         Redirect('/config/1', false);
     }
