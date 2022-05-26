@@ -71,7 +71,7 @@
         $amount = $_POST['amount'];
         if (!empty($_POST['start_id'])) { $start_id = "--start " . $_POST['start_id']; } else { $start_id = ""; }
         if (!empty($_POST['end_id'])) { $end_id = "--end " . $_POST['end_id']; } else { $end_id = ""; }
-        if (!empty($_POST['testmint'])) { $testmint = "--testmint"; } else { $testmint = "--testmint"; }
+        if (!empty($_POST['testmint'])) { $testmint = "--testmint"; } else { $testmint = ""; }
         $command = "mint --noprompt --amount ${amount} --name ${lower} ${start_id} ${end_id} ${testmint}"; ?>
         <h3 class="success">Confirm mint. This might take a while.</h3>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
