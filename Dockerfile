@@ -32,10 +32,10 @@ RUN apt-get update; \
 RUN apt-get install -y python3 npm ffmpeg
 # get compiled modules from previous stages
 COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
-COPY --from=node_modules /usr/src/app/node_modules /usr/src/app/node_modules
+COPY --from=node_modules /usr/src/app /usr/src/app
 # add the python files for the game
 ADD dockerfiles/scripts/* /usr/local/bin/
 # link cid calculator
-RUN ln -s /usr/src/app/node_modules/pure-ipfs-only-hash/cli.js /usr/bin/cid
+RUN ln -s /usr/src/app/cli.js /usr/bin/cid
 # finish up container
 WORKDIR /var/www/html

@@ -49,18 +49,15 @@ case $1 in
     update) update;;
     up)
         checkDotenv
-        if [ "$2" = "prod" ]; then
-            docker-compose up -d react
-        else
-            docker-compose up -d
-        fi
+        docker-compose up -d
     ;;
     down) docker-compose down;;
     migrate) migrate;;
     *)
-        if ! $(docker ps -q --filter "name=loopygen.python" | grep -q .); then
+        if ! $(docker ps -q --filter "name=loopygen.php" | grep -q .); then
+            checkDotenv
             docker-compose up -d
         fi
-        docker-compose exec python $@
+        docker-compose exec php $@
     ;;
 esac

@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd /app
+cd /var/www/html
 python3 minter/prepare.py --loopygen $@
