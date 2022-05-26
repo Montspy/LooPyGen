@@ -1,7 +1,7 @@
 <?php
 
     $collection_lower = file_get_contents(".tempfile");
-    $traits_file = file_get_contents("./images/${collection_lower}/traits.json");
+    $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.json");
     $traits = json_decode($traits_file, true);
     $s = 1;
     $t_display = $traits['trait_count'];
@@ -109,7 +109,7 @@
             $s = $s + 1;
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
-        file_put_contents("./images/${collection_lower}/traits.json", $traits_json);
+        file_put_contents("./collections/${collection_lower}/config/traits.json", $traits_json);
         Redirect('/setup/3', false);
     } else {
         Redirect('/setup/1', false);

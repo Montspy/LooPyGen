@@ -32,12 +32,12 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Background Color: Check this box to specify a set of background fill colors">
+                    <!-- <div data-tooltip="Background Color: Check this box to specify a set of background fill colors">
                         <label for="background_color">
                             Pick background colors?
                         </label>
                         <input type="checkbox" id="background_color" name="background_color" />
-                    </div>
+                    </div> -->
                     <div data-tooltip="Thumbnails: Check this box to include a thumbnail in your NFTs for faster previews and widest compatibility with dAPPs">
                         <label for="thumbnails">
                             Generate thumbnails?
@@ -67,10 +67,10 @@
         if (!empty($_POST['animation'])) { $animation = true; } else { $animation = false; }
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = str_replace(' ', '_', strtolower($collection_name));
-        $traits_file = "./images/${collection_lower}/traits.json";
+        $traits_file = "./collections/${collection_lower}/config/traits.json";
 
-        if (!file_exists("./images/${collection_lower}")) {
-            mkdir("./images/${collection_lower}", 0755, true);
+        if (!file_exists("./collections/${collection_lower}/config")) {
+            mkdir("./collections/${collection_lower}/config/source_layers", 0755, true);
         }
 
         $traits_data = array("collection_name"=>$collection_name,

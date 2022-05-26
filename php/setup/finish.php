@@ -1,7 +1,7 @@
 <?php
 
     $collection_lower = file_get_contents(".tempfile");
-    $traits_file = file_get_contents("./images/${collection_lower}/traits.json");
+    $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.json");
     $traits = json_decode($traits_file, true);
     $s = 1;
     $t_display = $traits['trait_count'];
@@ -25,6 +25,7 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </div>
         </div>
+        <a href="/"><button class="btn">HOME</button></a>
     <?php } else {
         Redirect('/setup/1', false);
     }

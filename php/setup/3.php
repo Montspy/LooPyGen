@@ -1,7 +1,7 @@
 <?php
 
     $collection_lower = file_get_contents(".tempfile");
-    $traits_file = file_get_contents("./images/${collection_lower}/traits.json");
+    $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.json");
     $traits = json_decode($traits_file, true);
     $s = 1;
     $t_display = $traits['trait_count'];
@@ -88,6 +88,10 @@
         $t = 0;
         if ($traits['background_color'] === true) { $s = 0; } else { $s = 1; }
         while ($s <= $traits['trait_count']) {
+            $target_dir = "./collections/" . $traits['collection_lower'] . "/config/source_layers/layer" . sprintf('%02d', $s);;
+            if (!file_exists($target_dir)) {
+                mkdir($target_dir, 0755, true);
+            }
             if ($t == 0 and $traits['background_color'] === true) {
                 $v = 1;
                 $traits["image_layers"][$t]['rgba'] = array();
@@ -107,6 +111,8 @@
                     $trait_var = $s . "_" . $v;
                     $traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_POST["trait${trait_var}_file"];
                     array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
+                    $target_file = $target_dir . $_FILES["trait${trait_var}_file"]['name'];
+                    move_uploaded_file($_FILES["trait${trait_var}_file"]['temp_name'], $target_file))
                     $v = $v + 1;
                 }
             }
@@ -114,8 +120,8 @@
             $s = $s + 1;
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
-        file_put_contents("./images/${collection_lower}/traits.json", $traits_json);
-        Redirect('/setup/edit', false);
+        file_put_contents("./collections/${collection_lower}/config/traits.json", $traits_json);
+        Redirect('/setup/finish', false);
     } else {
         Redirect('/setup/1', false);
     }
