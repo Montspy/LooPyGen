@@ -28,7 +28,8 @@
     } else if (empty($_GET['run'])) {
         $lower = $_GET['collection']; ?>
         <form method="post" action="/collection/metadata?collection=<?php echo $lower; ?>&run=true">
-            <h3>Metadata Options</h3>
+            <h3>Generate Metadata. This might take a while.</h3>
+            <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
             <div id="artist" class="section">
                 <div class="row">
                     <div data-tooltip="Empty: (Optional) Delete any previously generated metadata and start fresh.">
