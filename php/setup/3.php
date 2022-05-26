@@ -26,7 +26,7 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </div>
         </div>
-        <form method="post" action="/setup/3">
+        <form enctype="multipart/form-data" method="post" action="/setup/3">
             <?php $t = 0;
             while ($s <= $traits['trait_count']) {
                 if ($t == 0 and $traits['background_color'] === true) { ?>
@@ -71,7 +71,7 @@
                                     <option value="1">Legendary</option>
                                 </select>
                             </div>
-                            <div data-tooltip="Filename: The exact name of the trait/layer file">
+                            <div data-tooltip="Image: Choose the image file that should be used for this variation.">
                                 <label for="trait<?php echo $trait_var ?>_r">Filename:&nbsp;&nbsp;</label>
                                 <input required type="file" class="form" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
                             </div>
@@ -109,10 +109,10 @@
                 $traits["image_layers"][$t]['weights'] = array();
                 while ($v <= $traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
-                    $traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_POST["trait${trait_var}_file"];
+                    $traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_FILES["trait${trait_var}_file"]['name'];
                     array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
-                    $target_file = $target_dir . $_FILES["trait${trait_var}_file"]['name'];
-                    move_uploaded_file($_FILES["trait${trait_var}_file"]['temp_name'], $target_file))
+                    $target_file = $target_dir . "/" . $_FILES["trait${trait_var}_file"]['name'];
+                    move_uploaded_file($_FILES["trait${trait_var}_file"]['tmp_name'], $target_file);
                     $v = $v + 1;
                 }
             }
