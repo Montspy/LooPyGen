@@ -16,6 +16,12 @@ footer {
     margin: 25px 0;
 }
 
+pre {
+    width: 500px;
+    max-height: 500px;
+    overflow: scroll;
+}
+
 p {
     margin: 5px 0;
 }
@@ -89,6 +95,19 @@ form {
 
 #guide div {
     width: 400px;
+}
+
+.error {
+    background: #800000;
+}
+
+.success {
+    background: #008000;
+}
+
+.warning {
+    background: #B09000;
+    color: #000;
 }
 
 .section {
