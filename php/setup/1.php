@@ -32,12 +32,12 @@
                     </div>
                 </div>
                 <div class="row">
-                    <!-- <div data-tooltip="Background Color: Check this box to specify a set of background fill colors">
+                    <div data-tooltip="Background Color: Check this box to specify a set of background fill colors">
                         <label for="background_color">
                             Pick background colors?
                         </label>
                         <input type="checkbox" id="background_color" name="background_color" />
-                    </div> -->
+                    </div>
                     <div data-tooltip="Thumbnails: Check this box to include a thumbnail in your NFTs for faster previews and widest compatibility with dAPPs">
                         <label for="thumbnails">
                             Generate thumbnails?
