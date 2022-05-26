@@ -9,6 +9,7 @@ body {
     align-items: center;
     align-content: center;
     justify-content: center;
+    font-family: monospace;
 }
 
 footer {
