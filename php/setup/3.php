@@ -1,6 +1,6 @@
 <?php
 
-    $collection_lower = file_get_contents(".tempfile");
+    $collection_lower = $_GET['collection'];
     $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.json");
     $traits = json_decode($traits_file, true);
     $s = 1;
@@ -129,7 +129,7 @@
         }
         $traits_json = json_encode($traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents("./collections/${collection_lower}/config/traits.json", $traits_json);
-        Redirect('/setup/finish', false);
+        Redirect("/setup/finish?collection=${collection_lower}", false);
     } else {
         Redirect('/setup/1', false);
     }

@@ -1,6 +1,6 @@
 <?php
 
-    $collection_lower = file_get_contents(".tempfile");
+    $collection_lower = $_GET['collection'];
     $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.json");
     $traits = json_decode($traits_file, true);
     $s = 1;

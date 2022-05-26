@@ -97,9 +97,8 @@
 
         $traits_json = json_encode($traits_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($traits_file, $traits_json);
-        file_put_contents(".tempfile", $collection_lower);
 
-        Redirect('/setup/2', false);
+        Redirect("/setup/2?collection=${collection_lower}", false);
     }
 
 ?>
