@@ -66,7 +66,7 @@
         if (!empty($_POST['thumbnails'])) { $thumbnails = true; } else { $thumbnails = false; }
         if (!empty($_POST['animation'])) { $animation = true; } else { $animation = false; }
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
-        $collection_lower = str_replace(' ', '_', strtolower($collection_name));
+        $collection_lower = sanitize($collection_name);
         $traits_file = "./collections/${collection_lower}/config/traits.json";
 
         if (!file_exists("./collections/${collection_lower}/config")) {
