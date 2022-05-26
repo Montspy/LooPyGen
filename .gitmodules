@@ -2,10 +2,6 @@
 	path = minter
 	url = https://github.com/Montspy/LooPyMinty.git
 	branch = rel/LooPyGen
-[submodule "react"]
-	path = react
-	url = https://github.com/you3h/LooPyGen_Client.git
-	branch = main
 [submodule "ipfs-hash"]
 	path = ipfs-hash
 	url = https://github.com/sk33z3r/ipfs-only-hash.git
