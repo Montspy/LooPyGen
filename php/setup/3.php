@@ -39,10 +39,14 @@
                             <div class="trait-row" data-tooltip="Rarity: How rare this variation is">
                                 <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                                 <select required class="form" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
-                                    <option value="4">Common</option>
-                                    <option value="3">Uncommon</option>
-                                    <option value="2">Rare</option>
-                                    <option value="1">Legendary</option>
+                                    <option value="50">Common</option>
+                                    <option value="25">Uncommon</option>
+                                    <option value="10">Rare</option>
+                                    <option value="5">Epic</option>
+                                    <option value="4">Legendary</option>
+                                    <option value="3">Mythical</option>
+                                    <option value="2">Transcendent</option>
+                                    <option value="1">Godlike</option>
                                 </select>
                             </div>
                             <div class="trait-row" data-tooltip="Color: The fill color of this background variation">
@@ -65,10 +69,14 @@
                             <div data-tooltip="Rarity: How rare this variation is">
                                 <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
                                 <select required class="form" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
-                                    <option value="4">Common</option>
-                                    <option value="3">Uncommon</option>
-                                    <option value="2">Rare</option>
-                                    <option value="1">Legendary</option>
+                                    <option value="50">Common</option>
+                                    <option value="25">Uncommon</option>
+                                    <option value="10">Rare</option>
+                                    <option value="5">Epic</option>
+                                    <option value="4">Legendary</option>
+                                    <option value="3">Mythical</option>
+                                    <option value="2">Transcendent</option>
+                                    <option value="1">Godlike</option>
                                 </select>
                             </div>
                             <div data-tooltip="Image: Choose the image file that should be used for this variation.">
