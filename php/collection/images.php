@@ -68,7 +68,7 @@
         if (!empty($_POST['start_id'])) { $start_id = "--id " . $_POST['start_id']; } else { $start_id = ""; }
         if (!empty($_POST['empty'])) { $empty = "--empty"; } else { $empty = ""; }
         if (!empty($_POST['threaded'])) { $threaded = "--threaded"; } else { $threaded = ""; }
-        $command = "generate --count ${count} --name ${lower} ${start_id} ${empty} ${threaded}"; ?>
+        $command = "generate --count ${count} --name ${lower} ${start_id} ${empty} ${threaded} 2>&1"; ?>
         <h3 class="success">Confirm image generation. This might take a while.</h3>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
         <p><code>Command: <?php echo $command; ?></code></p>
@@ -78,19 +78,25 @@
         </form>
     <?php } else if (!empty($_GET['run'])) {
         $lower = $_GET['collection'];
-        $command = $_POST['command'] . " | grep -v Generating";
+        $command = $_POST['command'];
         exec($command, $output, $code);
         if ($code == 0) {
             $code = "Success!";
+            $type = "success";
         } else {
             $code = "Error: ${code} (see output below)";
+            $type = "error";
         } ?>
-        <h3>Image Generation Done!</h3>
+        <h3 class="<?php echo $type; ?>">Image Generation Done!</h3>
         <pre>
 Result: <?php echo $code; ?>
 <br /><br />
 <?php foreach ($output as $line) {
-    echo $line . "<br />";
+    if (strstr($line, "Generating") !== false) {
+        continue;
+    } else {
+        echo $line . "<br />";
+    }
 } ?>
 <br /><br />
 <?php exec("ls -n ./collections/${lower}/ipfs/images", $list, $code);
