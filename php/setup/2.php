@@ -26,7 +26,7 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </div>
         </div>
-        <form method="post" action="/setup/2">
+        <form method="post" action="/setup/2?collection=<?php echo $collection_lower; ?>">
             <?php if ($traits['thumbnails'] === true) { ?>
                 <div class="trait-row">
                     <label>

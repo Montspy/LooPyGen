@@ -26,7 +26,7 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </div>
         </div>
-        <form enctype="multipart/form-data" method="post" action="/setup/3">
+        <form enctype="multipart/form-data" method="post" action="/setup/3?collection=<?php echo $collection_lower; ?>">
             <?php $t = 0;
             while ($s <= $traits['trait_count']) {
                 if ($t == 0 and $traits['background_color'] === true) { ?>
