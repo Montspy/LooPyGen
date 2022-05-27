@@ -22,6 +22,10 @@ pre {
     overflow: scroll;
 }
 
+code {
+    font-size: 10px;
+}
+
 p {
     margin: 5px 0;
 }
