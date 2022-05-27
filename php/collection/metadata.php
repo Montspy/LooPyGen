@@ -53,14 +53,16 @@
         $lower = $_GET['collection'];
         if (!empty($_POST['empty'])) { $empty = "--empty"; } else { $empty = ""; }
         if (!empty($_POST['overwrite'])) { $overwrite = "--overwrite"; } else { $overwrite = ""; }
-        $command = "metadata --name ${lower} ${empty} ${overwrite}"; ?>
-        <h3 class="success">Metadata Generation Done!</h3>
+        $command = "metadata --name ${lower} ${empty} ${overwrite} 2>&1"; ?>
         <?php exec($command, $output, $code);
         if ($code == 0) {
             $code = "Success!";
+            $type = "success";
         } else {
             $code = "Error: ${code} (see output below)";
+            $type = "error";
         } ?>
+        <h3 class="<?php echo $type; ?>">Metadata Generation Done!</h3>
         <pre>
 Result: <?php echo $code; ?>
 <br /><br />
