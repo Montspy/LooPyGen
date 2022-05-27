@@ -7,6 +7,19 @@
         Redirect("/config/1");
     }
 
+    $infuraUrl = "https://mainnet.infura.io/v3/3b6a7ab1f65746d18cb72e4e216b55cb";
+    $json = '{"jsonrpc":"2.0","method":"eth_gasPrice","params": [],"id":1}';
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $infuraUrl);
+    curl_setopt($curl, CURLOPT_POST, true);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $json);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $response = curl_exec($curl);
+    curl_close($curl);
+    $results = json_decode($response, true);
+    $gas = hexdec($results['result']) / 1000000000;
+
+    echo '<div class="section">';
     echo '<h1>Mint Collection</h1>';
 
     if (empty($_GET['collection'])) {
@@ -34,6 +47,7 @@
         <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>">
             <h3>Minter Options</h3>
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
+            <h3>Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
             <div id="artist" class="section">
                 <div class="row">
                     <div data-tooltip="Start ID: (Optional) Choose a token ID to start with.">
@@ -99,5 +113,7 @@ Result: <?php echo $code; ?>
         </pre>
         <a href="/home"><button class="btn">MAIN MENU</button></a>
     <?php }
+
+    echo '</div>';
 
 ?>

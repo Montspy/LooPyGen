@@ -3,6 +3,7 @@
     $path = "./collections";
     $collections = array_diff(scandir($path), array('.', '..'));
 
+    echo '<div class="section">';
     echo '<h1>Metadata Generation</h1>';
 
     if (empty($_GET['collection'])) {
@@ -76,5 +77,7 @@ foreach ($list as $line) {
         <a href="/collection/mint?collection=<?php echo $lower; ?>"><button class="btn">MINT</button></a>
         <a href="/home"><button class="btn">MAIN MENU</button></a>
     <?php }
+
+    echo '</div>';
 
 ?>
