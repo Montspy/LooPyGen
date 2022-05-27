@@ -15,7 +15,7 @@
 <div class="section">
     <h3>Other Actions</h3>
     <!-- <a href="/prepare"><button class="btn">PREPARE METADATA</button></a> -->
-    <!-- <a href="/mint/1?type=single"><button class="btn">MINT SINGLE ITEM</button></a> -->
+    <a href="/mint"><button class="btn">MINT SINGLE ITEM</button></a>
     <!-- <a href="/transfer/1"><button class="btn">TRANSFER</button></a> -->
     <a href="/home?nuke=engage"><button class="btn">NUKE SENSITIVE INFO</button></a>
     <!-- <a href="/home?update=true"><button class="btn">UPDATE LOOPYGEN</button></a> -->
