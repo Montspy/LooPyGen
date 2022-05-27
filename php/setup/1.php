@@ -71,6 +71,8 @@
 
         if (!file_exists("./collections/${collection_lower}/config")) {
             mkdir("./collections/${collection_lower}/config/source_layers", 0755, true);
+            mkdir("./collections/${collection_lower}/ipfs", 0755, true);
+            mkdir("./collections/${collection_lower}/stats", 0755, true);
         }
 
         $traits_data = array("collection_name"=>$collection_name,
