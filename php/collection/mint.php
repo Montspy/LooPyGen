@@ -42,7 +42,7 @@
             echo '<h3 class="error">No collections found.</h3>';
             echo '<a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>';
         }
-    } else if (empty($_GET['run'])) {
+    } else if (!isset($_POST)) {
         $lower = $_GET['collection']; ?>
         <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>">
             <h3>Minter Options</h3>
@@ -86,7 +86,7 @@
         if (!empty($_POST['start_id'])) { $start_id = "--start " . $_POST['start_id']; } else { $start_id = ""; }
         if (!empty($_POST['end_id'])) { $end_id = "--end " . $_POST['end_id']; } else { $end_id = ""; }
         if (!empty($_POST['testmint'])) { $testmint = "--testmint"; } else { $testmint = ""; }
-        $command = "mint --noprompt --amount ${amount} --name ${lower} ${start_id} ${end_id} ${testmint}"; ?>
+        $command = "mint --noprompt --amount ${amount} --name ${lower} ${start_id} ${end_id} ${testmint} 2>&1"; ?>
         <h3 class="success">Confirm mint. This might take a while.</h3>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
         <p><code>Command: <?php echo $command; ?></code></p>
@@ -100,10 +100,12 @@
         exec($command, $output, $code);
         if ($code == 0) {
             $code = "Success!";
+            $type = "success";
         } else {
             $code = "Error: ${code} (see output below)";
+            $type = "error";
         } ?>
-        <h3 class="success">Minting Done!</h3>
+        <h3 class="<?php echo $type; ?>">Minting Done!</h3>
         <pre>
 Result: <?php echo $code; ?>
 <br /><br />
