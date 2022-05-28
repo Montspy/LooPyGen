@@ -42,7 +42,7 @@
             echo '<h3 class="error">No collections found.</h3>';
             echo '<a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>';
         }
-    } else if (!isset($_POST)) {
+    } else if (!empty($_GET['collection']) and empty($_POST['amount'])) {
         $lower = $_GET['collection']; ?>
         <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>">
             <h3>Minter Options</h3>
@@ -74,7 +74,7 @@
                         <label for="testmint">
                             Run as a test?
                         </label>
-                        <input type="checkbox" id="testmint" name="testmint" />
+                        <input checked type="checkbox" id="testmint" name="testmint" />
                     </div>
                 </div>
             </div>
