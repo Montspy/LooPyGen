@@ -1,6 +1,6 @@
 <?php
 
-    $short_hash = shell_exec('git rev-parse --short HEAD');
+    $version = file_get_contents('./.version');
 
     if (!empty($_GET['page'])) {
         $page = $_GET['page'];
@@ -49,7 +49,7 @@
     if ($redirect !== "TRUE") {
         include "php/header.html"; ?>
         <div class="content">
-            <h1><a href="/">LooPyGen UI</a> ( <?php echo $short_hash ?>)</h1>
+            <h1><a href="/">LooPyGen</a> (<?php echo $version ?>)</h1>
             <?php include "php/$page.php"; ?>
         </div>
     <?php } else {
