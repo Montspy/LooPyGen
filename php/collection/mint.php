@@ -80,7 +80,7 @@
             </div>
             <input class="form btn" type="submit" name="submit" value="NEXT STEP" />
         </form>
-    <?php } else if (!empty($_POST['amount'])) {
+    <?php } else if (!empty($_POST['amount']) and empty($_GET['run'])) {
         $lower = $_GET['collection'];
         $amount = $_POST['amount'];
         if (!empty($_POST['start_id'])) { $start_id = "--start " . $_POST['start_id']; } else { $start_id = ""; }
@@ -91,6 +91,7 @@
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
         <p><code>Command: <?php echo $command; ?></code></p>
         <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>&run=true">
+            <input type="hidden" name="amount" id="amount" value="<?php echo $amount; ?>" />
             <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
             <input class="form btn" type="submit" name="submit" value="MINT" />
         </form>
