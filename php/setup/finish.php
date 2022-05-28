@@ -25,7 +25,8 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </div>
         </div>
-        <a href="/"><button class="btn">HOME</button></a>
+        <a href="/collection/images?collection=<?php echo $collection_lower ?>"><button class="btn">GENERATE IMAGES</button></a>
+        <a href="/home"><button class="btn">MAIN MENU</button></a>
     <?php } else {
         Redirect('/setup/1', false);
     }
