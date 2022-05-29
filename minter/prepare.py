@@ -20,7 +20,7 @@ def parse_args():
     input_grp.add_argument('--idir', help='Specify an input directory', type=str)
     parser.add_argument('--metadata', help='Generate metadata templates instead of the CIDs list', action='store_true')
     parser.add_argument('--overwrite', help='Overwrite the metadata files and all metadata fields', action='store_true')
-    parser.add_argument('--loopygen', help=argparse.SUPPRESS, action='store_true')
+    parser.add_argument('--php', help=argparse.SUPPRESS, action='store_true')
 
     return parser.parse_args()
 
@@ -46,17 +46,12 @@ def make_directories(args):
     paths = Struct()
     paths.output = './output'
     paths.metadata_cids = os.path.join(paths.output, 'metadata-cids.json')
-    # LooPyGen specifics
-    if args.loopygen:
-        paths.output = './collections'
-        paths.metadata_cids = os.path.join(paths.output, 'config', 'metadata-cids.json')
-    # END LooPyGen specifics
     paths.metadata = os.path.join(paths.output, 'metadata')
 
     # Make directories if they don't exist
     if not os.path.exists(paths.output):
         os.makedirs(paths.output)
-    if not os.path.exists(paths.metadata):
+    if args.metadata and not os.path.exists(paths.metadata):
         os.makedirs(paths.metadata)
 
     return paths
@@ -73,7 +68,7 @@ async def get_file_cid(path: str, version: int=0):
         raise RuntimeError(f'Could not get CIDv{version} of file {path}:\n\t{stderr.decode()}')
     return stdout.decode().strip()
 
-async def get_files_cids(paths: 'list[str]', version: int=0):
+async def get_files_cids(paths: 'list[str]', machine_readable: bool, version: int=0):
     semaphore = asyncio.Semaphore(16)   # Limit to 16 files open at once
     async def sem_task(task):
         async with semaphore:
@@ -82,12 +77,16 @@ async def get_files_cids(paths: 'list[str]', version: int=0):
     task_ids = list(range(len(paths)))
     results = []
 
-    with yaspin.kbi_safe_yaspin().line as spinner:
-        if len(task_ids) > 10:
-            spinner.text = f"Calculating CID for {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
-        else:
-            spinner.text = f"Calculating CID for {' '.join( [f'#{id:03}' for id in task_ids] )}"
+    if machine_readable:    # Make it more machine readable
+        print(f"Calculating CID for {len(task_ids)} images...")
         results = await asyncio.gather( *[sem_task(get_file_cid(file, version)) for  file in paths] )
+    else:   # Make it more human readable
+        with yaspin.kbi_safe_yaspin().line as spinner:
+            if len(task_ids) > 10:
+                spinner.text = f"Calculating CID for {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
+            else:
+                spinner.text = f"Calculating CID for {' '.join( [f'#{id:03}' for id in task_ids] )}"
+            results = await asyncio.gather( *[sem_task(get_file_cid(file, version)) for  file in paths] )
 
     return results
 
@@ -118,7 +117,7 @@ def main():
     ids, input_files = list(zip(*sorted(zip(ids, input_files))))
 
     # Pre-calculate CIDs for input files
-    cids = asyncio.run(get_files_cids( [os.path.join(cfg.input_dir, file) for file in input_files] ))
+    cids = asyncio.run(get_files_cids( [os.path.join(cfg.input_dir, file) for file in input_files], args.php ))
 
     # Output or update metadata template files
     if args.metadata:

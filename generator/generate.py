@@ -91,6 +91,7 @@ def parse_args():
     parser.add_argument("--id", help="Specify starting ID for images", type=int, default=1)
     parser.add_argument("--seed", help="Specify the randomness seed", type=str, default=None)
     parser.add_argument("-t", "--threaded", help="Generate 4 images at once instead of just 1", action="store_true")
+    parser.add_argument("--php", help=argparse.SUPPRESS, action="store_true")
     args = parser.parse_args()
     return args
 
@@ -150,7 +151,7 @@ async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: 
         # print(f"Generated #{item['ID']:03}: {file_path}")
     return task_id
 
-async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threaded: bool): 
+async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threaded: bool, machine_readable: bool): 
     if threaded:
         semaphore = asyncio.Semaphore(4)   # Limit to 4 image building at once
     else:
@@ -162,19 +163,27 @@ async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threa
     task_ids = [item['ID'] for item in batch]
     results = []
 
-    with yaspin.kbi_safe_yaspin().line as spinner:
-        if len(task_ids) > 10:
-            spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
-        else:
-            spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
+    if machine_readable:    # Make it more machine readable
+        print(f"Generating {len(task_ids)} images...")
         for task in asyncio.as_completed( [sem_task(build_and_save_image(paths, traits, item, item['ID'])) for item in batch] ):
             result = await task
             results.append(result)
             task_ids.remove(result)
+            print(f"Generated #{result:03} ({len(task_ids)} images remaining)")
+    else:   # Make it more human readable
+        with yaspin.kbi_safe_yaspin().line as spinner:
             if len(task_ids) > 10:
                 spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
             else:
                 spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
+            for task in asyncio.as_completed( [sem_task(build_and_save_image(paths, traits, item, item['ID'])) for item in batch] ):
+                result = await task
+                results.append(result)
+                task_ids.remove(result)
+                if len(task_ids) > 10:
+                    spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
+                else:
+                    spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
 
     return results
 
@@ -282,7 +291,7 @@ def main():
         json.dump(all_images, outfile, indent=4)
 
     #### Generate Images
-    composites = asyncio.run(generate(paths, traits, this_batch, args.threaded))
+    composites = asyncio.run(generate(paths, traits, this_batch, args.threaded, args.php))
     print(f"Generated {len(this_batch)} images!")
 
     print("Look in " + paths.all_traits + " for an overview of all generated IDs and traits.")
