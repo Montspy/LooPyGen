@@ -51,7 +51,7 @@ async def load_config(args, paths: Struct):
     cfg = Struct()
     secret = Struct()   # Split to avoid leaking keys to console or logs
 
-    if args.loopygen and args.name: # Batch minting a generated collection of NFTs from LooPyGen
+    if args.name: # Batch minting a generated collection of NFTs
         with open(paths.traits) as f:
             traits_json = json.load(f)
         traits =  Struct(traits_json)
@@ -64,7 +64,7 @@ async def load_config(args, paths: Struct):
         cfg.nftType               = int(loopygen_cfg.nft_type)
         cfg.royaltyPercentage     = int(traits.royalty_percentage)
         cfg.maxFeeTokenId         = int(loopygen_cfg.fee_token)
-    elif args.loopygen and args.json: # Batch minting a folder of NFTs from LooPyGen
+    elif args.json: # Batch minting a folder of NFTs
         with open(paths.config) as f:
             config_json = json.load(f)
         loopygen_cfg = Struct(config_json)
@@ -72,15 +72,15 @@ async def load_config(args, paths: Struct):
         cfg.minter                = loopygen_cfg.minter
         cfg.royalty               = loopygen_cfg.minter
         cfg.nftType               = int(loopygen_cfg.nft_type)
-        cfg.royaltyPercentage     = int(os.getenv("ROYALTY_PERCENTAGE"))
+        cfg.royaltyPercentage     = int(loopygen_cfg.royalty_percentage)
         cfg.maxFeeTokenId         = int(loopygen_cfg.fee_token)
-    else:   # Minting from LooPyMinty
-        secret.loopringPrivateKey = os.getenv("LOOPRING_PRIVATE_KEY")
-        cfg.minter                = os.getenv("MINTER")
-        cfg.royalty               = os.getenv("ROYALTY_ADDRESS")
-        cfg.nftType               = int(os.getenv("NFT_TYPE"))
-        cfg.royaltyPercentage     = int(os.getenv("ROYALTY_PERCENTAGE"))
-        cfg.maxFeeTokenId         = int(os.getenv("FEE_TOKEN_ID"))
+    elif args.cid:   # Minting a single CID 
+        secret.loopringPrivateKey = loopygen_cfg.private_key
+        cfg.minter                = loopygen_cfg.minter
+        cfg.royalty               = loopygen_cfg.minter
+        cfg.nftType               = int(loopygen_cfg.nft_type)
+        cfg.royaltyPercentage     = int(loopygen_cfg.royalty_percentage)
+        cfg.maxFeeTokenId         = int(loopygen_cfg.fee_token)
 
     cfg.validUntil            = 1700000000
     cfg.nftFactory            = "0xc852aC7aAe4b0f0a0Deb9e8A391ebA2047d80026"
@@ -111,30 +111,31 @@ def parse_args():
     parser.add_argument("--testmint", help="Skips the mint step", action='store_true')
     parser.add_argument("-V", "--verbose", help="Verbose output", action='store_true')
     parser.add_argument("--noprompt", help="Skip all user prompts", action='store_true')
-    parser.add_argument("--loopygen", help=argparse.SUPPRESS, action='store_true')
-    parser.add_argument("--name", help=argparse.SUPPRESS, type=str)
+    parser.add_argument("--fees", help="Estimates the fees and exits", action='store_true')
 
     single_group = parser.add_argument_group(title="Single mint", description="Use these options to mint a single NFT:")
     single_group.add_argument("-c", "--cid", help="Specify the CIDv0 hash for the metadata to mint", type=str)
 
     batch_group = parser.add_argument_group(title="Batch mint", description="Use these options to batch mint multiple NFTs:")
-    batch_group.add_argument("-j", "--json", help="Specify a json file containing a list of CIDv0 hash to batch mint", type=str)
+    source_batch_group = batch_group.add_mutually_exclusive_group(required=True)
+    source_batch_group.add_argument("--name", help="Specify the name of a collection to batch mint", type=str)
+    source_batch_group.add_argument("-j", "--json", help="Specify a json file containing a list of CIDv0 hash to batch mint", type=str)
     batch_group.add_argument("-s", "--start", help="Specify the the starting ID to batch mint", type=int)
     batch_group.add_argument("-e", "--end", help="Specify the last ID to batch mint", type=int)
     args = parser.parse_args()
 
     # CID sources
-    assert args.json or args.cid or (args.loopygen and args.name), "Missing --cid or --json argument, please provide one"
+    assert args.json or args.cid or args.name, "Missing --cid, --json or --name argument, please provide one"
 
-    # LooPyGen specifics
-    if not args.json and not args.cid and (args.loopygen and args.name):
+    # Metadata CID(s) sources:
+    if args.name:   # --name
         args.json = os.path.join("./collections", args.name, "config", "metadata-cids.json")
         args.cid = None
-    # END LooPyGen specifics
-
-    if args.json:
+    elif args.json: # --json
         assert os.path.exists(args.json), f"JSON file not found: {args.json}"
-    if args.cid:
+        args.cid = None
+    if args.cid:    # --cid
+        args.json = None
         assert args.cid[:2] == "Qm", f"Invalid cid: {args.cid}" # Support CIDv0 only
     
     # Mint amount
@@ -339,7 +340,7 @@ async def main():
     paths = Struct()
     paths.mint_info = os.path.join(os.path.dirname(__file__), "mint-info.json")
     paths.config = "./config.json"
-    if args.loopygen and args.name:
+    if args.name:
         paths.traits = os.path.join("./collections", args.name, "config", "traits.json")
 
     # Parse all cids from JSON or command line
@@ -354,8 +355,6 @@ async def main():
 
     mint_info = []
     mint_info.append({'args': vars(args)})
-
-    approved_fees_prompt = args.noprompt
 
     try:
         filtered_cids = []  # CIDs filtered based on start/end
@@ -398,10 +397,14 @@ async def main():
         print("done!")
 
         # Estimate fees and get user approval
-        if not approved_fees_prompt:
-            batch_fees, fees_symbol = estimate_batch_fees(cfg, offchain_parameters['off_chain_fee'], len(filtered_cids))
-            log("--------")
-            approved_fees_prompt = prompt_yes_no(f"Estimated L2 fees for minting {args.amount} copies of {len(filtered_cids)} NFTs: {batch_fees}{fees_symbol}, continue?", default="no")
+        log("--------")
+        batch_fees, fees_symbol = estimate_batch_fees(cfg, offchain_parameters['off_chain_fee'], len(filtered_cids))
+        print(f"Estimated L2 fees for minting {args.amount} copies of {len(filtered_cids)} NFTs: {batch_fees}{fees_symbol}", end='')
+        if args.fees:   # Exit if --fees
+            print()
+            sys.exit()
+        if not args.noprompt:   # Skip approval if --noprompt
+            approved_fees_prompt = prompt_yes_no(", continue?", default="no")
             mint_info.append({'fee_approval': approved_fees_prompt, 'fee': batch_fees, 'token': fees_symbol})
             if not approved_fees_prompt: 
                 sys.exit("Aborted by user")
