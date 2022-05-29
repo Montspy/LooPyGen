@@ -50,14 +50,14 @@ async def eternity(s: float):
 async def load_config(args, paths: Struct):
     cfg = Struct()
     secret = Struct()   # Split to avoid leaking keys to console or logs
+    with open(paths.config) as f:
+        config_json = json.load(f)
+    loopygen_cfg = Struct(config_json)
 
     if args.name: # Batch minting a generated collection of NFTs
         with open(paths.traits) as f:
             traits_json = json.load(f)
         traits =  Struct(traits_json)
-        with open(paths.config) as f:
-            config_json = json.load(f)
-        loopygen_cfg = Struct(config_json)
         secret.loopringPrivateKey = loopygen_cfg.private_key
         cfg.minter                = loopygen_cfg.minter
         cfg.royalty               = traits.royalty_address
@@ -65,9 +65,6 @@ async def load_config(args, paths: Struct):
         cfg.royaltyPercentage     = int(traits.royalty_percentage)
         cfg.maxFeeTokenId         = int(loopygen_cfg.fee_token)
     elif args.json: # Batch minting a folder of NFTs
-        with open(paths.config) as f:
-            config_json = json.load(f)
-        loopygen_cfg = Struct(config_json)
         secret.loopringPrivateKey = loopygen_cfg.private_key
         cfg.minter                = loopygen_cfg.minter
         cfg.royalty               = loopygen_cfg.minter
@@ -117,7 +114,7 @@ def parse_args():
     single_group.add_argument("-c", "--cid", help="Specify the CIDv0 hash for the metadata to mint", type=str)
 
     batch_group = parser.add_argument_group(title="Batch mint", description="Use these options to batch mint multiple NFTs:")
-    source_batch_group = batch_group.add_mutually_exclusive_group(required=True)
+    source_batch_group = batch_group.add_mutually_exclusive_group()
     source_batch_group.add_argument("--name", help="Specify the name of a collection to batch mint", type=str)
     source_batch_group.add_argument("-j", "--json", help="Specify a json file containing a list of CIDv0 hash to batch mint", type=str)
     batch_group.add_argument("-s", "--start", help="Specify the the starting ID to batch mint", type=int)
