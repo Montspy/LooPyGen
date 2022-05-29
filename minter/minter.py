@@ -157,6 +157,22 @@ def parse_args():
 
     return args
 
+def sanitize_args(args):
+    safe_args = [
+        "amount",
+        "testmint",
+        "verbose",
+        "noprompt",
+        "fees",
+        "name",
+        "json",
+        "cid",
+        "start",
+        "end"
+    ]
+    sanitized_args = dict(filter(lambda item: item[0] in safe_args, vars(args).items()))
+    return sanitized_args
+
 # Estimate fees for a batch of NFTs from offchain fees
 def estimate_batch_fees(cfg, off_chain_fee, count):
     fee = int(off_chain_fee['fees'][cfg.maxFeeTokenId]['fee'])
@@ -351,7 +367,7 @@ async def main():
         os.makedirs(os.path.dirname(paths.mint_info))
 
     mint_info = []
-    mint_info.append({'args': vars(args)})
+    mint_info.append({'args': sanitize_args(args)})
 
     try:
         filtered_cids = []  # CIDs filtered based on start/end
