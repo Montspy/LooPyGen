@@ -3,13 +3,11 @@
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "minter")))
 from minter import get_account_info, retry_async
 from LoopringMintService import LoopringMintService
-from DataClasses import Struct
+from utils import Struct
 
 from shutil import copy2
-from dotenv import load_dotenv
 import json
 import argparse
 import shutil
@@ -76,8 +74,6 @@ def make_directories(paths: utils.Struct, empty: bool):
         os.makedirs(paths.metadata)
 
 def main():
-    load_dotenv()
-
     # check for command line arguments
     args = parse_args()
 

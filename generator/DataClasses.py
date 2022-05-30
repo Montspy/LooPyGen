@@ -1,26 +1,6 @@
 from typing import TypedDict
 from dataclasses import dataclass
 
-@dataclass
-class Struct(dict):
-    def __init__(self, d: dict = None):
-        if d:
-            for k,v in d.items():
-                super().__setitem__(k,v)
-    def __getattr__(self, name):
-        if super().__contains__(name):
-            return super().__getitem__(name)
-        else:
-            return None
-    def __setattr__(self, name, value):
-        return super().__setitem__(name, value)
-    def __delattr__(self, name):
-        return super().__delitem__(name)
-    def __str__(self):
-        return super().__str__()
-    def __repr__(self):
-        return super().__repr__()
-
 class MintResponseData(TypedDict):
     hash: str
     nftTokenId: int

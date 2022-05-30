@@ -1,4 +1,0 @@
-aiohttp
-base58
-python-dotenv
-yaspin

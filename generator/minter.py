@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "hello_loopring")))
 
-from dotenv import load_dotenv
 from pprint import pprint
 import argparse
 import asyncio
 import json
 import base58
+
+from utils import generate_paths, load_config_json, load_traits, Struct
 
 from DataClasses import *
 from LoopringMintService import LoopringMintService, NFTDataEddsaSignHelper, NFTEddsaSignHelper
@@ -50,14 +50,10 @@ async def eternity(s: float):
 async def load_config(args, paths: Struct):
     cfg = Struct()
     secret = Struct()   # Split to avoid leaking keys to console or logs
-    with open(paths.config) as f:
-        config_json = json.load(f)
-    loopygen_cfg = Struct(config_json)
+    loopygen_cfg = load_config_json(paths.config)
 
     if args.name: # Batch minting a generated collection of NFTs
-        with open(paths.traits) as f:
-            traits_json = json.load(f)
-        traits =  Struct(traits_json)
+        traits = load_traits(args.name)
         secret.loopringPrivateKey = loopygen_cfg.private_key
         cfg.minter                = loopygen_cfg.minter
         cfg.royalty               = traits.royalty_address
@@ -104,11 +100,12 @@ async def load_config(args, paths: Struct):
 def parse_args():
     # check for command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--amount", help="Specify the mint amount per NFT", type=int)
+    parser.add_argument("-n", "--amount", help="Specify the mint amount per NFT", type=int, default=1)
     parser.add_argument("--testmint", help="Skips the mint step", action='store_true')
     parser.add_argument("-V", "--verbose", help="Verbose output", action='store_true')
     parser.add_argument("--noprompt", help="Skip all user prompts", action='store_true')
     parser.add_argument("--fees", help="Estimates the fees and exits", action='store_true')
+    parser.add_argument("--php", help=argparse.SUPPRESS, action='store_true')   # Unused. Prevents errors if flag is provided
 
     single_group = parser.add_argument_group(title="Single mint", description="Use these options to mint a single NFT:")
     single_group.add_argument("-c", "--cid", help="Specify the CIDv0 hash for the metadata to mint", type=str)
@@ -134,10 +131,6 @@ def parse_args():
     if args.cid:    # --cid
         args.json = None
         assert args.cid[:2] == "Qm", f"Invalid cid: {args.cid}" # Support CIDv0 only
-    
-    # Mint amount
-    if not args.amount:
-        args.amount = int(os.getenv("AMOUNT") or 1)
     
     # ID selection (start/end)
     if not args.start:
@@ -341,8 +334,6 @@ async def mint_nft(cfg, secret, nft_data_poseidon_hash: str, nft_id: str, amount
             return MintResult.FAILED
 
 async def main():
-    load_dotenv()
-
     # check for command line arguments
     try:
         args = parse_args()
@@ -350,11 +341,7 @@ async def main():
         sys.exit(f"Failed to initialize the minter: {err}")
     
     # Generate paths
-    paths = Struct()
-    paths.mint_info = os.path.join(os.path.dirname(__file__), "mint-info.json")
-    paths.config = "./config.json"
-    if args.name:
-        paths.traits = os.path.join("./collections", args.name, "config", "traits.json")
+    paths = generate_paths()
 
     # Parse all cids from JSON or command line
     if args.json:

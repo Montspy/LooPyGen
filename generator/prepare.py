@@ -9,7 +9,7 @@ import yaspin
 import json
 from glob import glob
 
-from DataClasses import Struct
+from utils import Struct, generate_paths
 
 # Parse CLI arguments
 def parse_args():
@@ -43,16 +43,13 @@ def load_config(args):
 
 def make_directories(args):
     # Generate paths
-    paths = Struct()
-    paths.output = './output'
-    paths.metadata_cids = os.path.join(paths.output, 'metadata-cids.json')
-    paths.metadata = os.path.join(paths.output, 'metadata')
+    paths = generate_paths()
 
     # Make directories if they don't exist
-    if not os.path.exists(paths.output):
-        os.makedirs(paths.output)
-    if args.metadata and not os.path.exists(paths.metadata):
-        os.makedirs(paths.metadata)
+    if not os.path.exists(paths.custom_output):
+        os.makedirs(paths.custom_output)
+    if args.metadata and not os.path.exists(paths.custom_metadata):
+        os.makedirs(paths.custom_metadata)
 
     return paths
 
@@ -123,7 +120,7 @@ def main():
     if args.metadata:
         for id, cid, file in zip(ids, cids, input_files):
             json_file = os.path.splitext(file)[0] + '.json'
-            json_path = os.path.join(paths.metadata, json_file)
+            json_path = os.path.join(paths.custom_metadata, json_file)
 
             token = {}
             from_scratch = True    # Is true if 'overwrite' flag set or metadata json file is invalid
@@ -166,8 +163,8 @@ def main():
 
     # Output the metadata-cids.json file for minter
     else:
-        print(f'Generating metadata-cids.json file in: {paths.output}')
-        with open(paths.metadata_cids, 'w+') as f:
+        print(f'Generating metadata-cids.json file in: {paths.custom_metadata_cids}')
+        with open(paths.custom_metadata_cids, 'w+') as f:
             all_cids = [{'ID': i, 'CID': c} for i,c in zip(ids, cids)]
             json.dump(all_cids, f, indent=4)
 
