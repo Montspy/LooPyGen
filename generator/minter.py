@@ -50,7 +50,7 @@ async def eternity(s: float):
 async def load_config(args, paths: Struct):
     cfg = Struct()
     secret = Struct()   # Split to avoid leaking keys to console or logs
-    loopygen_cfg = load_config_json(paths.config)
+    loopygen_cfg = load_config_json(paths.config, args.configpass)
 
     if args.name: # Batch minting a generated collection of NFTs
         traits = load_traits(args.name)
@@ -105,7 +105,8 @@ def parse_args():
     parser.add_argument("-V", "--verbose", help="Verbose output", action='store_true')
     parser.add_argument("--noprompt", help="Skip all user prompts", action='store_true')
     parser.add_argument("--fees", help="Estimates the fees and exits", action='store_true')
-    parser.add_argument("--php", help=argparse.SUPPRESS, action='store_true')   # Unused. Prevents errors if flag is provided
+    parser.add_argument("--php", help=argparse.SUPPRESS, action='store_true')           # Unused. Prevents errors if flag is provided
+    parser.add_argument("--configpass", help=argparse.SUPPRESS, type=str)    # Should be base64 encoded
 
     single_group = parser.add_argument_group(title="Single mint", description="Use these options to mint a single NFT:")
     single_group.add_argument("-c", "--cid", help="Specify the CIDv0 hash for the metadata to mint", type=str)

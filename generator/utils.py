@@ -84,24 +84,70 @@ def load_config_json(path: str, base64secret: str = None):
 
     with open(path) as f:
         config_json = json.load(f)
+
+    # Check for encryption
+    if 'cypher' in config_json:
+        from jose import jwe
+        from base64 import b64decode
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+        enc_config = config_json
+        salt = b64decode(enc_config['salt'])
+
+        # Check for provided passphrase
+        if base64secret is not None:
+            try:    # Decrypt
+                secret = b64decode(base64secret)
+                print(secret)
+                kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
+                key = kdf.derive(secret)
+
+                cypher = b64decode(enc_config['cypher'])
+                config_json = json.loads(jwe.decrypt(cypher, key))
+            except jwe.JWEError as err:
+                sys.exit(f"Unable to load {path}: Invalid config passphrase provided")
+        # Request passphrase from user
+        else:
+            from getpass import getpass
+            attempts = 3
+            while attempts > 0:
+                secret = getpass("Config file is encrypted, please enter the passphrase (leave empty to abort): ").encode('utf-8')
+                if secret == b'':    # Abort
+                    sys.exit(f"Aborted by user")
+                    
+                try:    # Decrypt
+                    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
+                    key = kdf.derive(secret)
+
+                    cypher = b64decode(enc_config['cypher'])
+                    config_json = json.loads(jwe.decrypt(cypher, key))
+                    break
+                except jwe.JWEError as err: # Invalid, ask again
+                    print(f"Unable to load {path}: Invalid config passphrase provided")
+                    attempts -= 1
+            
+            if attempts == 0:
+                sys.exit(f"Did you forget your passphrase? Go to http://localhost:8080/ to recreate the file")
+
     return Struct(config_json)
 
 def generate_paths(traits: Struct = None):
     paths = Struct()
     if traits: 
         paths.collection = os.path.join(".", "collections", traits.collection_lower)
-    paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
-    paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
-    paths.images = os.path.join(paths.ipfs_folder, "images")
-    paths.thumbnails = os.path.join(paths.ipfs_folder, "thumbnails")
+        paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
+        paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
+        paths.images = os.path.join(paths.ipfs_folder, "images")
+        paths.thumbnails = os.path.join(paths.ipfs_folder, "thumbnails")
 
-    paths.gen_conf = os.path.join(paths.collection, "config")
-    paths.source = os.path.join(paths.gen_conf, "source_layers")
-    paths.metadata_cids = os.path.join(paths.gen_conf, "metadata-cids.json")
+        paths.gen_conf = os.path.join(paths.collection, "config")
+        paths.source = os.path.join(paths.gen_conf, "source_layers")
+        paths.metadata_cids = os.path.join(paths.gen_conf, "metadata-cids.json")
 
-    paths.stats = os.path.join(paths.collection, "stats")
-    paths.all_traits = os.path.join(paths.stats, "all-traits.json")
-    paths.gen_stats = os.path.join(paths.stats, "gen-stats.json")
+        paths.stats = os.path.join(paths.collection, "stats")
+        paths.all_traits = os.path.join(paths.stats, "all-traits.json")
+        paths.gen_stats = os.path.join(paths.stats, "gen-stats.json")
 
     # Logs
     paths.mint_info = os.path.join(".", "mint-info.json")
