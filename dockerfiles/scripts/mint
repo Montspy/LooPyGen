@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /var/www/html
-python3 minter/minter.py $@
+python3 generator/minter.py $@

@@ -5,6 +5,9 @@ from pprint import pprint
 
 from DataClasses import *
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "hello_loopring")))
 from hello_loopring.sdk.ethsnarks.field import SNARK_SCALAR_FIELD
 from hello_loopring.sdk.ethsnarks.poseidon import poseidon_params
 from hello_loopring.sdk.sig_utils.eddsa_utils import *

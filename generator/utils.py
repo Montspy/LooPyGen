@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 from glob import glob
 import subprocess
 import json
+import sys
 import os
 import re
 
@@ -68,14 +69,27 @@ def load_traits(name: str = None):
                 traits_json = json.load(f)
     return Struct(traits_json)
 
-def load_config(paths: Struct):
-    with open(paths.config) as f:
+def load_config_json(path: str):
+    if not os.path.exists(path):
+        sys.exit(f"Unable to load {path}: Config file not found. Did you create it? If not, go to http://localhost:8080/")
+
+    with open(path) as f:
         config_json = json.load(f)
     return Struct(config_json)
 
-def generate_paths(traits: Struct):
+# Load a config.json file from disk and decrypts it if needed (passphrase from provided base64secret, or asking the user for it)
+def load_config_json(path: str, base64secret: str = None):
+    if not os.path.exists(path):
+        sys.exit(f"Unable to load {path}: Config file not found. Did you create it? If not, go to http://localhost:8080/")
+
+    with open(path) as f:
+        config_json = json.load(f)
+    return Struct(config_json)
+
+def generate_paths(traits: Struct = None):
     paths = Struct()
-    paths.collection = os.path.join("./collections", traits.collection_lower)
+    if traits: 
+        paths.collection = os.path.join(".", "collections", traits.collection_lower)
     paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
     paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
     paths.images = os.path.join(paths.ipfs_folder, "images")
@@ -89,7 +103,13 @@ def generate_paths(traits: Struct):
     paths.all_traits = os.path.join(paths.stats, "all-traits.json")
     paths.gen_stats = os.path.join(paths.stats, "gen-stats.json")
 
-    paths.config = "./config.json"
+    # Logs
+    paths.mint_info = os.path.join(".", "mint-info.json")
+
+    paths.config = os.path.join(".", "config.json")
+    paths.custom_output = os.path.join(".", "collections", "custom")
+    paths.custom_metadata_cids = os.path.join(paths.custom_output, 'metadata-cids.json')
+    paths.custom_metadata = os.path.join(paths.custom_output, 'metadata')
 
     return paths
 
