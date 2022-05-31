@@ -1,6 +1,5 @@
 from pprint import pprint
 from jose import jwe
-from base64 import b64encode, b64decode
 import json
 import os
 
@@ -22,8 +21,8 @@ def encrypt_config(config, secret):
     # Encrypt
     cypher = jwe.encrypt(json.dumps(config), key, algorithm="dir", encryption="A256GCM")
     enc_config = {
-        "cypher": b64encode(cypher).decode("utf-8"),
-        "salt": b64encode(salt).decode("utf-8")
+        "cypher": cypher.decode("utf-8"),
+        "salt": "0x" + salt.hex()
     }
     return enc_config
 
@@ -32,7 +31,7 @@ def decrypt_config(enc_config, secret):
     from cryptography.hazmat.primitives import hashes
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-    salt = b64decode(enc_config['salt'])
+    salt = bytes.fromhex(enc_config['salt'].replace("0x", ""))
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -41,7 +40,7 @@ def decrypt_config(enc_config, secret):
     )
     key = kdf.derive(secret)
 
-    cypher = b64decode(enc_config['cypher'])
+    cypher = enc_config['cypher'].encode('utf-8')
     config = json.loads(jwe.decrypt(cypher, key))
     return config
 
