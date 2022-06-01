@@ -2,6 +2,3 @@ pillow
 IPython
 python-dotenv
 yaspin
-aiohttp
-base58
-python-jose[cryptography]

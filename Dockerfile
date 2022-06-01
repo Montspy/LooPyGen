@@ -7,8 +7,9 @@ RUN apt-get -y install libjpeg-dev gcc libc-dev
 RUN pip install --upgrade pip
 # install python modules
 ADD generator/requirements.txt /generator.txt
-ADD generator/hello_loopring/requirements.txt /hello_loopring.txt
-RUN pip install -r /generator.txt -r /hello_loopring.txt
+ADD minter/requirements.txt /minter.txt
+ADD minter/hello_loopring/requirements.txt /hello_loopring.txt
+RUN pip install -r /generator.txt -r /hello_loopring.txt -r /minter.txt
 
 FROM node:16 as node_modules
 # Set workdir initially just for npm to install
