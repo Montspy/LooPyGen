@@ -31,6 +31,7 @@ async def get_file_cid(filepath: str, version: int=0):
     matching_file = glob.glob(filepath)
     if len(matching_file) == 0:
         return None
+    matching_file = list(filter(lambda f: len(os.path.splitext(f)[-1]) <= 5, matching_file))  # Remove files with extensions longer than 5 (e.g. '.png:ZoneIdentifier')
     matching_file = sorted(matching_file, key=os.path.getmtime)[-1] # Sort by modified date, keep latest modified
     if not os.path.exists(matching_file):
         return None
