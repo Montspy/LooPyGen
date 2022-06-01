@@ -99,6 +99,7 @@ def load_config_json(path: str, base64secret: str = None):
         if base64secret is not None:
             try:    # Decrypt
                 secret = b64decode(base64secret)
+                print(secret)
                 kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
                 key = kdf.derive(secret)
 
