@@ -3,6 +3,7 @@
     <a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>
     <!-- <a href="/edit/view"><button class="btn">EDIT EXISTING COLLECTION</button></a> -->
     <a href="/config/1"><button class="btn">MINTING CONFIG SETUP</button></a>
+    <a href="/transfer/1"><button class="btn">TRANSFER CONFIG SETUP</button></a>
 </div>
 
 <div class="section">
@@ -25,7 +26,8 @@
 
     if (!empty($_GET['nuke'])) {
         unlink("./config.json");
-        if (file_exists("./config.json")) {
+        unlink("./transfer_config.json");
+        if (file_exists("./config.json") || file_exists("./transfer_config.json")) {
             echo "<h3 class='error'><i>Error: Sensitive info not deleted</i></h3>";
         } else {
             echo "<h3 class='success'><i>Success: Sensitive Info Deleted</i></h3>";
