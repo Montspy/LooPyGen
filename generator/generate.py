@@ -1,7 +1,6 @@
 from copy import deepcopy
 from PIL import Image
 from base64 import b64encode
-from dotenv import load_dotenv
 import yaspin
 from ImageBuilder import ImageBuilder, ImageDescriptor, ImageType
 import random
@@ -188,9 +187,6 @@ async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threa
     return results
 
 def main():
-    # load .env file into memory
-    load_dotenv()
-
     # check for command line arguments
     args = parse_args()
 
@@ -209,19 +205,13 @@ def main():
     if total_image > utils.get_variation_cnt(traits.image_layers):
         sys.exit(f"count ({total_image}) cannot be greater than the number of variations ({utils.get_variation_cnt(traits.image_layers)})")
 
-    # set the SOURCE_FILES if it's not specified in .env
-    if os.getenv("SOURCE_FILES") is not None and os.getenv("SOURCE_FILES") != "":
-        paths.source = os.getenv("SOURCE_FILES")
-
     # Set starting ID
     starting_id = args.id
     print("Starting at ID: " + str(starting_id))
 
-    # Randomness seed in order of priority: traits.json, .env, random seed
+    # Randomness seed in order of priority: traits.json, random seed
     if args.seed is None and traits.seed is not None and traits.seed != "":
         args.seed = str(traits.seed)
-    if args.seed is None and os.getenv("SEED") is not None and os.getenv("SEED") != "":
-        args.seed = str(os.getenv("SEED"))
     if args.seed is None:
         timestamp = time.time_ns().to_bytes(16, byteorder='big')
         args.seed = b64encode(timestamp).decode("utf-8") # Encode timestamp to a base64 string

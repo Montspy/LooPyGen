@@ -103,7 +103,9 @@ def main():
     if cfg.input_file:
         input_files = [cfg.input_file]
     else:
-        input_files = [os.path.basename(path) for path in glob(os.path.join(cfg.input_dir, cfg.file_filter)) ]
+        matching_files = glob(os.path.join(cfg.input_dir, cfg.file_filter))
+        matching_files = list(filter(lambda f: len(os.path.splitext(f)[-1]) <= 5, matching_files))  # Remove files with extensions longer than 5 (e.g. '.json:ZoneIdentifier')
+        input_files = [os.path.basename(path) for path in matching_files]
 
     # Extract ID from file name for all files
     ids = [int('0' + ''.join(filter(str.isdigit, f))) for f in input_files]
@@ -114,7 +116,7 @@ def main():
     ids, input_files = list(zip(*sorted(zip(ids, input_files))))
 
     # Pre-calculate CIDs for input files
-    cids = asyncio.run(get_files_cids( [os.path.join(cfg.input_dir, file) for file in input_files], args.php ))
+    cids = asyncio.run(get_files_cids( [os.path.join(cfg.input_dir, file) for file in input_files], machine_readable=args.php ))
 
     # Output or update metadata template files
     if args.metadata:
