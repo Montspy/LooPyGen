@@ -16,7 +16,7 @@
     $results = json_decode($response, true);
     $gas = hexdec($results['result']) / 1000000000;
 
-    echo '<div class="section">';
+    echo '<section>';
     echo '<h1>Mint Single NFT</h1>';
 
     if (empty($_GET['run'])) { ?>
@@ -24,7 +24,7 @@
             <h3>Minter Options</h3>
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
             <h3>Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
-            <div id="artist" class="section">
+            <section id="artist">
                 <div data-tooltip="CID: (Required) Paste your metadata file's CID from Pinata.">
                     <label for="cid">
                         CID:
@@ -45,7 +45,7 @@
                         <input type="checkbox" id="testmint" name="testmint" />
                     </div>
                 </div>
-            </div>
+    </section>
             <input class="form btn" type="submit" name="submit" value="MINT IT" />
         </form>
     <?php } else if (!empty($_POST['cid'])) {
@@ -67,9 +67,9 @@ Result: <?php echo $code; ?>
     echo $line . "<br />";
 } ?>
         </pre>
-        <a href="/home"><button class="btn">MAIN MENU</button></a>
+        <div class="nav"><a href="/home">MAIN MENU</a></div>
     <?php }
 
-    echo '</div>';
+    echo '</section>';
 
 ?>

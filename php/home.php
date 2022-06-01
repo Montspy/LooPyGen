@@ -1,26 +1,26 @@
-<div class="section">
+<section class="nav">
     <h3>Configuration Setup</h3>
-    <a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>
-    <!-- <a href="/edit/view"><button class="btn">EDIT EXISTING COLLECTION</button></a> -->
-    <a href="/config/1"><button class="btn">MINTING CONFIG SETUP</button></a>
-    <a href="/transfer/1"><button class="btn">TRANSFER CONFIG SETUP</button></a>
-</div>
+    <a href="/setup/1">CREATE NEW COLLECTION</a>
+    <!-- <a href="/edit/view">EDIT EXISTING COLLECTION</a> -->
+    <a href="/config/1">MINTING CONFIG SETUP</a>
+    <a href="/transfer/1">TRANSFER CONFIG SETUP</a>
+</section>
 
-<div class="section">
+<section class="nav">
     <h3>Collection Actions</h3>
-    <a href="/collection/images"><button class="btn">GENERATE IMAGES</button></a>
-    <a href="/collection/metadata"><button class="btn">GENERATE METADATA</button></a>
-    <a href="/collection/mint"><button class="btn">MINT COLLECTION</button></a>
-</div>
+    <a href="/collection/images">GENERATE IMAGES</a>
+    <a href="/collection/metadata">GENERATE METADATA</a>
+    <a href="/collection/mint">MINT COLLECTION</a>
+</section>
 
-<div class="section">
+<section class="nav">
     <h3>Other Actions</h3>
-    <!-- <a href="/prepare"><button class="btn">PREPARE METADATA</button></a> -->
-    <a href="/mint"><button class="btn">MINT SINGLE ITEM</button></a>
-    <!-- <a href="/transfer/1"><button class="btn">TRANSFER</button></a> -->
-    <a href="/home?nuke=engage"><button class="btn">NUKE SENSITIVE INFO</button></a>
-    <!-- <a href="/home?update=true"><button class="btn">UPDATE LOOPYGEN</button></a> -->
-</div>
+    <!-- <a href="/prepare">PREPARE METADATA</a> -->
+    <a href="/mint">MINT SINGLE ITEM</a>
+    <!-- <a href="/transfer/1">TRANSFER</a> -->
+    <a href="/home?nuke=engage">NUKE SENSITIVE INFO</a>
+    <!-- <a href="/home?update=true">UPDATE LOOPYGEN</a> -->
+</section>
 
 <?php
 

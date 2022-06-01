@@ -19,11 +19,12 @@
     $results = json_decode($response, true);
     $gas = hexdec($results['result']) / 1000000000;
 
-    echo '<div class="section">';
+    echo '<section>';
     echo '<h1>Mint Collection</h1>';
 
     if (empty($_GET['collection'])) {
         echo '<h3>Choose a collection:</h3>';
+        echo '<div class="nav">';
         $found = 0;
         foreach ($collections as $c) {
             if ($c !== ".keep") {
@@ -33,22 +34,23 @@
                     $ct = json_decode($ctf, true);
                     $lower = $ct['collection_lower'];
                     $name = $ct['collection_name'];
-                    echo "<a href=\"/collection/mint?collection=${lower}\"><button class=\"btn\">${name}</button></a>";
+                    echo "<a href=\"/collection/mint?collection=${lower}\">${name}</a>";
                     $found = $found + 1;
                 }
             }
         }
         if ($found == 0) {
             echo '<h3 class="error">No collections found.</h3>';
-            echo '<a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>';
+            echo '<a href="/setup/1">CREATE NEW COLLECTION</a>';
         }
+        echo '</div>';
     } else if (!empty($_GET['collection']) and empty($_POST['amount'])) {
         $lower = $_GET['collection']; ?>
         <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>">
             <h3>Minter Options</h3>
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
             <h3>Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
-            <div id="artist" class="section">
+            <section id="artist">
                 <div class="row">
                     <div data-tooltip="Start ID: (Optional) Choose a token ID to start with.">
                         <label for="start_id">
@@ -77,7 +79,7 @@
                         <input checked type="checkbox" id="testmint" name="testmint" />
                     </div>
                 </div>
-            </div>
+            </section>
             <input class="form btn" type="submit" name="submit" value="NEXT STEP" />
         </form>
     <?php } else if (!empty($_POST['amount']) and empty($_GET['run'])) {
@@ -114,9 +116,11 @@ Result: <?php echo $code; ?>
     echo $line . "<br />";
 } ?>
         </pre>
-        <a href="/home"><button class="btn">MAIN MENU</button></a>
+        <div class="nav">
+            <a href="/home">MAIN MENU</a>
+        </div>
     <?php }
 
-    echo '</div>';
+    echo '</section>';
 
 ?>

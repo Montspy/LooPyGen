@@ -101,7 +101,7 @@ form {
     justify-content: center;
 }
 
-#guide div {
+#guide section {
     width: 400px;
 }
 
@@ -118,12 +118,33 @@ form {
     color: #000;
 }
 
-.section {
+.nav, section {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     align-content: center;
     justify-content: center;
+}
+
+.nav a, .nav a:active {
+    padding: 10px 0;
+    width: 500px;
+    font-size: 20px;
+    font-family: monospace;
+    border: 1px solid #000;
+    border-radius: 5px;
+    color: #fff;
+    margin: 10px 0;
+    background: #22243a;
+    text-align: center;
+}
+
+.nav a:focus {
+    border: 1px solid #fff;
+}
+
+.nav a:hover {
+    background: #000;
 }
 
 .labeled {
@@ -206,7 +227,11 @@ form {
     background: #22243a;
 }
 
-.btn:hover, .btn:focus {
+.btn:focus {
+    border: 1px solid #fff;
+}
+
+.btn:hover {
     background: #000;
 }
 

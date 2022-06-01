@@ -9,7 +9,7 @@
     if (!empty($traits) and $redirect !== "TRUE") { ?>
         <h3>Collection Info</h3>
         <div id="guide">
-            <div class="section">
+            <section>
                 <p>STEP 03 - Define filenames, colors and rarities for each variation.</p>
                 <p><b>Collection Name</b>: <?php echo $traits['collection_name'] ?></p>
                 <?php if (array_key_exists('artist_name', $traits)) {
@@ -24,7 +24,7 @@
                     $t_display = $t_display + 1;
                 } ?>
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
-            </div>
+            </section>
         </div>
         <form enctype="multipart/form-data" method="post" action="/setup/3?collection=<?php echo $collection_lower; ?>">
             <?php $t = 0;

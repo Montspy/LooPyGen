@@ -16,7 +16,7 @@
         </div>
         <form method="post" action="/transfer/1">
             <h3>Transfer Tool Info</h3>
-            <div id="artist" class="section">
+            <section id="artist">
                 <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address, ENS, or Account ID" /></div>
                 <div data-tooltip="Loopring L2 Private Key: The Loopring private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Loopring L2 Private Key (from step 01)" /></div>
                 <div data-tooltip="MetaMask L1 Private Key: The MetaMask private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="MetaMask L1 Private Key (from step 02)" /></div>
@@ -31,7 +31,7 @@
                         </select>
                     </div>
                 </div>
-            </div>
+            </section>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
             <input class="form btn" type="submit" name="submit" value="FINISH" />
         </form>

@@ -7,6 +7,7 @@
 
     if (empty($_GET['collection'])) {
         echo '<h3>Choose a collection:</h3>';
+        echo '<div class="nav">';
         $found = 0;
         foreach ($collections as $c) {
             if ($c !== ".keep") {
@@ -16,15 +17,16 @@
                     $ct = json_decode($ctf, true);
                     $lower = $ct['collection_lower'];
                     $name = $ct['collection_name'];
-                    echo "<a href=\"/edit/view?collection=${lower}\"><button class=\"btn\">${name}</button></a>";
+                    echo "<a href=\"/edit/view?collection=${lower}\">${name}</a>";
                     $found = $found + 1;
                 }
             }
         }
         if ($found == 0) {
             echo '<h3 class="error">No collections found.</h3>';
-            echo '<a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>';
+            echo '<a href="/setup/1">CREATE NEW COLLECTION</a>';
         }
+        echo '</div>';
     } else if (empty($_GET['run'])) {
         $lower = $_GET['collection'];
         $file = "./collections/${lower}/config/traits.json";

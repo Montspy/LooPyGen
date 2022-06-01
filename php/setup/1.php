@@ -2,18 +2,18 @@
     if ($redirect !== "TRUE") { ?>
         <h3>Setup Info</h3>
         <div id="guide">
-            <div class="section">
+            <section>
                 <p>STEP 01 - Fill in the following artist and collection information.</p>
-            </div>
+            </section>
         </div>
         <form method="post" action="/setup/1">
             <h3>Artist Info</h3>
-            <div id="artist" class="section">
+            <section id="artist">
                 <div data-tooltip="Artist Name: The name of the artist to show in the metadata [optional]"><input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" /></div>
                 <div data-tooltip="Royalty Address: The address which will receive the royalties (L2, ENS or acccount ID) [optional]"><input type="text" class="form wide" id="royalty_address" name="royalty_address" placeholder="Royalty Address (Optional)" /></div>
-            </div>
+            </section>
             <h3>Collection Info</h3>
-            <div id="collection" class="section">
+            <section id="collection">
                 <div data-tooltip="Collection Name: A pretty name for your collection"><input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" /></div>
                 <div data-tooltip="Collection Description: A pretty description for your collection"><input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" /></div>
                 <div data-tooltip="Generation Seed: A seed for the random generator (use one for reproducible results) [optional]"><input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" /></div>
@@ -51,7 +51,7 @@
                         <input type="checkbox" id="animation" name="animation" />
                     </div>
                 </div>
-            </div>
+            </section>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
             <input class="form btn" type="submit" name="submit" value="STEP 02" />
         </form>

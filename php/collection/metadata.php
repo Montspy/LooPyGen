@@ -3,11 +3,12 @@
     $path = "./collections";
     $collections = array_diff(scandir($path), array('.', '..'));
 
-    echo '<div class="section">';
+    echo '<section>';
     echo '<h1>Metadata Generation</h1>';
 
     if (empty($_GET['collection'])) {
         echo '<h3>Choose a collection:</h3>';
+        echo '<div class="nav">';
         $found = 0;
         foreach ($collections as $c) {
             if ($c !== ".keep") {
@@ -17,21 +18,22 @@
                     $ct = json_decode($ctf, true);
                     $lower = $ct['collection_lower'];
                     $name = $ct['collection_name'];
-                    echo "<a href=\"/collection/metadata?collection=${lower}\"><button class=\"btn\">${name}</button></a>";
+                    echo "<a href=\"/collection/metadata?collection=${lower}\">${name}</a>";
                     $found = $found + 1;
                 }
             }
         }
         if ($found == 0) {
             echo '<h3 class="error">No collections found.</h3>';
-            echo '<a href="/setup/1"><button class="btn">CREATE NEW COLLECTION</button></a>';
+            echo '<a href="/setup/1">CREATE NEW COLLECTION</a>';
         }
+        echo '</div>';
     } else if (empty($_GET['run'])) {
         $lower = $_GET['collection']; ?>
         <form method="post" action="/collection/metadata?collection=<?php echo $lower; ?>&run=true">
             <h3>Generate Metadata. This might take a while.</h3>
             <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
-            <div id="artist" class="section">
+            <section id="artist">
                 <div class="row">
                     <div data-tooltip="Empty: (Optional) Delete any previously generated metadata and start fresh.">
                         <label for="empty">
@@ -46,7 +48,7 @@
                         <input type="checkbox" id="overwrite" name="overwrite" />
                     </div>
                 </div>
-            </div>
+            </section>
             <input class="form btn" type="submit" name="submit" value="GENERATE" />
         </form>
     <?php } else if (!empty($_GET['run'])) {
@@ -75,11 +77,13 @@ foreach ($list as $line) {
     echo $line . "<br />";
 } ?>
         </pre>
-        <a href="javascript:window.history.back();"><button class="btn">GO BACK</button></a>
-        <a href="/collection/mint?collection=<?php echo $lower; ?>"><button class="btn">MINT</button></a>
-        <a href="/home"><button class="btn">MAIN MENU</button></a>
+        <div class="nav">
+            <a href="javascript:window.history.back();">GO BACK</a>
+            <a href="/collection/mint?collection=<?php echo $lower; ?>">MINT</a>
+            <a href="/home">MAIN MENU</a>
+        </div>
     <?php }
 
-    echo '</div>';
+    echo '</section>';
 
 ?>

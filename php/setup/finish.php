@@ -9,7 +9,7 @@
     if (!empty($traits)) { ?>
         <h3>Collection Info</h3>
         <div id="guide">
-            <div class="section">
+            <section>
                 <p><b>Collection Name</b>: <?php echo $traits['collection_name'] ?></p>
                 <?php if (array_key_exists('artist_name', $traits)) {
                     echo "<p><b>Artist's Name</b>: " . $traits['artist_name'] . "</p>";
@@ -23,10 +23,12 @@
                     $t_display = $t_display + 1;
                 } ?>
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
-            </div>
+            </section>
         </div>
-        <a href="/collection/images?collection=<?php echo $collection_lower ?>"><button class="btn">GENERATE IMAGES</button></a>
-        <a href="/home"><button class="btn">MAIN MENU</button></a>
+        <div class="nav">
+            <a href="/collection/images?collection=<?php echo $collection_lower ?>">GENERATE IMAGES</a>
+            <a href="/home">MAIN MENU</a>
+        </div>
     <?php } else {
         Redirect('/setup/1', false);
     }

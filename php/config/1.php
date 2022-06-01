@@ -12,7 +12,7 @@
         </div>
         <form method="post" action="/config/1">
             <h3>Minter Info</h3>
-            <div id="artist" class="section">
+            <section id="artist">
                 <div data-tooltip="Minter Address: The L2 wallet address or ENS or Account ID of the minter"><input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" /></div>
                 <div data-tooltip="Minter Private Key: The Loopring private key of the minter [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Private Key" /></div>
                 <div data-tooltip="Royalty Percentage: Percentage of the price of a sale that will go to the Royalty Address (LooPyGen generated collections override this percentage)">
@@ -32,7 +32,7 @@
                         </select>
                     </div>
                 </div>
-            </div>
+            </section>
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
             <input class="form btn" type="submit" name="submit" value="FINISH" />
         </form>
