@@ -93,7 +93,7 @@ def load_config_json(path: str, base64secret: str = None):
         from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
         enc_config = config_json
-        salt = bytes.fromhex(enc_config['salt'].replace("0x", ""))
+        salt = b64decode(enc_config['salt'])
 
         # Check for provided passphrase
         if base64secret is not None:
@@ -103,7 +103,7 @@ def load_config_json(path: str, base64secret: str = None):
                 kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
                 key = kdf.derive(secret)
 
-                cypher = enc_config['cypher'].encode('utf-8')
+                cypher = b64decode(enc_config['cypher'])
                 config_json = json.loads(jwe.decrypt(cypher, key))
             except jwe.JWEError as err:
                 sys.exit(f"Unable to load {path}: Invalid config passphrase provided")
@@ -120,7 +120,7 @@ def load_config_json(path: str, base64secret: str = None):
                     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
                     key = kdf.derive(secret)
 
-                    cypher = enc_config['cypher'].encode('utf-8')
+                    cypher = b64decode(enc_config['cypher'])
                     config_json = json.loads(jwe.decrypt(cypher, key))
                     break
                 except jwe.JWEError as err: # Invalid, ask again
