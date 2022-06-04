@@ -248,7 +248,7 @@ form {
     max-width: 490px;
 
     position: absolute;
-    bottom: 1rem;
+    top: 0rem;
     left: 0;
 
     content: attr(data-tooltip);
@@ -258,15 +258,17 @@ form {
     border-radius: 5px;
     opacity: 0;
 
+    transform: translate(0, -100%);
+
     transition: all 80ms ease-out;
 }
 
 [data-tooltip]:hover::before {
     opacity: 1;
-    bottom: 2rem;
+    top: -1rem;
 }
 
 [data-tooltip]:focus-within::before {
     opacity: 1;
-    bottom: 2rem;
+    top: -1rem;
 }
