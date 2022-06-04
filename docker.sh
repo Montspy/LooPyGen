@@ -58,6 +58,6 @@ case $1 in
             checkDotenv
             docker-compose up -d
         fi
-        docker-compose exec php $@
+        docker-compose exec php "$@"
     ;;
 esac
