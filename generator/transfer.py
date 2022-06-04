@@ -10,7 +10,7 @@ import base58
 import json
 import re
 
-from utils import generate_paths, load_config_json, Struct
+from utils import Struct, generate_paths, load_config_json, load_traits, sanitize
 
 from DataClasses import *
 from LoopringMintService import LoopringMintService, NFTTransferEddsaSignHelper
@@ -68,9 +68,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--nfts",
-        metavar="<NFTID, CID, CONTRACT or LIST>",
+        metavar="<NFTID, CID, CONTRACT, COLLECTION or LIST>",
         dest="source",
-        help="Specify which NFT(s) to send. LIST is a text file with one NFTID or CID per line",
+        help="Specify which NFT(s) to send. COLLECTION is a LooPyGen collection name (surround with quotes for special characters and spaces). LIST is a text file with one NFTID or CID per line, or a metadata-cids.json file",
         type=str,
         required=True,
     )
@@ -200,11 +200,19 @@ async def load_config(args, paths: Struct):
     args.source = str(args.source).strip()
     if os.path.exists(args.source):  # LIST
         with open(args.source, "r") as f:
-            lines = [line.strip() for line in f.readlines()]
-            nft_ids = [
-                "0x" + base58.b58decode(line).hex()[4:] if line[:2] == "Qm" else line
-                for line in lines
-            ]  # Convert each line to NFT ID hex-string if it was a CID: base58 to hex and drop first 2 bytes (always 1220h)
+
+            if os.path.split(args.source)[-1] == "metadata-cids.json":
+                # Handle metadata-cids.json format
+                metadata_cids = json.load(f)
+                lines = [element["CID"] for element in metadata_cids]
+            else:
+                # Handle simple text files (newline delimited)
+                lines = [line.strip() for line in f.readlines()]
+        # Convert each line to NFT ID hex-string if it was a CID: base58 to hex and drop first 2 bytes (always 1220h)
+        nft_ids = [
+            "0x" + base58.b58decode(line).hex()[4:] if line[:2] == "Qm" else line
+            for line in lines
+        ]
         cfg.nfts = filter_nft_balance_by(nft_balance, "nftId", nft_ids)
         # Treat --ordered as a special case. cfg.nfts should be a list of nft info based on the --nfts LIST file
         if args.ordered:
@@ -233,6 +241,23 @@ async def load_config(args, paths: Struct):
         assert (
             not args.ordered
         ), f"Unsupported --nfts CONTRACT with transfer mode --ordered. Please use --nfts NFTID, CID or LIST with --ordered"
+    elif os.path.exists(
+        os.path.join(".", "collections", sanitize(args.source), "config", "traits.json")
+    ):  # COLLECTION
+        traits = load_traits(sanitize(args.source))
+        paths = generate_paths(traits)
+        assert os.path.exists(
+            paths.metadata_cids
+        ), f'Collection "{traits.collection_name}" is missing metadata-cids.json file'
+        with open(paths.metadata_cids, "r") as f:
+            metadata_cids = json.load(f)
+            lines = [element["CID"] for element in metadata_cids]
+            # Convert each line to NFT ID hex-string if it was a CID: base58 to hex and drop first 2 bytes (always 1220h)
+            nft_ids = [
+                "0x" + base58.b58decode(line).hex()[4:] if line[:2] == "Qm" else line
+                for line in lines
+            ]
+        cfg.nfts = filter_nft_balance_by(nft_balance, "nftId", nft_ids)
     plog(cfg.nfts)
 
     cfg.nftsCount = cfg.nfts["totalNum"]
@@ -285,8 +310,6 @@ async def load_config(args, paths: Struct):
             cfg.nftsCount == 1
         ), f"Expected only 1 NFT in --nfts for --single transfer mode, got {cfg.nftsCount}"
         # Make sure they have at least as many NFT copies as to addresses
-        import pdb
-        pdb.set_trace()
         assert (
             cfg.totalAmount >= cfg.tosCount * args.amount
         ), f"Not enough copies of the NFT found in balance of account {cfg.fromAccount} (expected {cfg.tosCount * args.amount} or more, but got {cfg.totalAmount} matching)."

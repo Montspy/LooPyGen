@@ -1,4 +1,5 @@
 
+from copyreg import clear_extension_cache
 from dataclasses import dataclass
 from typing import TypeVar, Generic
 from collections import OrderedDict
@@ -30,6 +31,19 @@ class Struct(dict):
     def __repr__(self):
         return super().__repr__()
 
+# Based off of the PHP implementation
+def sanitize(string: str, force_lowercase: bool = True, alphanum_only: bool = False):
+    strip = ["~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "=", "+", "[", "{", "]",
+        "}", "\\", "|", ";", ":", "\"", "'", "&#8216;", "&#8217;", "&#8220;", "&#8221;", "&#8211;", "&#8212;",
+        "â€”", "â€“", ",", "<", ".", ">", "/", "?"]
+
+    clean = "".join(c for c in string if c not in strip)
+    clean = clean.strip()
+    clean = re.sub(r"\s+", "_", clean)
+    clean = re.sub(r"[^a-zA-Z0-9]", "", clean) if alphanum_only else clean
+    clean = clean.lower() if force_lowercase else clean
+    return clean
+
 
 def load_traits(name: str = None):
     TRAITS_VERSION = "v1.0.0"
@@ -58,7 +72,7 @@ def load_traits(name: str = None):
 
     with open(traits_path) as f:
         traits_json = json.load(f)
-    
+
     # Convert version if needed
     if 'version' in traits_json and traits_json['version'] != TRAITS_VERSION:
         with TemporaryDirectory() as tempdir:
@@ -114,7 +128,7 @@ def load_config_json(path: str, base64secret: str = None):
                 secret = getpass("Config file is encrypted, please enter the passphrase (leave empty to abort): ").encode('utf-8')
                 if secret == b'':    # Abort
                     sys.exit(f"Aborted by user")
-                    
+
                 try:    # Decrypt
                     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
                     key = kdf.derive(secret)
@@ -125,7 +139,7 @@ def load_config_json(path: str, base64secret: str = None):
                 except jwe.JWEError as err: # Invalid, ask again
                     print(f"Unable to load {path}: Invalid config passphrase provided")
                     attempts -= 1
-            
+
             if attempts == 0:
                 sys.exit(f"Did you forget your passphrase? Go to http://localhost:8080/ to recreate the file")
 
@@ -133,7 +147,7 @@ def load_config_json(path: str, base64secret: str = None):
 
 def generate_paths(traits: Struct = None):
     paths = Struct()
-    if traits: 
+    if traits:
         paths.collection = os.path.join(".", "collections", traits.collection_lower)
         paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
         paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
@@ -193,7 +207,7 @@ class SemVerFilter(object):
                 if not wildcard_found:
                     self.priority = 3 - i
                 wildcard_found = True
-        
+
         self.match_regex = r"^" + r"\.".join(self.elements).replace('x', r"(0|[1-9]\d*)") + r"$"
 
         super().__init__()
@@ -219,7 +233,7 @@ class FromToFilter(object):
 
     def get_priority(self) -> int:
         return self.f.get_priority() + self.t.get_priority()
-    
+
     def sort_func(self) -> int:
         return self.get_priority()
 
@@ -251,7 +265,7 @@ class Router(Generic[Key, Route]):
         for key, route in self.routes.items():
             if key.match(filter):
                 return route
-        
+
         return None
 
 # [END] JSON conversion
