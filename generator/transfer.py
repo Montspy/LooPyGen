@@ -198,9 +198,19 @@ async def load_config(args, paths: Struct):
     ## CLI args validation
     # --nfts
     args.source = str(args.source).strip()
-    if os.path.exists(args.source):  # LIST
-        with open(args.source, "r") as f:
-
+    if os.path.exists(args.source) or os.path.exists(os.path.join(".", "collections", sanitize(args.source), "config", "traits.json")):  # LIST or COLLECTION
+        # Determine the source file name
+        if os.path.exists(args.source):
+            fn = args.source
+        else:
+            traits = load_traits(sanitize(args.source))
+            paths = generate_paths(traits)
+            assert os.path.exists(
+                paths.metadata_cids
+            ), f'Collection "{traits.collection_name}" is missing metadata-cids.json file'
+            fn = paths.metadata_cids
+        # Open source file and load nft ids from it
+        with open(fn, "r") as f:
             if os.path.split(args.source)[-1] == "metadata-cids.json":
                 # Handle metadata-cids.json format
                 metadata_cids = json.load(f)
@@ -241,23 +251,6 @@ async def load_config(args, paths: Struct):
         assert (
             not args.ordered
         ), f"Unsupported --nfts CONTRACT with transfer mode --ordered. Please use --nfts NFTID, CID or LIST with --ordered"
-    elif os.path.exists(
-        os.path.join(".", "collections", sanitize(args.source), "config", "traits.json")
-    ):  # COLLECTION
-        traits = load_traits(sanitize(args.source))
-        paths = generate_paths(traits)
-        assert os.path.exists(
-            paths.metadata_cids
-        ), f'Collection "{traits.collection_name}" is missing metadata-cids.json file'
-        with open(paths.metadata_cids, "r") as f:
-            metadata_cids = json.load(f)
-            lines = [element["CID"] for element in metadata_cids]
-            # Convert each line to NFT ID hex-string if it was a CID: base58 to hex and drop first 2 bytes (always 1220h)
-            nft_ids = [
-                "0x" + base58.b58decode(line).hex()[4:] if line[:2] == "Qm" else line
-                for line in lines
-            ]
-        cfg.nfts = filter_nft_balance_by(nft_balance, "nftId", nft_ids)
     plog(cfg.nfts)
 
     cfg.nftsCount = cfg.nfts["totalNum"]
