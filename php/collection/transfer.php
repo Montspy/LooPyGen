@@ -3,8 +3,8 @@
     $path = "./collections";
     $collections = array_diff(scandir($path), array('.', '..'));
 
-    if (!file_exists("./config.json")) {
-        Redirect("/config/1");
+    if (!file_exists("./transfer_config.json")) {
+        Redirect("/transfer/1");
     }
 
     $infuraUrl = "https://mainnet.infura.io/v3/3b6a7ab1f65746d18cb72e4e216b55cb";
@@ -20,7 +20,7 @@
     $gas = hexdec($results['result']) / 1000000000;
 
     echo '<section>';
-    echo '<h1>Mint Collection</h1>';
+    echo '<h1>Transfer Collection</h1>';
 
     if (empty($_GET['collection'])) {
         echo '<h3>Choose a collection:</h3>';
@@ -34,7 +34,7 @@
                     $ct = json_decode($ctf, true);
                     $lower = $ct['collection_lower'];
                     $name = $ct['collection_name'];
-                    echo "<a href=\"/collection/mint?collection=${lower}\">${name}</a>";
+                    echo "<a href=\"/collection/transfer?collection=${lower}\">${name}</a>";
                     $found = $found + 1;
                 }
             }
@@ -44,60 +44,60 @@
             echo '<a href="/setup/1">CREATE NEW COLLECTION</a>';
         }
         echo '</div>';
-    } else if (!empty($_GET['collection']) and empty($_POST['amount'])) {
+    } else if (!empty($_GET['collection']) and empty($_POST['wallets'])) {
         $lower = $_GET['collection']; ?>
-        <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>">
+        <form method="post" action="/collection/transfer?collection=<?php echo $lower; ?>">
             <h3>Minter Options</h3>
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
             <h3>Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
-            <section id="artist">
+            <section>
                 <div class="row">
-                    <div data-tooltip="Start ID: (Optional) Choose a token ID to start with.">
-                        <label for="start_id">
-                            Start ID:
+                    <div data-tooltip="Wallets: The L2 addresses or ENS to send to, one per line.">
+                        <label for="wallets">
+                            Wallets:
                         </label>
-                        <input type="number" class="form small" id="start_id" name="start_id" />
-                    </div>
-                    <div data-tooltip="End ID: (Optional) Choose a token ID to end with.">
-                        <label for="end_id">
-                            End ID:
-                        </label>
-                        <input type="number" class="form small" id="end_id" name="end_id" />
+                        <textarea required class="form wide" id="wallets" name="wallets"></textarea>
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Copies: (Required) How many copies of each NFT should be minted?">
-                        <label for="amount">
-                            Copies:
+                    <div data-tooltip="Tranfer mode: Send the NFTs ordered by ID or in a random order.">
+                        <label for="mode">
+                            Tranfer mode
                         </label>
-                        <input required type="number" class="form small" id="amount" name="amount" />
+                        <select required class="form med" id="mode" name="mode">
+                            <option selected value="--random">Random</option>
+                            <option value="--ordered">Ordered (by ID)</option>
+                        </select>
                     </div>
                     <div data-tooltip="Test: (Recommended) Run a test mint, but don't actually mint anything.">
-                        <label for="testmint">
+                        <label for="test">
                             Run as a test?
                         </label>
-                        <input checked type="checkbox" id="testmint" name="testmint" />
+                        <input checked type="checkbox" id="test" name="test" />
                     </div>
                 </div>
             </section>
             <input class="form btn" type="submit" name="submit" value="NEXT STEP" />
         </form>
-    <?php } else if (!empty($_POST['amount']) and empty($_GET['run'])) {
+    <?php } else if (!empty($_POST['wallets']) and empty($_GET['run'])) {
         $lower = $_GET['collection'];
-        $amount = $_POST['amount'];
-        if (!empty($_POST['start_id'])) { $start_id = "--start " . $_POST['start_id']; } else { $start_id = ""; }
-        if (!empty($_POST['end_id'])) { $end_id = "--end " . $_POST['end_id']; } else { $end_id = ""; }
-        if (!empty($_POST['testmint'])) { $testmint = "--testmint"; } else { $testmint = ""; }
-        $command = "mint --noprompt --amount ${amount} --name ${lower} ${start_id} ${end_id} ${testmint} 2>&1"; ?>
-        <h3 class="success">Confirm mint. This might take a while.</h3>
+        $wallet_file = "/tmp/wallets.txt";
+        $wallets = $_POST['wallets'];
+        $mode = $_POST['mode'];
+        if (!empty($_POST['test'])) { $test = "--test"; } else { $test = ""; }
+        $command = "transfer --noprompt --nfts ${lower} --to ${wallet_file} ${mode} ${test} 2>&1";
+        file_put_contents($wallet_file, $wallets); ?>
+        <h3 class="success">Confirm transfer. This might take a while.</h3>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
         <p><code>Command: <?php echo $command; ?></code></p>
-        <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>&run=true">
-            <input type="hidden" name="amount" id="amount" value="<?php echo $amount; ?>" />
+        <form method="post" action="/collection/transfer?collection=<?php echo $lower; ?>&run=true">
             <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
-            <input class="form btn" type="submit" name="submit" value="MINT" />
+            <input type="hidden" id="wallets" name="wallets" value="<?php echo $wallets; ?>" />
+            <button class="form btn" type="submit" name="submit">TRANSFER</button>
         </form>
-    <?php } else if (!empty($_GET['run'])) {
+    <?php
+    } else if (!empty($_GET['run'])) {
+        $wallet_file = "/tmp/wallets.txt";
         $lower = $_GET['collection'];
         $command = $_POST['command'];
         exec($command, $output, $code);
@@ -107,8 +107,12 @@
         } else {
             $code = "Error: ${code} (see output below)";
             $type = "error";
-        } ?>
-        <h3 class="<?php echo $type; ?>">Minting Done!</h3>
+        }
+        if (file_exists($wallet_file)) {
+            unlink($wallet_file);
+        }
+        ?>
+        <h3 class="<?php echo $type; ?>">Transfers Done!</h3>
         <pre>
 Result: <?php echo $code; ?>
 <br /><br />
@@ -118,7 +122,6 @@ Result: <?php echo $code; ?>
         </pre>
         <div class="nav">
             <a href="javascript:window.history.back();">GO BACK</a>
-            <a href="/collection/transfer?collection=<?php echo $lower; ?>">TRANSFER</a>
             <a href="/home">MAIN MENU</a>
         </div>
     <?php }

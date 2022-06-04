@@ -11,6 +11,7 @@
     <a href="/collection/images">GENERATE IMAGES</a>
     <a href="/collection/metadata">GENERATE METADATA</a>
     <a href="/collection/mint">MINT COLLECTION</a>
+    <a href="/collection/transfer">TRANSFER COLLECTION</a>
 </section>
 
 <section class="nav">
