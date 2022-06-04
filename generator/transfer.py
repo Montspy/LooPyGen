@@ -68,7 +68,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--nfts",
-        metavar="<NFTID, CID, CONTRACT, COLLECTION or LIST>",
+        metavar='<NFTID, CID, CONTRACT, "COLLECTION" or LIST>',
         dest="source",
         help="Specify which NFT(s) to send. COLLECTION is a LooPyGen collection name (surround with quotes for special characters and spaces). LIST is a text file with one NFTID or CID per line, or a metadata-cids.json file",
         type=str,
@@ -103,6 +103,13 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
     )
     parser.add_argument(
+        "--memo",
+        metavar='"MEMO"',
+        help="A note attached to your transfers (must be surrounded with quotes)",
+        type=str,
+        default="",
+    )
+    parser.add_argument(
         "--amount",
         help="Amount of NFTs to send to each address (only valid with --single mode)",
         type=int,
@@ -126,16 +133,12 @@ def parse_args() -> argparse.Namespace:
     advanced_group.add_argument(
         "--configpass", help=argparse.SUPPRESS, type=str
     )  # Should be base64 encoded
-    # Memo is broken by shell handling quoted strings
-    # advanced_group.add_argument("--memo", help="Transfer memo", type=str)
 
     args = parser.parse_args()
 
     # Test mode
     if args.test:
         print("Test mode enabled: Transfers will be skipped and no fees will incur.")
-
-    args.memo = ""
 
     global VERBOSE
     VERBOSE = args.verbose
@@ -153,6 +156,7 @@ async def load_config(args, paths: Struct):
     secret.metamaskPrivateKey = loopygen_cfg.private_key_mm
     cfg.fromAddress = loopygen_cfg.sender
     cfg.maxFeeTokenId = int(loopygen_cfg.fee_token)
+    cfg.memo = str(args.memo).strip()
 
     # Fee limit is estimatedFee * ( 1 + feeSlippage ), default: +50%
     cfg.feeSlippage = 0.5
@@ -198,7 +202,9 @@ async def load_config(args, paths: Struct):
     ## CLI args validation
     # --nfts
     args.source = str(args.source).strip()
-    if os.path.exists(args.source) or os.path.exists(os.path.join(".", "collections", sanitize(args.source), "config", "traits.json")):  # LIST or COLLECTION
+    if os.path.exists(args.source) or os.path.exists(
+        os.path.join(".", "collections", sanitize(args.source), "config", "traits.json")
+    ):  # LIST or COLLECTION
         # Determine the source file name
         if os.path.exists(args.source):
             fn = args.source

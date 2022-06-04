@@ -55,7 +55,7 @@ class UrlEddsaSignHelper(EddsaSignHelper):
             poseidon_params = poseidon_params(SNARK_SCALAR_FIELD, 2, 6, 53, b'poseidon', 5, security_target=128),
             private_key = private_key
         )
-    
+
     def hash(self, structure_data):
         serialized_data = self.serialize_data(structure_data)
         hasher = hashlib.sha256()
@@ -72,7 +72,7 @@ class UrlEddsaSignHelper(EddsaSignHelper):
             data = urllib.parse.quote(json.dumps(request['data']), safe='')
         else:
             raise Exception(f"Unknown request method {method}")
-            
+
         return "&".join([method, url, data])
 
 class LoopringMintService(object):
@@ -315,7 +315,7 @@ class LoopringMintService(object):
             response = await self.session.request("get", "/api/v3/nft/info/nfts", params=params, headers=headers)
             parsed = await response.json()
             self.last_status = response.status
-            
+
             response.raise_for_status()
             nft_data = cast('list[NftData]', parsed)
         except aiohttp.ClientError as client_err:
@@ -377,7 +377,7 @@ class LoopringMintService(object):
 
         if royaltyAddress:
             params["royaltyAddress"] = royaltyAddress
-        
+
         headers = {"x-api-key": apiKey}
         nft_mint_data = None
 
@@ -399,7 +399,7 @@ class LoopringMintService(object):
             self.last_error = parsed
 
         return nft_mint_data
-    
+
     async def transferNft(
             self,
             apiKey: str,
@@ -434,6 +434,7 @@ class LoopringMintService(object):
                 "tokenId": maxFeeTokenId,
                 "amount": maxFeeAmount
             },
+            "memo": memo,
             "counterFactualNftInfo": {
                 "nftFactory": counterFactualNftInfo['nftFactory'],
                 "nftOwner": counterFactualNftInfo['nftOwner'],
