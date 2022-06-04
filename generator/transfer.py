@@ -217,7 +217,7 @@ async def load_config(args, paths: Struct):
             fn = paths.metadata_cids
         # Open source file and load nft ids from it
         with open(fn, "r") as f:
-            if os.path.split(args.source)[-1] == "metadata-cids.json":
+            if os.path.split(fn)[-1] == "metadata-cids.json":
                 # Handle metadata-cids.json format
                 metadata_cids = json.load(f)
                 lines = [element["CID"] for element in metadata_cids]
