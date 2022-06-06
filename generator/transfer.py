@@ -238,7 +238,6 @@ async def load_config(args, paths: Struct):
                 nft_data = filter_nft_balance_by(cfg.nfts, "nftId", nft_id)["data"]
                 nfts_data.extend(nft_data)
             cfg.nfts = NftBalance(totalNum=len(nfts_data), data=nfts_data)
-            pprint(cfg.nfts)
     elif re.match(r"^Qm[a-zA-Z0-9]{44}$", args.source):  # CID
         nft_id = "0x" + base58.b58decode(args.source).hex()[4:]
         cfg.nfts = filter_nft_balance_by(nft_balance, "nftId", nft_id)
