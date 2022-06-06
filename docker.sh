@@ -52,6 +52,7 @@ install_start_menu_shortcuts() {
         cp -a dockerfiles/assets/win_shortcuts/. "$start_menu_dir/LooPyGen"                                         # Copy our shortcuts in it
         (cd "$start_menu_dir/LooPyGen" && sed -i "s/DISTRO/${WSL_DISTRO_NAME}/g" "LooPyGen Folder.noturl" && sed -i "s/USERNAME/${USER}/g" "LooPyGen Folder.noturl")    # Update the LooPyGen folder URL based on distro name and user
         (cd "$start_menu_dir/LooPyGen" && find . -type f -name "*.noturl" -exec sh -c 'for pathname do mv -- "$pathname" "${pathname%.noturl}".url; done' sh {} + )     # Rename .noturl to .url (workaround Windows caching .url files at creation)
+        grep -qxF 'cd ~/LooPyGen' ~/.bashrc || echo 'cd ~/LooPyGen' >> ~/.bashrc    # Default wsl bash to ~/LooPyGen
         echo "Shortcuts installed";
         [ ! -d "$start_menu_dir" ] && echo "Start menu directory not found";
     else
@@ -63,6 +64,7 @@ remove_start_menu_shortcuts() {
     if [ ! -z ${WSL_DISTRO_NAME+x} ]; then
         start_menu_dir="`wslpath "$(wslvar USERPROFILE)"`/AppData/Roaming/Microsoft/Windows/Start Menu/Programs"    # Get Start Menu path for the current user
         [ -d "$start_menu_dir" ] && ([ ! -d "$start_menu_dir/LooPyGen" ] || rm -rf "$start_menu_dir/LooPyGen")      # Delete Start Menu "LooPyGen folder"
+        sed -i '/cd ~\/LooPyGen/d' ~/.bashrc
         echo "Shortcuts removed"
         [ ! -d "$start_menu_dir" ] && echo "Start menu directory not found"
     else
