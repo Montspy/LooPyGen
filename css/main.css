@@ -251,6 +251,7 @@ form {
     top: 0rem;
     left: 0;
 
+    white-space: pre-wrap;
     content: attr(data-tooltip);
     color: #FFF;
     background: #1F2033;
