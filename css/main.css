@@ -118,6 +118,12 @@ form {
     color: #000;
 }
 
+.nav .danger, .danger {
+    background:#b71c1c;
+    border-color: #ffe0e3;
+    color: #ffe0e3;
+}
+
 .nav, section {
     display: flex;
     flex-direction: column;
@@ -272,4 +278,10 @@ form {
 [data-tooltip]:focus-within::before {
     opacity: 1;
     top: -1rem;
+}
+
+/* Correct vertical alignment */
+.material-icons {
+    display: inline-flex;
+    vertical-align: text-bottom;
 }
