@@ -47,7 +47,7 @@
     } else if (!empty($_GET['collection']) and empty($_POST['wallets'])) {
         $lower = $_GET['collection']; ?>
         <form method="post" action="/collection/transfer?collection=<?php echo $lower; ?>">
-            <h3>Minter Options</h3>
+            <h3>Transfer Options</h3>
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
             <h3>Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
             <section>
@@ -69,7 +69,7 @@
                             <option value="--ordered">Ordered (by ID)</option>
                         </select>
                     </div>
-                    <div data-tooltip="Test: (Recommended) Run a test mint, but don't actually mint anything.">
+                    <div data-tooltip="Test: (Recommended) Run a test, but don't actually transfer anything.">
                         <label for="test">
                             Run as a test?
                         </label>
@@ -77,7 +77,7 @@
                     </div>
                 </div>
             </section>
-            <input class="form btn" type="submit" name="submit" value="NEXT STEP" />
+            <button class="form btn" name="submit">NEXT STEP</button>
         </form>
     <?php } else if (!empty($_POST['wallets']) and empty($_GET['run'])) {
         $lower = $_GET['collection'];
