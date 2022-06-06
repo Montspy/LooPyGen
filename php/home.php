@@ -18,7 +18,7 @@
     <h3>Other Actions</h3>
     <!-- <a href="/prepare">PREPARE METADATA</a> -->
     <a href="/mint">MINT SINGLE ITEM</a>
-    <!-- <a href="/transfer/1">TRANSFER</a> -->
+    <a href="/transfer">TRANSFER</a>
     <a href="/home?nuke=engage">NUKE SENSITIVE INFO</a>
     <!-- <a href="/home?update=true">UPDATE LOOPYGEN</a> -->
 </section>
