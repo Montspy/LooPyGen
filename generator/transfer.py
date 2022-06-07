@@ -11,6 +11,7 @@ import json
 import re
 
 from utils import Struct, generate_paths, load_config_json, load_traits, sanitize
+from minter import get_account_info
 
 from DataClasses import *
 from LoopringMintService import LoopringMintService, NFTTransferEddsaSignHelper
@@ -30,28 +31,6 @@ def log(*objects, **kwds):
 def plog(object, **kwds):
     if VERBOSE:
         pprint(object, **kwds)
-
-
-account_info_cache = {}
-
-
-async def get_account_info(account: str):
-    if account not in account_info_cache:
-        async with LoopringMintService() as lms:
-            account = str(account).strip().lower()
-            if (
-                account[:2] == "0x"
-            ):  # Assuming it's an address formatted as L2 hex-string
-                address = account
-                id = await lms.getAccountId(address)
-            elif account[-4:] == ".eth":  # Assuming it's an ENS
-                address = await lms.resolveENS(account)
-                id = await lms.getAccountId(address)
-            else:  # Assuming it's an account ID
-                id = int(account)
-                address = await lms.getAccountAddress(id)
-        account_info_cache[account] = (id, address)
-    return account_info_cache[account]
 
 
 async def retry_async(coro, *args, timeout: float = 3, retries: int = 3, **kwds):
