@@ -26,19 +26,19 @@ def plog(object, **kwds):
 account_info_cache = {}
 async def get_account_info(account: str):
     if account not in account_info_cache:
-    async with LoopringMintService() as lms:
-        account = str(account).strip().lower()
+        async with LoopringMintService() as lms:
+            account = str(account).strip().lower()
             if (
                 account[:2] == "0x"
             ):  # Assuming it's an address formatted as L2 hex-string
-            address = account
-            id = await lms.getAccountId(address)
+                address = account
+                id = await lms.getAccountId(address)
             elif account[-4:] == ".eth":  # Assuming it's an ENS
-            address = await lms.resolveENS(account)
-            id = await lms.getAccountId(address)
+                address = await lms.resolveENS(account)
+                id = await lms.getAccountId(address)
             else:  # Assuming it's an account ID
-            id = int(account)
-            address = await lms.getAccountAddress(id)
+                id = int(account)
+                address = await lms.getAccountAddress(id)
         account_info_cache[account] = (id, address)
     return account_info_cache[account]
 
@@ -136,14 +136,14 @@ def parse_args():
         args.json = None
         assert args.cid[:2] == "Qm", f"Invalid cid: {args.cid}" # Support CIDv0 only
 
+    if args.cid and (args.start or args.end):
+        print("Ignoring start and end arguments with single CID minting")
+
     # ID selection (start/end)
     if not args.start:
         args.start = 1
     if args.end:
         assert args.start <= args.end, f"start cannot be greater than end: {args.start} > {args.end}"
-
-    if args.cid and (args.start or args.end):
-        print("Ignoring start and end arguments with single CID minting")
 
     # Test mint mode
     if args.testmint:
