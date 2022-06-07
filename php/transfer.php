@@ -19,11 +19,11 @@
     echo '<section>';
     echo '<h1>Transfer any NFTs</h1>';
 
-    if (empty($_GET['run'])) { ?>
-        <form method="post" action="/transfer?run=true">
-            <h3>Transfer Options</h3>
+    if (empty($_GET['run']) and (empty($_POST['wallets']) or empty($_POST['nfts']) or empty($_POST['mode']))) { ?>
+        <form method="post" action="/transfer">
             <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
-            <h3>Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
+            <h3 class="info">Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
+            <h3>Transfer Options</h3>
             <section id="artist">
                 <div class="row">
                     <div data-tooltip="List of L2 addresses or ENS to send to, one per line.">
@@ -58,20 +58,59 @@
                         <input checked type="checkbox" id="test" name="test" />
                     </div>
                 </div>
+                <div class="row">
+                    <div data-tooltip="The passphrase to your transfer config file">
+                        <label for="configpass">
+                            Transfer config passphrase
+                        </label>
+                        <input type="password" class="form med" id="configpass" name="configpass" />
+                    </div>
+                </div>
             </section>
             <button class="form btn" name="submit">TRANSFER</button>
         </form>
-    <?php } else if (!empty($_POST['wallets'])) {
+    <?php } else if (empty($_GET['run'])) {
+        // Build command from inputs
         $wallet_file = "/tmp/wallets.txt";
         $nft_file = "/tmp/nfts.txt";
         $wallets = $_POST['wallets'];
         $nfts = $_POST['nfts'];
         $mode = $_POST['mode'];
         if (!empty($_POST['test'])) { $test = "--test"; } else { $test = ""; }
-        $command = "transfer --noprompt --nfts ${nft_file} --to ${wallet_file} ${mode} ${test}";
-        echo $command;
+        if (!empty($_POST['configpass'])) { $configpass = "--configpass " . base64_encode($_POST['configpass']); } else { $configpass = ""; }
+        $fees_command = "transfer --php --noprompt --nfts ${nft_file} --to ${wallet_file} ${mode} ${test} ${configpass} --fees 2>&1";
+        $command = str_replace("--fees", "", $fees_command);
         file_put_contents($wallet_file, $wallets);
         file_put_contents($nft_file, $nfts);
+
+        // Get estimated fees
+        exec($fees_command, $output, $code);
+        if ($code == 0) {
+            $code = "Success!";
+            $matches = preg_grep('/^Estimated L2 fees/', $output);
+            $estimated_fees = end($matches);
+            $printable_output = '<h3 class="info">' . $estimated_fees . '</h3>';
+        } else {
+            $code = "Error: ${code} (see output below)";
+            $printable_output = '<pre class="error">Error estimating fees:<br /><br />';
+            foreach ($output as $line) {
+                $printable_output .= $line . '<br />';
+            }
+            $printable_output .= '</pre>';
+        }
+        ?>
+        <h3 class="success">Confirm transfer. This might take a while.</h3>
+        <?php echo $printable_output ?>
+        <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
+        <p><code>Command: <?php echo $command; ?></code></p>
+        <form method="post" action="/transfer?run=true">
+            <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
+            <button class="form btn" type="submit" name="submit">TRANSFER</button>
+        </form>
+    <?php } else if (!empty($_GET['run'])) {
+        $wallet_file = "/tmp/wallets.txt";
+        $nft_file = "/tmp/nfts.txt";
+        $command = $_POST['command'];
         exec($command, $output, $code);
         if ($code == 0) {
             $code = "Success!";

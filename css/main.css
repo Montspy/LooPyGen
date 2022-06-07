@@ -113,6 +113,10 @@ form {
     background: #008000;
 }
 
+.info {
+    background: #2168ff;
+}
+
 .warning {
     background: #B09000;
     color: #000;
