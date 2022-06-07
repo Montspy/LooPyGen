@@ -128,7 +128,7 @@ def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool 
             from getpass import getpass
             attempts = 3
             while attempts > 0:
-                secret = getpass("Config file is encrypted, please enter the passphrase for {path} (leave empty to abort): ").encode('utf-8')
+                secret = getpass(f"Config file is encrypted, please enter the passphrase for {path} (leave empty to abort): ").encode('utf-8')
                 if secret == b'':    # Abort
                     sys.exit(f"Aborted by user")
 
