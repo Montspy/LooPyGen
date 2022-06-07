@@ -151,7 +151,9 @@ async def load_config(args, paths: Struct):
 
     cfg = Struct()
     secret = Struct()  # Split to avoid leaking keys to console or logs
-    loopygen_cfg = load_config_json(paths.transfer_config, args.configpass)
+    loopygen_cfg = load_config_json(
+        paths.transfer_config, args.configpass, args.noprompt
+    )
     secret.loopringPrivateKey = loopygen_cfg.private_key
     secret.metamaskPrivateKey = loopygen_cfg.private_key_mm
     cfg.fromAddress = loopygen_cfg.sender

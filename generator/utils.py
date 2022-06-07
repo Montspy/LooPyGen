@@ -92,7 +92,7 @@ def load_config_json(path: str):
     return Struct(config_json)
 
 # Load a config.json file from disk and decrypts it if needed (passphrase from provided base64secret, or asking the user for it)
-def load_config_json(path: str, base64secret: str = None):
+def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool = False):
     if not os.path.exists(path):
         sys.exit(f"Unable to load {path}: Config file not found. Did you create it? If not, go to http://localhost:8080/")
 
@@ -120,12 +120,15 @@ def load_config_json(path: str, base64secret: str = None):
                 config_json = json.loads(jwe.decrypt(cypher, key))
             except jwe.JWEError as err:
                 sys.exit(f"Unable to load {path}: Invalid config passphrase provided")
+        # Error out if --noprompt
+        elif disallow_prompt:
+            sys.exit(f"Passphrase for {path} was not provided")
         # Request passphrase from user
         else:
             from getpass import getpass
             attempts = 3
             while attempts > 0:
-                secret = getpass("Config file is encrypted, please enter the passphrase (leave empty to abort): ").encode('utf-8')
+                secret = getpass("Config file is encrypted, please enter the passphrase for {path} (leave empty to abort): ").encode('utf-8')
                 if secret == b'':    # Abort
                     sys.exit(f"Aborted by user")
 
@@ -141,7 +144,7 @@ def load_config_json(path: str, base64secret: str = None):
                     attempts -= 1
 
             if attempts == 0:
-                sys.exit(f"Did you forget your passphrase? Go to http://localhost:8080/ to recreate the file")
+                sys.exit(f"Did you forget your passphrase for {path} ? Go to http://localhost:8080/ to recreate the file")
 
     return Struct(config_json)
 

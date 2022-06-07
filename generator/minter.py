@@ -26,7 +26,7 @@ def plog(object, **kwds):
 async def get_account_info(account: str):
     async with LoopringMintService() as lms:
         account = str(account).strip().lower()
-        if account[:2] == "0x": # Assuming it's an address formatted as L2 hex-string 
+        if account[:2] == "0x": # Assuming it's an address formatted as L2 hex-string
             address = account
             id = await lms.getAccountId(address)
         elif account[-4:] == ".eth":    # Assuming it's an ENS
@@ -48,7 +48,7 @@ async def retry_async(coro, *args, timeout: float=3, retries: int=3, **kwds):
 async def load_config(args, paths: Struct, traits: Struct):
     cfg = Struct()
     secret = Struct()   # Split to avoid leaking keys to console or logs
-    loopygen_cfg = load_config_json(paths.config, args.configpass)
+    loopygen_cfg = load_config_json(paths.config, args.configpass, args.noprompt)
 
     if args.name: # Batch minting a generated collection of NFTs
         secret.loopringPrivateKey = loopygen_cfg.private_key
@@ -64,7 +64,7 @@ async def load_config(args, paths: Struct, traits: Struct):
         cfg.nftType               = int(loopygen_cfg.nft_type)
         cfg.royaltyPercentage     = int(loopygen_cfg.royalty_percentage)
         cfg.maxFeeTokenId         = int(loopygen_cfg.fee_token)
-    elif args.cid:   # Minting a single CID 
+    elif args.cid:   # Minting a single CID
         secret.loopringPrivateKey = loopygen_cfg.private_key
         cfg.minter                = loopygen_cfg.minter
         cfg.royalty               = loopygen_cfg.minter
@@ -76,7 +76,7 @@ async def load_config(args, paths: Struct, traits: Struct):
     cfg.validUntil            = 1700000000
     cfg.nftFactory            = "0xc852aC7aAe4b0f0a0Deb9e8A391ebA2047d80026"
     cfg.exchange              = "0x0BABA1Ad5bE3a5C0a66E7ac838a129Bf948f1eA4"
-    
+
     # Resolve ENS, get account_id and ETH address
     cfg.minterAccount, cfg.minterAddress = await retry_async(get_account_info, cfg.minter, retries=3)
     assert cfg.minterAddress and cfg.minterAccount, f"Invalid minter: {cfg.minter} aka {cfg.minterAddress} (account ID {cfg.minterAccount})"
@@ -92,7 +92,7 @@ async def load_config(args, paths: Struct, traits: Struct):
     if secret.loopringPrivateKey[:2] != "0x":
         secret.loopringPrivateKey = "0x{0:0{1}x}".format(int(secret.loopringPrivateKey), 64)
     secret.loopringPrivateKey = secret.loopringPrivateKey.lower()
-    
+
     return cfg, secret
 
 # Parse CLI arguments
@@ -130,7 +130,7 @@ def parse_args():
     elif args.cid:  # --cid
         args.json = None
         assert args.cid[:2] == "Qm", f"Invalid cid: {args.cid}" # Support CIDv0 only
-    
+
     # ID selection (start/end)
     if not args.start:
         args.start = 1
@@ -192,7 +192,7 @@ def prompt_yes_no(prompt: str, default: str=None):
         indicator = "[y/N]"
     else:
         raise ValueError(f"Invalid default string yes/no/None but is {default}")
-    
+
     while True:
         print(f"{prompt} {indicator}: ", end='')
         s = input().lower()
@@ -224,7 +224,7 @@ async def get_offchain_parameters(cfg, secret):
         log(f"Storage id: {json.dumps(storage_id, indent=2)}")
         if storage_id is None:
             sys.exit("Failed to obtain storage id")
-        
+
         parameters['storage_id'] = storage_id
 
         # Getting the token address
@@ -233,7 +233,7 @@ async def get_offchain_parameters(cfg, secret):
         log(f"CounterFactualNFT Token Address: {json.dumps(counterfactual_nft, indent=2)}")
         if counterfactual_nft is None:
             sys.exit("Failed to obtain token address")
-            
+
         parameters['counterfactual_nft_info'] = counterfactual_nft_info
         parameters['counterfactual_nft'] = counterfactual_nft
 
@@ -242,7 +242,7 @@ async def get_offchain_parameters(cfg, secret):
         log(f"Offchain fee:  {json.dumps(off_chain_fee['fees'][cfg.maxFeeTokenId], indent=2)}")
         if off_chain_fee is None:
             sys.exit("Failed to obtain offchain fee")
-            
+
         parameters['off_chain_fee'] = off_chain_fee
 
     return parameters
@@ -311,7 +311,7 @@ async def mint_nft(cfg, secret, nft_data_poseidon_hash: str, nft_id: str, amount
 
         if test_mode:
             return MintResult.TESTMODE
-        
+
         nft_mint_response = await lms.mintNft(
             apiKey=secret.loopringApiKey,
             exchange=cfg.exchange,
@@ -342,7 +342,7 @@ async def mint_nft(cfg, secret, nft_data_poseidon_hash: str, nft_id: str, amount
                 return MintResult.FEE_INVALID
         elif lms.last_status == 200:    # Mint succeeded
             return MintResult.SUCCESS
-        
+
         return MintResult.FAILED
 
 async def main():
@@ -426,11 +426,11 @@ async def main():
         if not args.noprompt:   # Skip approval if --noprompt
             approved_fees_prompt = prompt_yes_no(", continue?", default="no")
             mint_info.append({'fee_approval': approved_fees_prompt, 'feeEstimate': cfg.feeEstimate, 'feeLimit': cfg.feeLimit, 'feeSymbol': cfg.feeSymbol})
-            if not approved_fees_prompt: 
+            if not approved_fees_prompt:
                 sys.exit("Fees not approved by user")
         else:
             print()
-        
+
         # NFT Mint sequence
         for i, cid in enumerate(filtered_cids):
             id = cid['ID']
@@ -440,7 +440,7 @@ async def main():
 
             # Generate Eddsa Signature
             nft_id, nft_data_poseidon_hash, eddsa_signature = await get_hashes_and_sign(cfg, secret, cid=cid_hash, amount=args.amount, offchain_parameters=offchain_parameters, info=info)
-            
+
             # Submit the nft mint
             mint_result = await mint_nft(cfg,
                                          secret,
@@ -451,7 +451,7 @@ async def main():
                                          offchain_parameters=offchain_parameters,
                                          test_mode=args.testmint,
                                          info=info)
-            
+
             if mint_result == MintResult.SUCCESS:
                 print(f"{i+1}/{len(filtered_cids)} NFT {id}: Successful Mint! ({args.amount}x {cid_hash})")
                 offchain_parameters['storage_id']['offchainId'] += 2
