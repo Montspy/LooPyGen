@@ -1,7 +1,7 @@
 <section class="nav">
     <h3>Configuration Setup</h3>
     <a href="/setup/1"><span class="material-icons">create_new_folder</span> CREATE NEW COLLECTION</a>
-    <!-- <a href="/edit/view">EDIT EXISTING COLLECTION</a> -->
+    <a href="/edit/1"><span class="material-icons">edit</span> EDIT EXISTING COLLECTION</a>
     <a href="/config/1"><span class="material-icons">settings_suggest</span> MINTING CONFIG SETUP</a>
     <a href="/transfer/1"><span class="material-icons">settings</span> TRANSFER CONFIG SETUP</a>
 </section>
