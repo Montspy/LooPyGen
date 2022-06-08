@@ -115,13 +115,8 @@
         if (!empty($_POST['animation'])) { $animation = true; } else { $animation = false; }
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = sanitize($collection_name);
-        $traits_file = "./collections/${collection_lower}/config/traits.tmp.json";
-
-        if (!file_exists("./collections/${collection_lower}/config")) {
-            mkdir("./collections/${collection_lower}/config/source_layers", 0755, true);
-            mkdir("./collections/${collection_lower}/ipfs", 0755, true);
-            mkdir("./collections/${collection_lower}/stats", 0755, true);
-        }
+        $lower = $_GET['collection'];
+        $traits_file = "./collections/${lower}/config/traits.tmp.json";
 
         $traits_data = array("collection_name"=>$collection_name,
                              "collection_lower"=>$collection_lower,
@@ -148,7 +143,7 @@
         $traits_json = json_encode($traits_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($traits_file, $traits_json);
 
-        Redirect("/edit/2?collection=${collection_lower}", false);
+        Redirect("/edit/2?collection=${lower}", false);
     }
 
 ?>

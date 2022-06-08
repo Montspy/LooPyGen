@@ -134,7 +134,7 @@
         $t = 0;
         if ($tmp_traits['background_color'] === true) { $s = 0; } else { $s = 1; }
         while ($s <= $tmp_traits['trait_count']) {
-            $target_dir = "./collections/" . $tmp_traits['collection_lower'] . "/config/source_layers/layer" . sprintf('%02d', $s);;
+            $target_dir = "./collections/" . $collection_lower . "/config/source_layers/layer" . sprintf('%02d', $s);;
             if (!file_exists($target_dir)) {
                 mkdir($target_dir, 0755, true);
             }
