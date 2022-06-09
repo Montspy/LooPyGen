@@ -26,8 +26,8 @@
 <?php
 
     if (!empty($_GET['nuke'])) {
-        unlink("./config.json");
-        unlink("./transfer_config.json");
+        if (file_exists("./config.json")) { unlink("./config.json"); }
+        if (file_exists("./transfer_config.json")) { unlink("./transfer_config.json"); }
         if (file_exists("./config.json") || file_exists("./transfer_config.json")) {
             echo "<h3 class='error'><i>Error: Sensitive info not deleted</i></h3>";
         } else {
