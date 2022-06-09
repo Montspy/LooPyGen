@@ -4,7 +4,7 @@
     if (!file_exists($config_file)) {
         $config = json_decode($config_file, true);
     } else {
-        Redirect('/config/1', false);
+        Redirect('/mint-config/1', false);
     }
 
     if (!empty($config)) { ?>
@@ -20,7 +20,7 @@
         </div>
         <div class="nav"><a href="/">Back to Home</a></div>
     <?php } else {
-        Redirect('/config/1', false);
+        Redirect('/mint-config/1', false);
     }
 
 ?>

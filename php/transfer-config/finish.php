@@ -4,7 +4,7 @@
     if (!file_exists($config_file)) {
         $config = json_decode($config_file, true);
     } else {
-        Redirect('/transfer/1', false);
+        Redirect('/transfer-config/1', false);
     }
 
     if (!empty($config)) { ?>
@@ -21,7 +21,7 @@
             <a href="/">Back to Home</a>
         </div>
     <?php } else {
-        Redirect('/transfer/1', false);
+        Redirect('/transfer-config/1', false);
     }
 
 ?>

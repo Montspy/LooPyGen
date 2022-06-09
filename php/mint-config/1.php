@@ -10,7 +10,7 @@
                 </ol>
             </div>
         </div>
-        <form method="post" action="/config/1">
+        <form method="post" action="/mint-config/1">
             <h3>Minter Info</h3>
             <section id="artist">
                 <div data-tooltip="Minter Address: The L2 wallet address or ENS or Account ID of the minter"><input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" /></div>
@@ -53,7 +53,7 @@
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($config_file, $config_json);
 
-        Redirect('/config/finish', false);
+        Redirect('/mint-config/finish', false);
     }
 
 ?>

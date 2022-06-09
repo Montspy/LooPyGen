@@ -14,7 +14,7 @@
                 </ol>
             </div>
         </div>
-        <form method="post" action="/transfer/1">
+        <form method="post" action="/transfer-config/1">
             <h3>Transfer Tool Info</h3>
             <section id="artist">
                 <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address, ENS, or Account ID" /></div>
@@ -53,7 +53,7 @@
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($config_file, $config_json);
 
-        Redirect('/transfer/finish', false);
+        Redirect('/transfer-config/finish', false);
     }
 
 ?>

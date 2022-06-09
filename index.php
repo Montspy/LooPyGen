@@ -42,7 +42,7 @@
         $redirect = "FALSE";
     }
 
-    if ($page === "config" or $page === "setup" or $page === "edit") {
+    if ($page === "mint-config" or $page === "transfer-config" or $page === "setup" or $page === "edit") {
         $page = "$page/1";
     }
 
