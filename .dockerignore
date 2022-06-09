@@ -15,4 +15,7 @@ __pycache__
 *.md
 *.yml
 *.bat
-collections
+*.js
+.env*
+env.bak/
+collections/

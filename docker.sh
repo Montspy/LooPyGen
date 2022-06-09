@@ -31,6 +31,8 @@ reload() {
     install_start_menu_shortcuts
     docker builder prune -f
     docker-compose up -d --build --force-recreate
+    composer
+    docker builder prune -f
 }
 
 migrate() {
@@ -80,6 +82,11 @@ remove_start_menu_shortcuts() {
     else
         echo "Not running inside WSL";
     fi
+}
+
+composer() {
+    docker-compose exec php \
+    composer require firebase/php-jwt --ignore-platform-reqs --no-cache
 }
 
 case $1 in

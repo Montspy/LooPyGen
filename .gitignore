@@ -9,6 +9,8 @@ images
 .tempfile
 config.json
 collections/*/
+composer.lock
+vendor/
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
