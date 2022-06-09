@@ -3,7 +3,7 @@
     $collection = $_GET['collection'];
     $new_traits_file = file_get_contents("./collections/${collection}/config/traits.tmp.json");
     $new_traits = json_decode($new_traits_file, true);
-    $collection_lower = $new_traits['collection'];
+    $collection_lower = $new_traits['collection_lower'];
 
     if ($collection === $collection_lower) {    // Collection stays in same directory
         rename("./collections/${collection}/config/traits.tmp.json", "./collections/${collection}/config/traits.json");

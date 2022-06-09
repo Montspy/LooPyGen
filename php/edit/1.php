@@ -29,7 +29,7 @@
     } else if ($redirect !== "TRUE") {
         if (!empty($_GET['collection'])) {
             $collection = $_GET['collection'];
-            $file = "./collections/${lower}/config/traits.json";
+            $file = "./collections/${collection}/config/traits.json";
             $contents = file_get_contents($file);
             $traits = json_decode($contents, true);
 
@@ -116,7 +116,7 @@
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = sanitize($collection_name);
         $collection = $_GET['collection'];
-        $traits_file = "./collections/${lower}/config/traits.tmp.json";
+        $traits_file = "./collections/${collection}/config/traits.tmp.json";
 
         $traits_data = array("collection_name"=>$collection_name,
                              "collection_lower"=>$collection_lower,
@@ -143,7 +143,7 @@
         $traits_json = json_encode($traits_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($traits_file, $traits_json);
 
-        Redirect("/edit/2?collection=${lower}", false);
+        Redirect("/edit/2?collection=${collection}", false);
     }
 
 ?>
