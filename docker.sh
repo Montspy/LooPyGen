@@ -34,15 +34,25 @@ reload() {
 }
 
 migrate() {
-    for i in $(ls images); do
-        mkdir -p collections/$i/{config,stats,ipfs}
-        mv images/$i/*.json collections/$i/config/
-        mv images/$i collections/$i/config/source_layers
-        mv generated/$i/{gen-stats.json,all-traits.json} collections/$i/stats/
-        mv generated/$i/metadata-cids.json collections/$i/config/
-        mv generated/$i/{images,thumbnails,metadata} collections/$i/ipfs/
-    done
-    rm -r images generated
+    # if the user has the old setup, migrate files
+    if ls images; then
+        echo "Old collection structure found, migrating files..."
+        for i in $(ls images); do
+            mkdir -p collections/$i/{config,stats,ipfs}
+            mv images/$i/*.json collections/$i/config/
+            mv images/$i collections/$i/config/source_layers
+            mv generated/$i/{gen-stats.json,all-traits.json} collections/$i/stats/
+            mv generated/$i/metadata-cids.json collections/$i/config/
+            mv generated/$i/{images,thumbnails,metadata} collections/$i/ipfs/
+        done
+        echo "...cleaning up..."
+        rm -r images generated
+        echo "...done!"
+    else
+        echo "Old collection structure not found, skipping file migration."
+    fi
+    # if the minter folder still exists, delete it
+    if ls minter; then rm -r minter; fi
 }
 
 install_start_menu_shortcuts() {
