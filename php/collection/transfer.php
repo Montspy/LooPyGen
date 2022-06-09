@@ -4,7 +4,7 @@
     $collections = array_diff(scandir($path), array('.', '..'));
 
     if (!file_exists("./transfer_config.json")) {
-        Redirect("/transfer-config/1");
+        BrowserRedirect("/transfer-config/1");
     }
 
     $infuraUrl = "https://mainnet.infura.io/v3/3b6a7ab1f65746d18cb72e4e216b55cb";

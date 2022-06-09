@@ -13,6 +13,16 @@
         exit();
     }
 
+    function BrowserRedirect($url)
+    {
+        $string = '<script type="text/javascript">';
+        $string .= 'window.location = "' . $url . '"';
+        $string .= '</script>';
+
+        echo $string;
+        exit();
+    }
+
     /**
      * Function: sanitize
      * Returns a sanitized string, typically for URLs.
