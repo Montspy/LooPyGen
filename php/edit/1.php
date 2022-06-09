@@ -28,7 +28,7 @@
         echo '</div>';
     } else if ($redirect !== "TRUE") {
         if (!empty($_GET['collection'])) {
-            $lower = $_GET['collection'];
+            $collection = $_GET['collection'];
             $file = "./collections/${lower}/config/traits.json";
             $contents = file_get_contents($file);
             $traits = json_decode($contents, true);
@@ -54,7 +54,7 @@
                 <p>STEP 01 - Fill in the following artist and collection information.</p>
             </section>
         </div>
-        <form method="post" action="/edit/1?collection=<?php echo $lower ?>">
+        <form method="post" action="/edit/1?collection=<?php echo $collection ?>">
             <h3>Artist Info</h3>
             <section id="artist">
                 <div data-tooltip="Artist Name: The name of the artist to show in the metadata [optional]"><input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" value="<?php echo htmlspecialchars($artist_name); ?>" /></div>
@@ -115,7 +115,7 @@
         if (!empty($_POST['animation'])) { $animation = true; } else { $animation = false; }
         if (!empty($_POST['seed'])) { $seed = $_POST['seed']; } else { $seed = false; }
         $collection_lower = sanitize($collection_name);
-        $lower = $_GET['collection'];
+        $collection = $_GET['collection'];
         $traits_file = "./collections/${lower}/config/traits.tmp.json";
 
         $traits_data = array("collection_name"=>$collection_name,

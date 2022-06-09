@@ -1,26 +1,26 @@
 <?php
 
-    $collection_lower = $_GET['collection'];
-    $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.json");
-    $tmp_traits_file = file_get_contents("./collections/${collection_lower}/config/traits.tmp.json");
+    $collection = $_GET['collection'];
+    $traits_file = file_get_contents("./collections/${collection}/config/traits.json");
+    $new_traits_file = file_get_contents("./collections/${collection}/config/traits.tmp.json");
     $traits = json_decode($traits_file, true);
-    $tmp_traits = json_decode($tmp_traits_file, true);
+    $new_traits = json_decode($new_traits_file, true);
     $s = 1;
-    $t_display = $tmp_traits['trait_count'];
+    $t_display = $new_traits['trait_count'];
 
-    if (!empty($tmp_traits) and $redirect !== "TRUE") { ?>
+    if (!empty($new_traits) and $redirect !== "TRUE") { ?>
         <h3>Collection Info</h3>
         <div id="guide">
             <section>
                 <p>STEP 03 - Define filenames, colors and rarities for each variation.</p>
-                <p><b>Collection Name</b>: <?php echo $tmp_traits['collection_name'] ?></p>
-                <?php if (array_key_exists('artist_name', $tmp_traits)) {
-                    echo "<p><b>Artist's Name</b>: " . $tmp_traits['artist_name'] . "</p>";
+                <p><b>Collection Name</b>: <?php echo $new_traits['collection_name'] ?></p>
+                <?php if (array_key_exists('artist_name', $new_traits)) {
+                    echo "<p><b>Artist's Name</b>: " . $new_traits['artist_name'] . "</p>";
                 } ?>
-                <?php if (array_key_exists('royalty_address', $tmp_traits)) {
-                    echo "<p><b>Royalty Address</b>: " . $tmp_traits['royalty_address'] . "</p>";
+                <?php if (array_key_exists('royalty_address', $new_traits)) {
+                    echo "<p><b>Royalty Address</b>: " . $new_traits['royalty_address'] . "</p>";
                 } ?>
-                <?php if ($tmp_traits['background_color'] === true) {
+                <?php if ($new_traits['background_color'] === true) {
                     echo "<p><b>Generate Background Colors</b>: YES</p>";
                     $s = 0;
                     $t_display = $t_display + 1;
@@ -28,9 +28,9 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </section>
         </div>
-        <form enctype="multipart/form-data" method="post" action="/edit/3?collection=<?php echo $collection_lower; ?>">
+        <form enctype="multipart/form-data" method="post" action="/edit/3?collection=<?php echo $collection; ?>">
             <?php $t = 0;
-            while ($s <= $tmp_traits['trait_count']) {
+            while ($s <= $new_traits['trait_count']) {
                 $rarity_options = [
                     ['value' => 50, 'text' => 'Common'],
                     ['value' => 25, 'text' => 'Uncommon'],
@@ -41,7 +41,7 @@
                     ['value' => 2 , 'text' => 'Transcendent'],
                     ['value' => 1 , 'text' => 'Godlike'],
                 ];
-                if ($t == 0 and $tmp_traits['background_color'] === true) {
+                if ($t == 0 and $new_traits['background_color'] === true) {
                     unset($layer);
                     if (($traits['background_color'] === true) and isset($traits['image_layers'][$s])) {
                         $layer = $traits["image_layers"][$s];
@@ -86,19 +86,21 @@
                     <?php $v = $v + 1; }
                 } else {
                     $s_offset = 0;
-                    if ($traits['background_color'] === true and $tmp_traits['background_color'] === false) { $s_offset = 1; }
-                    else if ($traits['background_color'] === false and $tmp_traits['background_color'] === true) { $s_offset = -1; }
+                    if ($traits['background_color'] === true and $new_traits['background_color'] === false) { $s_offset = 1; }
+                    else if ($traits['background_color'] === false and $new_traits['background_color'] === true) { $s_offset = -1; }
                     unset($layer);
                     if (isset($traits['image_layers'][$s + $s_offset])) {
                         $layer = $traits["image_layers"][$s + $s_offset];
                     } ?>
-                    <h3 class="trait-title">Setup "<?php echo $tmp_traits['image_layers'][$t]['layer_name']; ?>" Trait:</h3>
-                    <?php $v = 1; while ($v <= $tmp_traits['image_layers'][$t]['variations']) {
+                    <h3 class="trait-title">Setup "<?php echo $new_traits['image_layers'][$t]['layer_name']; ?>" Trait:</h3>
+                    <?php $v = 1; while ($v <= $new_traits['image_layers'][$t]['variations']) {
                         $trait_var = $s . "_" . $v;
                         unset($var_name);
                         if (isset($layer) and isset($layer['weights'][$v - 1])) {
                             $var_name = array_keys($layer['filenames'])[$v - 1];
                             $filename = $layer['filenames'][$var_name];
+                            $filepath =  "./collections/" . $collection . "/config/source_layers/layer" . sprintf('%02d', $t) . "/" . $filename;
+                            $file_exists = file_exists($filepath);
                         } ?>
                         <h4>Variation #<?php echo $v ?>:</h4>
                         <div data-tooltip="Display Name: The pretty name of this variation">
@@ -118,8 +120,11 @@
                             </div>
                             <div data-tooltip="Image: Choose the image file that should be used for this variation.">
                                 <label for="trait<?php echo $trait_var ?>_r">Filename:&nbsp;&nbsp;</label>
-                                <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
-                                <!-- <input required type="text" class="form med" id="trait<?php //echo $trait_var ?>_file" name="trait<?php //echo $trait_var ?>_file" value="<?php //echo isset($var_name) ? $filename : null; ?>" onclick="this.type='file'" oninput="this.type='file'" /> -->
+                                <?php if (isset($var_name) and $file_exists) {  // File exists, pre-fill field with filename (no need to upload it again) ?>
+                                    <input required type="text" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" value="<?php echo isset($var_name) ? $filename : null; ?>" onclick="this.type='file'" oninput="this.type='file'" />
+                                <?php } else {  // File does not exist, create a file input field (need to upload the file on submission) ?>
+                                    <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
+                                <?php } ?>
                             </div>
                         </div>
                     <?php $v = $v + 1; }
@@ -130,44 +135,55 @@
             <input type="hidden" name="redirect" id="redirect" value="TRUE" />
             <input class="form btn" type="submit" name="submit" value="FINISH" />
         </form>
-    <?php } else if (!empty($tmp_traits) and $redirect === "TRUE") {
+    <?php } else if (!empty($new_traits) and $redirect === "TRUE") {
         $t = 0;
-        if ($tmp_traits['background_color'] === true) { $s = 0; } else { $s = 1; }
-        while ($s <= $tmp_traits['trait_count']) {
-            $target_dir = "./collections/" . $collection_lower . "/config/source_layers/layer" . sprintf('%02d', $s);;
+        if ($new_traits['background_color'] === true) { $s = 0; } else { $s = 1; }
+        while ($s <= $new_traits['trait_count']) {
+            $target_dir = "./collections/" . $collection . "/config/source_layers/layer" . sprintf('%02d', $s);
             if (!file_exists($target_dir)) {
                 mkdir($target_dir, 0755, true);
             }
-            if ($t == 0 and $tmp_traits['background_color'] === true) {
+            if ($t == 0 and $new_traits['background_color'] === true) {
                 $v = 1;
-                $tmp_traits["image_layers"][$t]['rgba'] = array();
-                $tmp_traits["image_layers"][$t]['weights'] = array();
-                while ($v <= $tmp_traits['image_layers'][$t]['variations']) {
+                $new_traits["image_layers"][$t]['rgba'] = array();
+                $new_traits["image_layers"][$t]['weights'] = array();
+                while ($v <= $new_traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
                     $rgb = str_split(str_replace("#", "", $_POST["trait${trait_var}_color"]), 2);
-                    $tmp_traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array(hexdec($rgb[0]), hexdec($rgb[1]), hexdec($rgb[2]), (int)$_POST["trait${trait_var}_alpha"]);
-                    array_push($tmp_traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
+                    $new_traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array(hexdec($rgb[0]), hexdec($rgb[1]), hexdec($rgb[2]), (int)$_POST["trait${trait_var}_alpha"]);
+                    array_push($new_traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
                     $v = $v + 1;
                 }
             } else {
                 $v = 1;
-                $tmp_traits["image_layers"][$t]['filenames'] = array();
-                $tmp_traits["image_layers"][$t]['weights'] = array();
-                while ($v <= $tmp_traits['image_layers'][$t]['variations']) {
+                $new_traits["image_layers"][$t]['filenames'] = array();
+                $new_traits["image_layers"][$t]['weights'] = array();
+                while ($v <= $new_traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
-                    $tmp_traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_FILES["trait${trait_var}_file"]['name'];
-                    array_push($tmp_traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
-                    $target_file = $target_dir . "/" . $_FILES["trait${trait_var}_file"]['name'];
-                    move_uploaded_file($_FILES["trait${trait_var}_file"]['tmp_name'], $target_file);
+                    $var_name = $_POST["trait${trait_var}_name"];
+                    $var_weight =(int)$_POST["trait${trait_var}_weight"];
+
+                    if (isset($_FILES["trait${trait_var}_file"])) { // New file was uploaded
+                        $filename = $_FILES["trait${trait_var}_file"]['name'];
+                        // Move newly uploaded file to correct directory
+                        $target_file = $target_dir . "/" . $filename;
+                        move_uploaded_file($_FILES["trait${trait_var}_file"]['tmp_name'], $target_file);
+                    }
+                    else if (isset($_POST["trait${trait_var}_file"])) { // Old file should be re-used
+                        $filename = $_POST["trait${trait_var}_file"];
+                        // No need to move old file
+                    }
+                    $new_traits["image_layers"][$t]['filenames'][$var_name] = $filename;    // Add variation filename to filename array (with variation name as key)
+                    array_push($new_traits["image_layers"][$t]['weights'], $var_weight);    // Add weights to weight array
                     $v = $v + 1;
                 }
             }
             $t = $t + 1;
             $s = $s + 1;
         }
-        $tmp_traits_json = json_encode($tmp_traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
-        file_put_contents("./collections/${collection_lower}/config/traits.tmp.json", $tmp_traits_json);
-        Redirect("/edit/finish?collection=${collection_lower}", false);
+        $new_traits_json = json_encode($new_traits, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+        file_put_contents("./collections/${collection}/config/traits.tmp.json", $new_traits_json);
+        Redirect("/edit/finish?collection=${collection}", false);
     } else {
         Redirect('/edit/1', false);
     }

@@ -1,14 +1,14 @@
 <?php
 
-    $collection_lower = $_GET['collection'];
-    $traits_file = file_get_contents("./collections/${collection_lower}/config/traits.tmp.json");
-    $traits = json_decode($traits_file, true);
-    $new_lower = $traits['collection_lower'];
+    $collection = $_GET['collection'];
+    $new_traits_file = file_get_contents("./collections/${collection}/config/traits.tmp.json");
+    $new_traits = json_decode($new_traits_file, true);
+    $collection_lower = $new_traits['collection'];
 
-    if ($collection_lower === $new_lower) {
-        rename("./collections/${collection_lower}/config/traits.tmp.json", "./collections/${collection_lower}/config/traits.json");
+    if ($collection === $collection_lower) {    // Collection stays in same directory
+        rename("./collections/${collection}/config/traits.tmp.json", "./collections/${collection}/config/traits.json");
     }
-    else {
+    else {  // Collection directory needs to change
         /**
          * Copy a file, or recursively copy a folder and its contents
          *
@@ -60,28 +60,28 @@
             return true;
         }
 
-        copyr("./collections/${collection_lower}", "./collections/${new_lower}");   // Copy all files to the new collections directory
-        rename("./collections/${new_lower}/config/traits.tmp.json", "./collections/${new_lower}/config/traits.json");   // Move temporary json to permanent traits.json
-        system("rm -rf ".escapeshellarg("./collections/${collection_lower}")); // Remove old collections directory
+        copyr("./collections/${collection}", "./collections/${collection_lower}");   // Copy all files to the new collections directory
+        rename("./collections/${collection_lower}/config/traits.tmp.json", "./collections/${collection_lower}/config/traits.json");   // Move temporary json to permanent traits.json
+        system("rm -rf ".escapeshellarg("./collections/${collection}")); // Remove old collections directory
 
     }
 
     $s = 1;
-    $t_display = $traits['trait_count'];
+    $t_display = $new_traits['trait_count'];
 
-    if (!empty($traits)) {
+    if (!empty($new_traits)) {
         ?>
         <h3>Collection Info</h3>
         <div id="guide">
             <section>
-                <p><b>Collection Name</b>: <?php echo $traits['collection_name'] ?></p>
-                <?php if (array_key_exists('artist_name', $traits)) {
-                    echo "<p><b>Artist's Name</b>: " . $traits['artist_name'] . "</p>";
+                <p><b>Collection Name</b>: <?php echo $new_traits['collection_name'] ?></p>
+                <?php if (array_key_exists('artist_name', $new_traits)) {
+                    echo "<p><b>Artist's Name</b>: " . $new_traits['artist_name'] . "</p>";
                 } ?>
-                <?php if (array_key_exists('royalty_address', $traits)) {
-                    echo "<p><b>Royalty Address</b>: " . $traits['royalty_address'] . "</p>";
+                <?php if (array_key_exists('royalty_address', $new_traits)) {
+                    echo "<p><b>Royalty Address</b>: " . $new_traits['royalty_address'] . "</p>";
                 } ?>
-                <?php if ($traits['background_color'] === true) {
+                <?php if ($new_traits['background_color'] === true) {
                     echo "<p><b>Generate Background Colors</b>: YES</p>";
                     $s = 0;
                     $t_display = $t_display + 1;
@@ -90,7 +90,7 @@
             </section>
         </div>
         <div class="nav">
-            <a href="/collection/images?collection=<?php echo $new_lower ?>">GENERATE IMAGES</a>
+            <a href="/collection/images?collection=<?php echo $collection_lower ?>">GENERATE IMAGES</a>
             <a href="/home">MAIN MENU</a>
         </div>
     <?php } else {
