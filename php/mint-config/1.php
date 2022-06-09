@@ -2,13 +2,13 @@
     if ($redirect !== "TRUE") { ?>
         <h3>Getting Your Private Key</h3>
         <div id="guide">
-            <div>
+            <section>
                 <p>STEP 01 - Export your account info to get your Private Key.</p>
                 <ol>
                     <li>Login to the <a href="https://loopring.io/#" target="_blank">Loopring Wallet</a></li>
                     <li>Go to <b>L2 Wallet -> Security -> Export Account</b></p></li>
                 </ol>
-            </div>
+            </section>
         </div>
         <form method="post" action="/mint-config/1">
             <h3>Minter Info</h3>

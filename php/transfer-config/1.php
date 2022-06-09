@@ -2,7 +2,7 @@
     if ($redirect !== "TRUE") { ?>
         <h3>Getting Your L1 and L2 Private Keys</h3>
         <div id="guide">
-            <div>
+            <section>
                 <p>STEP 01 - Export your Loopring account info to get your Loopring Private Key.</p>
                 <ol>
                     <li>Login to the <a href="https://loopring.io/#/layer2" target="_blank">Loopring Wallet</a></li>
@@ -12,7 +12,7 @@
                 <ol>
                     <li>Follow <a href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-Export-an-Account-Private-Key" target="_blank">this guide</a></li>
                 </ol>
-            </div>
+            </section>
         </div>
         <form method="post" action="/transfer-config/1">
             <h3>Transfer Tool Info</h3>
