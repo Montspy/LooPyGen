@@ -31,9 +31,9 @@ checkDotenv() {
 }
 
 ci() {
-    echo $HUB_KEY | docker login -u $HUB_USER --password-stdin
-    docker build -t $tag .
-    docker push $tag
+    docker login -u "$HUB_USER" -p "$HUB_KEY" &&
+    docker build -t $tag . &&
+    docker push $tag &&
     docker logout
 }
 
