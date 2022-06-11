@@ -68,6 +68,6 @@
         include "php/$page.php";
     }
 
-    include "php/footer.html";
+    include "php/footer.php";
 
 ?>
