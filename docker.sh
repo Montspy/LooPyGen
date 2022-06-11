@@ -55,7 +55,7 @@ update() {
 reload() {
     docker-compose down --remove-orphans
     remove_start_menu_shortcuts
-    #checkDotenv
+    checkDotenv
     install_start_menu_shortcuts
     docker system prune -f
     docker-compose up -d --build --force-recreate
@@ -139,7 +139,7 @@ case $1 in
     reload) reload;;
     update) update;;
     up)
-        #checkDotenv
+        checkDotenv
         install_start_menu_shortcuts
         docker-compose up -d
     ;;
@@ -155,7 +155,7 @@ case $1 in
     -h|-help|help) usage;;
     *)
         if ! $(docker ps -q --filter "name=loopygen" | grep -q .); then
-            #checkDotenv
+            checkDotenv
             docker-compose up -d
         fi
         docker-compose exec loopygen "$@"

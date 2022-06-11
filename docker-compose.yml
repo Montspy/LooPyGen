@@ -10,3 +10,4 @@ services:
       - "8080:80"
     volumes:
       - ./collections:/var/www/html/collections:rw
+    user: ${UID}:${GID}
