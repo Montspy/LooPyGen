@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 
 env:
-  HUB_TAG: $GITHUB_REF_NAME
+  HUB_TAG: ${{ github.ref_name }}
 
 jobs:
 
