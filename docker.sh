@@ -5,8 +5,9 @@ if [ -f .env ]; then
 fi
 
 if [ -z $HUB_TAG ]; then
-    branch=$(git rev-parse --abbrev-ref HEAD | sed 's,/,-,g')
-    if [ -z $branch ]; then
+    if $(git --version); then
+        branch=$(git rev-parse --abbrev-ref HEAD | sed 's,/,-,g')
+    else
         branch=$(cat .version)
     fi
     if [ $branch == "main" ]; then
@@ -149,7 +150,7 @@ case $1 in
     down) docker-compose down;;
     migrate) migrate;;
     container)
-        chmod -R 777 /var/www/html/collections &&
+        chmod -R 777 ./collections &&
         php-fpm &
         nginx -g "daemon off;"
     ;;
