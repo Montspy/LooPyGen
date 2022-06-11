@@ -2,6 +2,9 @@ name: Docker Image CI
 
 on: [push]
 
+env:
+  HUB_TAG: "ci"
+
 jobs:
 
   build:
