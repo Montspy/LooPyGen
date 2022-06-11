@@ -20,7 +20,7 @@ RUN pkg ./cli.js -o ./ipfs-cid-linux
 
 FROM php:fpm-alpine3.15 AS php
 # define workdir
-WORKDIR /var/www/html
+WORKDIR /loopygen
 # install python3.9 and ffmpeg
 RUN apk --no-cache --update add python3 ffmpeg bash nginx
 # get compiled modules from previous stages
