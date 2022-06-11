@@ -12,7 +12,7 @@ FROM node:16-alpine3.15 as node_modules
 WORKDIR /usr/src/app
 # Install modules
 ADD ipfs-hash/package*.json ./
-RUN npm install --production
+RUN npm install --omit=dev
 RUN npm install -g pkg
 # Install app files, compile to native binary
 ADD ipfs-hash/* ./
