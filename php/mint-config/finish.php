@@ -1,7 +1,7 @@
 <?php
 
-    if (!file_exists($mint_config)) {
-        $config = json_decode($mint_config, true);
+    if (file_exists($mint_config)) {
+        $config = json_decode(file_get_contents($mint_config), true);
     } else {
         Redirect('/mint-config/1', false);
     }
