@@ -36,4 +36,5 @@ ADD dockerfiles/nginx.conf /etc/nginx/http.d/default.conf
 # add app files
 ADD . .
 # run nginx
+EXPOSE 80
 CMD ["./docker.sh", "container"]
