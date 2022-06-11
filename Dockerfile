@@ -13,7 +13,7 @@ WORKDIR /usr/src/app
 # Install modules
 ADD ipfs-hash/package*.json ./
 RUN npm install --omit=dev
-RUN npm install -g pkg
+RUN npm install --location=global pkg
 # Install app files, compile to native binary
 ADD ipfs-hash/* ./
 RUN pkg ./cli.js -o ./ipfs-cid-linux
