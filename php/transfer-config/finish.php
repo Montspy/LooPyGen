@@ -1,8 +1,7 @@
 <?php
 
-    $config_file = file_get_contents("./transfer_config.json");
-    if (!file_exists($config_file)) {
-        $config = json_decode($config_file, true);
+    if (!file_exists($transfer_config)) {
+        $config = json_decode($transfer_config, true);
     } else {
         Redirect('/transfer-config/1', false);
     }

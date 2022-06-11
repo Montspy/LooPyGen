@@ -42,7 +42,6 @@
         $royalty_percentage = $_POST['royalty_percentage'];
         $nft_type = $_POST['nft_type'];
         $fee_token = $_POST['fee_token'];
-        $config_file = "./config.json";
 
         $config_data = array("minter"=>$minter,
                              "private_key"=>$private_key,
@@ -51,7 +50,7 @@
                              "fee_token"=>(int)$fee_token);
 
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
-        file_put_contents($config_file, $config_json);
+        file_put_contents($mint_config, $config_json);
 
         Redirect('/mint-config/finish', false);
     }

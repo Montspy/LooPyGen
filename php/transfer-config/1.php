@@ -40,7 +40,6 @@
         $private_key = $_POST['private_key'];
         $private_key_mm = $_POST['private_key_mm'];
         $fee_token = $_POST['fee_token'];
-        $config_file = "./transfer_config.json";
 
         if(!str_starts_with($private_key_mm, '0x'))
             $private_key_mm = '0x' . $private_key_mm;
@@ -51,7 +50,7 @@
                              "fee_token"=>(int)$fee_token);
 
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
-        file_put_contents($config_file, $config_json);
+        file_put_contents($transfer_config, $config_json);
 
         Redirect('/transfer-config/finish', false);
     }

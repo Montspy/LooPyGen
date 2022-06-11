@@ -3,7 +3,7 @@
     $path = "./collections";
     $collections = array_diff(scandir($path), array('.', '..'));
 
-    if (!file_exists("./config.json")) {
+    if (!file_exists($mint_config)) {
         BrowserRedirect("/mint-config/1");
     }
 

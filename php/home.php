@@ -26,24 +26,13 @@
 <?php
 
     if (!empty($_GET['nuke'])) {
-        if (file_exists("./config.json")) { unlink("./config.json"); }
-        if (file_exists("./transfer_config.json")) { unlink("./transfer_config.json"); }
-        if (file_exists("./config.json") || file_exists("./transfer_config.json")) {
+        if (file_exists($mint_config)) { unlink($mint_config); }
+        if (file_exists($transfer_config)) { unlink($transfer_config); }
+        if (file_exists($mint_config) || file_exists($transfer_config)) {
             echo "<h3 class='error'><i>Error: Sensitive info not deleted</i></h3>";
         } else {
             echo "<h3 class='success'><i>Success: Sensitive Info Deleted</i></h3>";
         }
-    }
-
-    if (!empty($_GET['update'])) {
-        exec('git pull --recurse-submodules', $output, $code);
-        echo "<pre>";
-        echo "Update Exit Code: ${code}";
-        echo "";
-        foreach ($output as $line) {
-            echo $line;
-        }
-        echo "</pre>";
     }
 
 ?>

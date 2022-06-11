@@ -3,7 +3,7 @@
     $path = "./collections";
     $collections = array_diff(scandir($path), array('.', '..'));
 
-    if (!file_exists("./transfer_config.json")) {
+    if (!file_exists($transfer_config)) {
         BrowserRedirect("/transfer-config/1");
     }
 

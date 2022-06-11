@@ -152,7 +152,7 @@ def generate_paths(traits: Struct = None):
     paths = Struct()
     if traits:
         paths.user_folder = os.path.join(".", "collections")
-        paths.collection = os.path.join(".", "collections", traits.collection_lower)
+        paths.collection = os.path.join(paths.user_folder, traits.collection_lower)
         paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
         paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
         paths.images = os.path.join(paths.ipfs_folder, "images")
