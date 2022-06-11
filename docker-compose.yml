@@ -9,4 +9,4 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./collections:/var/www/html/collections:rw
+      - ./:/var/www/html:rw
