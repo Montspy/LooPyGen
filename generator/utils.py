@@ -151,6 +151,7 @@ def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool 
 def generate_paths(traits: Struct = None):
     paths = Struct()
     if traits:
+        paths.user_folder = os.path.join(".", "collections")
         paths.collection = os.path.join(".", "collections", traits.collection_lower)
         paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
         paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
@@ -166,14 +167,14 @@ def generate_paths(traits: Struct = None):
         paths.gen_stats = os.path.join(paths.stats, "gen-stats.json")
 
     # Log files
-    paths.mint_info = os.path.join(".", "mint-info.json")
-    paths.transfer_info = os.path.join(".", "transfer-info.json")
+    paths.mint_info = os.path.join(paths.user_folder, "mint-info.json")
+    paths.transfer_info = os.path.join(paths.user_folder, "transfer-info.json")
 
     # Config files
-    paths.config = os.path.join(".", "config.json")
-    paths.transfer_config = os.path.join(".", "transfer_config.json")
+    paths.config = os.path.join(paths.user_folder, "config.json")
+    paths.transfer_config = os.path.join(paths.user_folder, "transfer_config.json")
 
-    paths.custom_output = os.path.join(".", "collections", "custom")
+    paths.custom_output = os.path.join(paths.user_folder, "custom")
     paths.custom_metadata_cids = os.path.join(paths.custom_output, 'metadata-cids.json')
     paths.custom_metadata = os.path.join(paths.custom_output, 'metadata')
 
