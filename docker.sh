@@ -31,7 +31,6 @@ reload() {
     install_start_menu_shortcuts
     docker builder prune -f
     docker-compose up -d --build --force-recreate
-    composer
     docker builder prune -f
 }
 
@@ -84,11 +83,6 @@ remove_start_menu_shortcuts() {
     fi
 }
 
-composer() {
-    docker-compose exec php \
-    composer require web-token/jwt-encryption --ignore-platform-reqs --no-cache
-}
-
 case $1 in
     build) docker-compose build;;
     reload) reload;;
@@ -102,6 +96,10 @@ case $1 in
     remove_start_menu) remove_start_menu_shortcuts;;
     down) docker-compose down;;
     migrate) migrate;;
+    container)
+        php-fpm &
+        nginx -g "daemon off;"
+    ;;
     *)
         if ! $(docker ps -q --filter "name=loopygen.php" | grep -q .); then
             checkDotenv
