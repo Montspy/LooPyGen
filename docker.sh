@@ -86,7 +86,7 @@ remove_start_menu_shortcuts() {
 
 composer() {
     docker-compose exec php \
-    composer require firebase/php-jwt --ignore-platform-reqs --no-cache
+    composer require web-token/jwt-encryption --ignore-platform-reqs --no-cache
 }
 
 case $1 in
