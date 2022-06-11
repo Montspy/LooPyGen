@@ -5,9 +5,13 @@ if [ -f .env ]; then
 fi
 
 if [ -z $HUB_TAG ]; then
-    branch=$(git rev-parse --abbrev-ref HEAD)
+    branch=$(git rev-parse --abbrev-ref HEAD | sed 's,/,-,g')
     if [ $branch == "main" ]; then
         $branch = "latest"
+    fi
+    if [ -f .env ]; then
+        cat .env | sed "s/^HUB_TAG=.*$/HUB_TAG=$branch/g" > .temp
+        mv .temp .env
     fi
 else
     branch=$HUB_TAG
