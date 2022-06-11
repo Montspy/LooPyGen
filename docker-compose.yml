@@ -4,6 +4,7 @@ services:
 
   loopygen:
     container_name: "loopygen"
+    image: "sk33z3r/loopygen:${HUB_TAG}"
     build: .
     ports:
       - "8080:80"

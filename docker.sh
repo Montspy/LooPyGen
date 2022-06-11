@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 
-name="loopygen"
+if [ -f .env ]; then
+    . .env
+fi
+
+if [ -z $HUB_TAG ]; then
+    branch=$(git rev-parse --abbrev-ref HEAD)
+    if [ $branch == "main" ]; then
+        $branch = "latest"
+    fi
+else
+    branch=$HUB_TAG
+fi
+
+tag="sk33z3r/loopygen:$branch"
 
 checkDotenv() {
     uid=$(id -u)
@@ -17,6 +30,13 @@ checkDotenv() {
     fi
 }
 
+ci() {
+    echo $HUB_KEY | docker login -u $HUB_USER --password-stdin
+    docker build -t $tag .
+    docker push $tag
+    docker logout
+}
+
 update() {
     git fetch &&
     git pull &&
@@ -27,11 +47,11 @@ update() {
 reload() {
     docker-compose down --remove-orphans
     remove_start_menu_shortcuts
-    checkDotenv
+    #checkDotenv
     install_start_menu_shortcuts
-    docker builder prune -f
+    docker system prune -f
     docker-compose up -d --build --force-recreate
-    docker builder prune -f
+    docker system prune -f
 }
 
 migrate() {
@@ -83,12 +103,35 @@ remove_start_menu_shortcuts() {
     fi
 }
 
+usage() {
+cat <<EOF
+
+    LooPyGen Docker Environment Utility Script
+
+    Usage: $0 [command]
+
+    Commands:
+    build                 | Build the container locally
+    reload                | Tear down and rebuild the container
+    update                | Update and reload the repository
+    up                    | Spin up container
+    down                  | Tear down container
+    install_start_menu    | Install Windows Start Menu
+    remove_start_menu     | Remove Windows Start Menu
+    migrate               | Migrate collection files
+    container             | Runs commands for the container, meant for Docker
+    ci                    | Build, tag, and push container to Docker Hub
+    {command}             | Run a command inside the container
+
+EOF
+}
+
 case $1 in
     build) docker-compose build;;
     reload) reload;;
     update) update;;
     up)
-        checkDotenv
+        #checkDotenv
         install_start_menu_shortcuts
         docker-compose up -d
     ;;
@@ -100,11 +143,13 @@ case $1 in
         php-fpm &
         nginx -g "daemon off;"
     ;;
+    ci) ci;;
+    -h|-help|help) usage;;
     *)
-        if ! $(docker ps -q --filter "name=loopygen.php" | grep -q .); then
-            checkDotenv
+        if ! $(docker ps -q --filter "name=loopygen" | grep -q .); then
+            #checkDotenv
             docker-compose up -d
         fi
-        docker-compose exec php "$@"
+        docker-compose exec loopygen "$@"
     ;;
 esac
