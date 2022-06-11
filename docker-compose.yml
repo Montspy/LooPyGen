@@ -10,4 +10,6 @@ services:
       - "8080:80"
     volumes:
       - ./collections:/var/www/html/collections:rw
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     user: ${UID}:${GID}
