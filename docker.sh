@@ -6,8 +6,11 @@ fi
 
 if [ -z $HUB_TAG ]; then
     branch=$(git rev-parse --abbrev-ref HEAD | sed 's,/,-,g')
+    if [ -z $branch ]; then
+        branch=$(cat .version)
+    fi
     if [ $branch == "main" ]; then
-        $branch = "latest"
+        branch="latest"
     fi
     if [ -f .env ]; then
         cat .env | sed "s/^HUB_TAG=.*$/HUB_TAG=$branch/g" > .temp
@@ -16,7 +19,7 @@ if [ -z $HUB_TAG ]; then
 else
     branch=$HUB_TAG
     if [ $branch == "main" ]; then
-        $branch = "latest"
+        branch="latest"
     fi
 fi
 
