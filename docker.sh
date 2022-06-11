@@ -35,6 +35,7 @@ checkDotenv() {
 
 ci() {
     docker login -u "$HUB_USER" -p "$HUB_KEY" &&
+    echo "Building image with tag: $tag"
     docker build -t $tag . &&
     docker push $tag &&
     docker logout
