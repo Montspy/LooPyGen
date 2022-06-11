@@ -11,6 +11,9 @@ if [ -z $HUB_TAG ]; then
     fi
 else
     branch=$HUB_TAG
+    if [ $branch == "main" ]; then
+        $branch = "latest"
+    fi
 fi
 
 tag="sk33z3r/loopygen:$branch"
