@@ -1,6 +1,11 @@
 name: Docker Image CI
 
-on: [push]
+on:
+  push:
+    branches-ignore:
+      - 'main'
+    tags-ignore:
+      - v*.*.*
 
 env:
   HUB_TAG: "ci"
