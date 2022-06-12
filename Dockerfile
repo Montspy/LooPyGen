@@ -37,4 +37,5 @@ ADD dockerfiles/nginx.conf /etc/nginx/http.d/default.conf
 ADD . .
 # run nginx
 EXPOSE 80
+STOPSIGNAL SIGKILL
 CMD ["./docker.sh", "container"]
