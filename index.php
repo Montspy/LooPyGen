@@ -1,8 +1,8 @@
 <?php
 
     $version = file_get_contents('./.version');
-    $mint_config = "./collections/config.json";
-    $transfer_config = "./collections/transfer_config.json";
+    $mint_config = "./config.json";
+    $transfer_config = "./transfer_config.json";
 
     if (!empty($_GET['page'])) {
         $page = $_GET['page'];
