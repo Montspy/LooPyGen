@@ -150,8 +150,8 @@ def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool 
 
 def generate_paths(traits: Struct = None):
     paths = Struct()
+    paths.user_folder = os.path.join(".", "collections")
     if traits:
-        paths.user_folder = os.path.join(".", "collections")
         paths.collection = os.path.join(paths.user_folder, traits.collection_lower)
         paths.ipfs_folder = os.path.join(paths.collection, "ipfs")
         paths.metadata = os.path.join(paths.ipfs_folder, "metadata")
