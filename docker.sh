@@ -150,7 +150,7 @@ case $1 in
     down) docker-compose down;;
     migrate) migrate;;
     container)
-        chmod -R 777 ./collections &&
+        chmod -R 777 ./ &&
         php-fpm &
         nginx -g "daemon off;"
     ;;
