@@ -118,7 +118,14 @@
         }
         ?>
         <h3 class="success">Confirm mint. This might take a while.</h3>
-        <?php echo $printable_output ?>
+        <?php
+            echo $printable_output;
+            if (strpos($command, "--testmint") !== false) {
+                echo "<h3 class='info'>Test Mode enabled. Fees will not be paid.</h3>";
+            } else {
+                echo "<h3 class='warning'>Minting is active. Fees will be paid.</h3>";
+            }
+        ?>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
         <form method="post" action="/collection/mint?collection=<?php echo $lower; ?>&run=true">
             <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
