@@ -1,3 +1,6 @@
 [submodule "ipfs-hash"]
 	path = ipfs-hash
 	url = https://github.com/sk33z3r/ipfs-only-hash.git
+[submodule "python/hello_loopring"]
+	path = python/hello_loopring
+	url = https://github.com/Loopring/hello_loopring.git
