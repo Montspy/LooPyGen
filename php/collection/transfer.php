@@ -118,7 +118,6 @@
         <h3 class="success">Confirm transfer. This might take a while.</h3>
         <?php echo $printable_output ?>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
-        <p><code>Command: <?php echo $command; ?></code></p>
         <form method="post" action="/collection/transfer?collection=<?php echo $lower; ?>&run=true">
             <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
             <button class="form btn" type="submit" name="submit">TRANSFER</button>
