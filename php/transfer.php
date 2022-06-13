@@ -67,8 +67,14 @@
                     </div>
                 </div>
             </section>
-            <button class="form btn" name="submit">TRANSFER</button>
+            <button onclick="openModal('loading')" class="form btn" name="submit">REVIEW TRANSFER</button>
         </form>
+        <div class="modal" id="loading">
+            <h2>Retrieving estimated fees...</h2>
+            <div class="modal-content">
+                <img loading="lazy" src="/css/images/fees.gif" alt="GETTING FEES..." />
+            </div>
+        </div>
     <?php } else if (empty($_GET['run'])) {
         // Build command from inputs
         $wallet_file = "/tmp/wallets.txt";
@@ -104,15 +110,23 @@
             echo $printable_output;
             if (strpos($command, "--testmint") !== false) {
                 echo "<h3 class='info'>Test Mode enabled. Fees will not be paid.</h3>";
+                $loading_msg = "Hang tight, we're test transferring your NFT(s)...";
             } else {
                 echo "<h3 class='warning'>Transfers are active. Fees will be paid.</h3>";
+                $loading_msg = "Hang tight, we're transferring your NFT(s)...";
             }
         ?>
         <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
         <form method="post" action="/transfer?run=true">
             <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
-            <button class="form btn" type="submit" name="submit">TRANSFER</button>
+            <button onclick="openModal('loading')" class="form btn" type="submit" name="submit">TRANSFER</button>
         </form>
+        <div class="modal" id="loading">
+            <h2><?php echo $loading_msg; ?></h2>
+            <div class="modal-content">
+                <img loading="lazy" src="/css/images/transfer.gif" alt="TRANSFERRING..." />
+            </div>
+        </div>
     <?php } else if (!empty($_GET['run'])) {
         $wallet_file = "/tmp/wallets.txt";
         $nft_file = "/tmp/nfts.txt";
@@ -138,7 +152,10 @@ Result: <?php echo $code; ?>
     echo $line . "<br />";
 } ?>
         </pre>
-        <div class="nav"><a href="/home">MAIN MENU</a></div>
+        <div class="nav">
+            <a href="/transfer">TRANSFER AGAIN</a>
+            <a href="/home">MAIN MENU</a>
+        </div>
     <?php }
 
     echo '</section>';

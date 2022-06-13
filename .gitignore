@@ -1,11 +1,8 @@
 ### Custom ###
 
-generated
-output
 all-traits.json
 gen-stats.json
 traits.json
-images
 .tempfile
 config.json
 collections/*/
@@ -20,7 +17,6 @@ __pycache__/
 *.jpg
 *.jpeg
 *.png
-*.gif
 *.mp4
 *.webm
 *.json

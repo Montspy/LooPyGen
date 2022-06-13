@@ -49,8 +49,14 @@
                     </div>
                 </div>
             </section>
-            <input class="form btn" type="submit" name="submit" value="GENERATE" />
+            <input onclick="openModal('loading')" class="form btn" type="submit" name="submit" value="GENERATE" />
         </form>
+        <div class="modal" id="loading">
+            <h2>Hang tight, we're generating metadata for you...</h2>
+            <div class="modal-content">
+                <img loading="lazy" src="/css/images/metadata.gif" alt="GENERATING METADATA..." />
+            </div>
+        </div>
     <?php } else if (!empty($_GET['run'])) {
         $lower = $_GET['collection'];
         if (!empty($_POST['empty'])) { $empty = "--empty"; } else { $empty = ""; }

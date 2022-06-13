@@ -76,8 +76,14 @@
         <p><code>Command: <?php echo $command; ?></code></p>
         <form method="post" action="/collection/images?collection=<?php echo $lower; ?>&run=true">
             <input type="hidden" id="command" name="command" value="<?php echo $command; ?>" />
-            <input class="form btn" type="submit" name="submit" value="GENERATE" />
+            <input onclick="openModal('loading')" class="form btn" type="submit" name="submit" value="GENERATE" />
         </form>
+        <div class="modal" id="loading">
+            <h2>Hang tight, we're generating <?php echo $count; ?> images for you...</h2>
+            <div class="modal-content">
+                <img loading="lazy" src="/css/images/generate.gif" alt="GENERATING IMAGES..." />
+            </div>
+        </div>
     <?php } else if (!empty($_GET['run'])) {
         $lower = $_GET['collection'];
         $command = $_POST['command'];
