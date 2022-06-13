@@ -27,8 +27,8 @@ RUN apk --no-cache --update add python3 ffmpeg bash nginx
 COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
 COPY --from=node_modules /usr/src/app/ipfs-cid-linux /usr/bin/cid
 # setup composer
-COPY --from=composer /usr/bin/composer /usr/bin/composer
-RUN composer require web-token/jwt-encryption --ignore-platform-reqs --no-cache
+# COPY --from=composer /usr/bin/composer /usr/bin/composer
+# RUN composer require web-token/jwt-encryption --ignore-platform-reqs --no-cache
 # add scripts
 ADD dockerfiles/scripts/* /usr/local/bin/
 # add nginx conf
