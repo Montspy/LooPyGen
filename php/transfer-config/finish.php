@@ -8,7 +8,7 @@
         <h3 class="success">Configuration Successfully Encrypted</h3>
         <div id="guide">
             <section>
-                <p>Your configuration is encrypted stored in a secure location that gets destroyed when you remove or update LooPyGen.</p>
+                <p>Your configuration is encrypted and stored in a secure location that gets destroyed when you remove or update LooPyGen.</p>
                 <p>If you forget your passphrase for any reason, or need to change the private key to another wallet, simply remake your config again with a new passphrase.</p>
             </section>
         </div>
