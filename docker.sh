@@ -150,8 +150,19 @@ case $1 in
     down) docker-compose down;;
     migrate) migrate;;
     container)
-        chmod -R 777 ./!(python|ipfs-hash) &&
+        echo "[startup] Running startup job..."
+        echo "[startup] Set permissions..."
+        for f in $(ls); do
+            if [ $f = 'python' ] || [ $f = 'ipfs-hash' ]; then
+                echo "[startup] Skipping $f"
+            else
+                chmod -R 777 $f
+            fi
+        done &&
+        echo "[startup] Starting PHP FPM..."
         php-fpm &
+        echo "[startup] Starting nginx..."
+        echo "[LooPyGen v$(cat .version)] Server Running..."
         nginx -g "daemon off;"
     ;;
     ci) ci;;
