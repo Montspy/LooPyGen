@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /loopygen
-python3 generator/prepare.py "$@"
+python3 python/prepare.py "$@"

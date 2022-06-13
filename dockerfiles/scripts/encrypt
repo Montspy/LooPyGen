@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /loopygen
-python3 generator/enc-config.py "$@"
+python3 python/enc-config.py "$@"

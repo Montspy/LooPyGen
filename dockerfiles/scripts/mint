@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /loopygen
-python3 generator/minter.py "$@"
+python3 python/minter.py "$@"

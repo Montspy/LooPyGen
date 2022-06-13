@@ -77,7 +77,7 @@ def load_traits(name: str = None):
     if 'version' in traits_json and traits_json['version'] != TRAITS_VERSION:
         with TemporaryDirectory() as tempdir:
             converted_path = os.path.join(tempdir, 'traits_converted.json')
-            ret_code = subprocess.call(f"python3 generator/json-convert.py --file {traits_path} --version {TRAITS_VERSION} --output {converted_path}", shell=True)
+            ret_code = subprocess.call(f"python3 python/json-convert.py --file {traits_path} --version {TRAITS_VERSION} --output {converted_path}", shell=True)
             assert ret_code == 0, f"Could not convert {traits_path} to version {TRAITS_VERSION}"
             with open(converted_path, 'r') as f:
                 traits_json = json.load(f)

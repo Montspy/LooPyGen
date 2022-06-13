@@ -3,8 +3,8 @@ FROM python:3.9-alpine3.15 AS python_modules
 RUN apk --no-cache --update add build-base jpeg-dev libffi-dev
 
 # install python modules
-ADD generator/requirements.txt /generator.txt
-ADD generator/hello_loopring/requirements.txt /hello_loopring.txt
+ADD python/requirements.txt /generator.txt
+ADD python/hello_loopring/requirements.txt /hello_loopring.txt
 RUN pip install -r /generator.txt -r /hello_loopring.txt
 
 FROM node:16-alpine3.15 as node_modules

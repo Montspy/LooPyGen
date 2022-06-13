@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd /loopygen
-python3 generator/metadata.py "$@"
+python3 python/metadata.py "$@"
