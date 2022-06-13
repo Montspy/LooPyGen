@@ -60,9 +60,9 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Tranfer mode: Send the NFTs ordered by ID or in a random order.">
+                    <div data-tooltip="Transfer mode: Send the NFTs ordered by ID or in a random order.">
                         <label for="mode">
-                            Tranfer mode
+                            Transfer mode
                         </label>
                         <select required class="form med" id="mode" name="mode">
                             <option selected value="--random">Random</option>

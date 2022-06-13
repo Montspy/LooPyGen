@@ -44,7 +44,7 @@
                 <div class="row">
                     <div data-tooltip="Random: Each wallet will receive a random NFT from the list&#xa;Ordered: One-to-one association between wallet and NFT. The 1st wallet will receive the 1st NFT in the list, The 2nd wallet the 2nd NFT, etc...">
                         <label for="mode">
-                            Tranfer mode
+                            Transfer mode
                         </label>
                         <select required class="form med" id="mode" name="mode">
                             <option selected value="--random">Random</option>
