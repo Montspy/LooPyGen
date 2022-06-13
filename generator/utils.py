@@ -83,6 +83,53 @@ def load_traits(name: str = None):
                 traits_json = json.load(f)
     return Struct(traits_json)
 
+def save_config_json(config: str, path: str, base64secret: str = None):
+    from jose import jwe
+    from base64 import b64decode
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+    with open(config) as f:
+        config_json = json.load(f)
+
+    # Check for provided passphrase
+    if base64secret is not None:
+
+        # Decode passphrase
+        secret = b64decode(base64secret)
+
+        # Derive key
+        salt = os.urandom(16)
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=390000,
+        )
+        key = kdf.derive(secret)
+
+        # Encrypt
+        cypher = jwe.encrypt(json.dumps(config_json), key, algorithm="dir", encryption="A256GCM")
+        enc_config = {
+            "cypher": cypher.decode("utf-8"),
+            "salt": "0x" + salt.hex()
+        }
+
+        # write encrypted config to file
+        file = open(path, 'w')
+        file.write(json.dumps(enc_config))
+        file.close()
+
+        # Return true or false result
+        if os.path.exists(path):
+            return True
+        else:
+            return False
+
+    else:
+
+        sys.exit("Unable to encrypt config: No passphrase provided")
+
 def load_config_json(path: str):
     if not os.path.exists(path):
         sys.exit(f"Unable to load {path}: Config file not found. Did you create it? If not, go to http://localhost:8080/")
