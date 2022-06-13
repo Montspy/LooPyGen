@@ -12,8 +12,8 @@
                 <p>If you forget your passphrase for any reason, or need to change the private key to another wallet, simply remake your config again with a new passphrase.</p>
             </section>
         </div>
-        <div class="nav"><a href="/">Back to Home</a></div>
-        <div class="nav"><a href="/mint-config/1">Remake Config</a></div>
+        <div class="nav"><a href="/">BACK TO HOME</a></div>
+        <div class="nav"><a href="/mint-config/1">REMAKE CONFIG</a></div>
     <?php } else {
         unlink($mint_config); ?>
         <h3 class="error">Configuration Not Encrypted</h3>
@@ -23,7 +23,7 @@
                 <p>Please try again.</p>
             </section>
         </div>
-        <div class="nav"><a href="/mint-config/1">Retry Config</a></div>
+        <div class="nav"><a href="/mint-config/1">RETRY CONFIG</a></div>
     <?php }
 
 ?>
