@@ -20,6 +20,7 @@
                 <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address, ENS, or Account ID" /></div>
                 <div data-tooltip="Loopring L2 Private Key: The Loopring private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Loopring L2 Private Key (from step 01)" /></div>
                 <div data-tooltip="MetaMask L1 Private Key: The MetaMask private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="MetaMask L1 Private Key (from step 02)" /></div>
+                <div data-tooltip="Config Passphrase: A passphrase to encrypt your private key with [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="secret" name="secret" placeholder="Config Passphrase" /></div>
                 <div class="row">
                     <div data-tooltip="Fee Token: The token to be used to pay protocol fees">
                         <label for="fee_token" class="med">
@@ -38,6 +39,7 @@
     <?php } else {
         $sender = $_POST['sender'];
         $private_key = $_POST['private_key'];
+        $secret = base64_encode($_POST['secret']);
         $private_key_mm = $_POST['private_key_mm'];
         $fee_token = $_POST['fee_token'];
 
@@ -52,7 +54,11 @@
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($transfer_config, $config_json);
 
-        Redirect('/transfer-config/finish', false);
+        # encrypt the config file
+        $command = "encrypt --transfer --secret ${secret}";
+        exec($command, $output, $code);
+
+        Redirect("/transfer-config/finish?result=${code}", false);
     }
 
 ?>

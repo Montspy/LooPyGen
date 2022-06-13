@@ -15,6 +15,7 @@
             <section id="artist">
                 <div data-tooltip="Minter Address: The L2 wallet address or ENS or Account ID of the minter"><input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" /></div>
                 <div data-tooltip="Minter Private Key: The Loopring private key of the minter [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Private Key" /></div>
+                <div data-tooltip="Config Passphrase: A passphrase to encrypt your private key with [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="secret" name="secret" placeholder="Config Passphrase" /></div>
                 <div data-tooltip="Royalty Percentage: Percentage of the price of a sale that will go to the Royalty Address (LooPyGen generated collections override this percentage)">
                     <input required type="number" class="form wide" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="Default Royalty Percentage: 0-10" />
                 </div>
@@ -39,6 +40,7 @@
     <?php } else {
         $minter = $_POST['minter'];
         $private_key = $_POST['private_key'];
+        $secret = base64_encode($_POST['secret']);
         $royalty_percentage = $_POST['royalty_percentage'];
         $nft_type = $_POST['nft_type'];
         $fee_token = $_POST['fee_token'];
@@ -52,7 +54,11 @@
         $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
         file_put_contents($mint_config, $config_json);
 
-        Redirect('/mint-config/finish', false);
+        # encrypt the config file
+        $command = "encrypt --mint --secret ${secret}";
+        exec($command, $output, $code);
+
+        Redirect("/mint-config/finish?result=${code}", false);
     }
 
 ?>
