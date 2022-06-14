@@ -242,7 +242,7 @@ async def load_config(args, paths: Struct):
     cfg.nftsCount = cfg.nfts["totalNum"]
     assert (
         cfg.nftsCount > 0
-    ), f"Could not parse --nfts argument {args.source}. Make sure it is an NFTID, CID, CONTRACT or LIST."
+    ), f"No NFT matching \"{args.source}\" was found in the sender's wallet. Make sure --nfts is a valid NFTID, CID, CONTRACT, COLLECTION or LIST."
 
     # Weights based off the amount of each NFT
     cfg.weights = [int(t["total"]) for t in cfg.nfts["data"]]
