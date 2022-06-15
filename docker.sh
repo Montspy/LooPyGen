@@ -152,6 +152,8 @@ case $1 in
     container)
         echo "[startup] Running startup job..."
         echo "[startup] Set permissions..."
+        mkdir -p .secrets
+        chmod -R 777 .secrets
         for f in $(ls); do
             if [ $f = 'python' ] || [ $f = 'ipfs-hash' ]; then
                 echo "[startup] Skipping $f"

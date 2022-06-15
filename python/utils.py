@@ -218,8 +218,8 @@ def generate_paths(traits: Struct = None):
     paths.transfer_info = os.path.join(paths.user_folder, "transfer-info.json")
 
     # Config files
-    paths.config = os.path.join(".", "config.json")
-    paths.transfer_config = os.path.join(".", "transfer_config.json")
+    paths.config = os.path.join(".", ".secrets", "config.json")
+    paths.transfer_config = os.path.join(".", ".secrets", "transfer_config.json")
 
     paths.custom_output = os.path.join(paths.user_folder, "custom")
     paths.custom_metadata_cids = os.path.join(paths.custom_output, 'metadata-cids.json')
