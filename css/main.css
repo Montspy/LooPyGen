@@ -17,7 +17,7 @@ footer {
 }
 
 pre {
-    width: 500px;
+    width: 750px;
     max-height: 500px;
     overflow: scroll;
 }
@@ -78,12 +78,12 @@ form {
 
 .content {
     margin: 10px 0;
-    width: 650px;
+    width: 950px;
     background: #2d2f4b;
     display: flex;
     flex-direction: column;
     align-items: center;
-    align-content: flex-start;
+    align-content: center;
     justify-content: center;
 }
 
@@ -131,7 +131,7 @@ form {
 .nav, section {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     align-content: center;
     justify-content: center;
 }
