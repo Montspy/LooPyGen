@@ -154,6 +154,7 @@ case $1 in
         echo "[startup] Set permissions..."
         mkdir -p .secrets
         chmod -R 777 .secrets
+        chmod 777 /loopygen
         for f in $(ls); do
             if [ $f = 'python' ] || [ $f = 'ipfs-hash' ]; then
                 echo "[startup] Skipping $f"
