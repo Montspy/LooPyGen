@@ -1,48 +1,56 @@
-from pprint import pprint
+from wxasync import WxAsyncApp, AsyncBind, AsyncShowDialogModal, StartCoroutine
+import asyncio
+import aiohttp
 import re
 import os
 import subprocess
-import sys
-import requests
 import wx
 import time
-import json
+import aiodocker
 import docker
 import webbrowser
 
 IMAGE = "sk33z3r/loopygen"
 
-
-def wait_until(condition, interval=0.1, timeout=1, *args):
+# Checks condition(args) every interval until it is ture or until timeout seconds is elapsed
+# Returns True if it timed out
+async def wait_until(condition, interval=0.1, timeout=1, *args):
     start = time.time()
-    while not condition(*args) and time.time() - start < timeout:
-        time.sleep(interval)
+    timed_out = False
+    while not condition(*args):
+        await asyncio.sleep(interval)
+        if time.time() - start >= timeout:
+            timed_out = True
+            break
+    return timed_out
 
 
 class MainWindow(wx.Frame):
-    client: docker.DockerClient
-    api_client: docker.APIClient
-    container: docker.models.containers.Container
+    client: aiodocker.docker.Docker
+    container: aiodocker.docker.DockerContainer
     container_image_id: str
     latest_image_id: str
+    busy: bool
+
+    DOCKER_PATHS_WIN = [r"C:\Program Files\Docker\Docker\Docker Desktop.exe"]
 
     def __init__(self, parent, title):
+        self.client = None
+        self.container = None
+        self.container_image_id = None
         self.latest_image_id = None
-        self.initDocker()
+        self.busy = True
 
         wx.Frame.__init__(self, parent, title=title)
         self.statusBar = self.CreateStatusBar()
         self.panel = wx.Panel(self, wx.ID_ANY)
 
-        self.pollTimer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onTimer, self.pollTimer)
-
-        self.startButton = wx.Button(self.panel, wx.ID_ANY, "Start LooPyGen")
+        self.startButton = wx.Button(self.panel, wx.ID_ANY, "Open LooPyGen UI")
         self.stopButton = wx.Button(self.panel, wx.ID_ANY, "Stop LooPyGen")
         self.updateButton = wx.Button(self.panel, wx.ID_ANY, "LooPyGen is up-to-date")
-        self.Bind(wx.EVT_BUTTON, self.onStartButton, self.startButton)
-        self.Bind(wx.EVT_BUTTON, self.onStopButton, self.stopButton)
-        self.Bind(wx.EVT_BUTTON, self.onUpdateButton, self.updateButton)
+        AsyncBind(wx.EVT_BUTTON, self.onStartButton, self.startButton)
+        AsyncBind(wx.EVT_BUTTON, self.onStopButton, self.stopButton)
+        AsyncBind(wx.EVT_BUTTON, self.onUpdateButton, self.updateButton)
 
         grid = wx.BoxSizer(wx.HORIZONTAL)
         grid.Add(self.startButton, 0, wx.ALL, 5)
@@ -55,68 +63,63 @@ class MainWindow(wx.Frame):
         self.startButton.Disable()
         self.stopButton.Disable()
         self.updateButton.Disable()
-        self.refreshButtons()
-        self.pollTimer.Start(1000)
 
-        # self.client.containers.run(
-        #     "sk33z3r/loopygen:dev-sk33z3r",
-        #     detach=True,
-        #     name="loopygen",
-        #     ports={80: 8080},
-        #     volumes=[f"C:\\Users\\Valentin\\Desktop\\collections:/loopygen/collections"],
-        # )
-        # sys.exit()
-
-        if not self.client:
-            self.startDocker()
-
-    def refreshDockerStatus(self):
         self.client = None
-        self.api_client = None
+        StartCoroutine(self.initDocker, self)
+        self.busy = False
+        StartCoroutine(self.udpateUI, self)
+
+    async def refreshDockerStatus(self):
         self.container = None
         self.container_image_id = None
 
         try:
-            self.client = docker.from_env()
-            self.api_client = docker.APIClient(os.getenv("DOCKER_HOST"))
+            if not self.client:
+                self.client = aiodocker.Docker()
         except docker.errors.DockerException as e:
             return
 
-        containers = self.client.containers.list(all=True)
-        containers = list(filter(lambda ctnr: "loopygen" in ctnr.name, containers))
-        if len(containers) == 0:
-            self.container = None
-            return
-        self.container = containers[0]
+        containers = await self.client.containers.list(all=True, filters={})
+        for ctnr in containers:
+            if (await ctnr.show())["Name"] == "/loopygen":
+                self.container = ctnr
+                break
 
         # Read image ID from container
         try:
-            self.container_image_id = self.api_client.inspect_container(
-                self.container.id
-            )["Image"]
+            self.container_image_id = await self.inspectContainer("Image")
+            # print('current')
+            # print(self.container_image_id)
         except Exception as e:
             print("Failed to check for updates:")
             print(e)
 
-        # print(self.container_image_id)
+    async def udpateUI(self):
+        while True:
+            if not self.busy:
+                await self.refreshButtons()
+            await asyncio.sleep(1)
 
-    def onTimer(self, event):
-        self.refreshButtons()
-
-    def refreshButtons(self):
-        self.refreshDockerStatus()
+    async def refreshButtons(self):
+        await self.refreshDockerStatus()
 
         if not self.client:
             self.startButton.Disable()
+            self.startButton.SetLabel("Start LooPyGen")
             self.stopButton.Disable()
             self.updateButton.Disable()
             self.updateButton.SetLabel("LooPyGen is up-to-date")
 
-        if self.container and self.container.status == "running":
-            self.startButton.Disable()
+        if (
+            self.container
+            and (await self.inspectContainer(["State", "Status"])) == "running"
+        ):
+            self.startButton.Enable()
+            self.startButton.SetLabel("Open LooPyGen UI")
             self.stopButton.Enable()
         else:
             self.startButton.Enable()
+            self.startButton.SetLabel("Start LooPyGen")
             self.stopButton.Disable()
 
         if (
@@ -126,122 +129,247 @@ class MainWindow(wx.Frame):
         ):
             self.updateButton.Enable()
             self.updateButton.SetLabel("Update LooPyGen")
-            self.statusBar.SetStatusText(
-                f"New {IMAGE} update found: {self.latest_image_id}"
-            )
         else:
             self.updateButton.Disable()
             self.updateButton.SetLabel("LooPyGen is up-to-date")
 
-    def initDocker(self):
-        self.refreshDockerStatus()
+    async def ensureDockerDesktop(self):
+        import platform
+
+        self.statusBar.SetStatusText(f"Starting Docker Desktop...")
+
+        res = await asyncio.create_subprocess_shell("docker ps")
+        if res.returncode == 0:
+            return True
+
+        # Attempt to start
+        if platform.system() == "Linux":
+            # Linux
+            await asyncio.create_subprocess_shell(
+                "systemctl --user start docker-desktop"
+            )
+        elif platform.system() == "Darwin":
+            # macOS
+            await asyncio.create_subprocess_shell("open -a Docker")
+        elif platform.system() == "Windows":
+            # Windows
+            import shutil
+
+            docker_exe_path = shutil.which("docker.exe")
+            if docker_exe_path:
+                self.DOCKER_PATHS_WIN.insert(
+                    0,
+                    re.sub(
+                        r"resources\\bin\\docker.exe",
+                        r"Docker Desktop.exe",
+                        docker_exe_path,
+                        re.IGNORECASE,
+                    ),
+                )
+            for potential_path in self.DOCKER_PATHS_WIN:
+                if os.path.exists(potential_path):
+                    subprocess.Popen(potential_path)
+                    break
+        else:
+            print(f"Unknown platform {platform.system()}")
+            return False
+
+        # Wait for docker daemon to be up and running
+        timed_out_waiting = await wait_until(
+            lambda cmd: (
+                await asyncio.create_subprocess_shell(cmd).returncode == 0 for _ in "_"
+            ).__anext__(),
+            3,
+            30,
+            "docker ps",
+        )
+        return not timed_out_waiting
+
+    async def initDocker(self):
+        if await self.ensureDockerDesktop():
+            self.statusBar.SetStatusText(f"Docker Desktop started")
+            await self.refreshDockerStatus()
+        else:
+            self.statusBar.SetStatusText(f"Could not start Docker Desktop")
 
         # Get image ID of latest from Docker hub
         try:
-            token = json.loads(
-                requests.get(
+            async with aiohttp.ClientSession() as session:
+                resp = await session.get(
                     f"https://auth.docker.io/token?scope=repository:{IMAGE}:pull&service=registry.docker.io"
-                ).text
-            )["token"]
-            self.latest_image_id = json.loads(
-                requests.get(
+                )
+                token = (await resp.json())["token"]
+                resp = await session.get(
                     f"https://registry.hub.docker.com/v2/{IMAGE}/manifests/latest",
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Accept": "application/vnd.docker.distribution.manifest.v2+json",
                     },
-                ).text
-            )["config"]["digest"]
-            # print(self.latest_image_id)
+                )
+                self.latest_image_id = (await resp.json())["config"]["digest"]
+                # print('latest')
+                # print(self.latest_image_id)
         except Exception as e:
             print("Failed to check for updates:")
             print(e)
 
-    def createContainer(self, collection_dir: str = None):
+    async def createContainer(self, collection_dir: str = None):
         if not collection_dir:
             dialog = wx.DirDialog(
+
                 self,
                 "Select your collections directory:",
                 style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
             )
-            if dialog.ShowModal() != wx.ID_OK:
+            if (await AsyncShowDialogModal(dialog)) != wx.ID_OK:
                 dialog.Destroy()
                 return
 
-            dialog.Destroy()
             collection_dir = dialog.GetPath()
+            dialog.Destroy()
 
         self.statusBar.SetStatusText(f"Getting docker image {IMAGE}...")
-        loopygen_image = self.client.images.pull(IMAGE)
+        loopygen_image = await self.client.images.pull(IMAGE)
         self.statusBar.SetStatusText(f"Starting new container loopygen...")
-        self.container = self.client.containers.run(
-            loopygen_image,
-            detach=True,
+        self.container = await self.client.containers.run(
+            {
+                "Image": IMAGE,
+                "HostConfig": {
+                    "Binds": [f"{collection_dir}:/loopygen/collections:rw"],
+                    "PortBindings": {
+                        "80/tcp": [{"HostPort": "8080"}],
+                    },
+                },
+            },
             name="loopygen",
-            ports={80: 8080},
-            volumes=[f"{collection_dir}:/loopygen/collections"],
         )
 
     def openUI(self):
-        if not self.container:
+        self.statusBar.SetStatusText("Opening LooPyGen UI...")
+        webbrowser.open("http://localhost:8080/")
+
+    async def onStartButton(self, event):
+        self.busy = True
+        print("start", event)
+        just_started = False
+
+        if self.container is None:
+            await self.createContainer()
+            just_started = True
+        elif (await self.inspectContainer(["State", "Status"])) != "running":
+            name = await self.inspectContainer("Name")
+            self.statusBar.SetStatusText(f"Starting container {name}...")
+            await self.container.start()
+            just_started = True
+
+        if self.container is None:
+            self.busy = False
             return
 
-        wait_until(
-            lambda ctnr: ctnr.reload() or ctnr.status == "running",
+        timed_out_waiting = await wait_until(
+            lambda x: (
+                await self.inspectContainer(["State", "Status"]) == "running"
+                for _ in "_"
+            ).__anext__(),
             1,
             10,
-            self.container,
+            None,
         )
-        self.statusBar.SetStatusText("Opening LooPyGen UI...")
-        time.sleep(2)
-        webbrowser.open("http://localhost:8080/")
-        self.statusBar.SetStatusText("LooPyGen started")
-
-    def onStartButton(self, event):
-        print("start", event)
-
-        if not self.container:
-            self.createContainer()
-        else:
-            self.statusBar.SetStatusText(f"Starting container {self.container.name}...")
-            self.container.start()
-
-        self.openUI()
-
-    def onStopButton(self, event):
-        print("stop", event)
-        if self.container and self.container.status == "running":
-            self.container.stop()
-
-    def onUpdateButton(self, event):
-        print("update", event)
-
-        if not self.container:
+        if timed_out_waiting:
+            self.statusBar.SetStatusText(f"Could not start LooPyGen")
+            self.busy = False
             return
 
-        if self.container.status == "running":
-            self.statusBar.SetStatusText(f"Stopping container {self.container.name}...")
-            self.container.stop()
-            wait_until(
-                lambda ctnr: ctnr.reload() or ctnr.status == "exited",
+        if just_started:
+            await asyncio.sleep(2)
+
+        self.openUI()
+        self.busy = False
+
+    async def onStopButton(self, event):
+        self.busy = True
+        print("stop", event)
+        if (
+            self.container
+            and (await self.inspectContainer(["State", "Status"])) == "running"
+        ):
+            await self.container.kill()
+            self.busy = False
+
+    async def onUpdateButton(self, event):
+        self.busy = True
+        print("update", event)
+
+        if self.container is None:
+            self.busy = False
+            return
+
+        if (await self.inspectContainer(["State", "Status"])) == "running":
+            name = await self.inspectContainer("Name")
+            self.statusBar.SetStatusText(f"Stopping container {name}...")
+            await self.container.kill()
+            await wait_until(
+                lambda x: (
+                    await self.inspectContainer(["State", "Status"]) == "exited"
+                    for _ in "_"
+                ).__anext__(),
                 1,
                 10,
-                self.container,
+                None,
             )
 
         # Get collections path from existing container
-        mounts = self.api_client.inspect_container(self.container.id)["Mounts"]
-        collection_dir = mounts[0]["Source"]
-        self.statusBar.SetStatusText(f"Removing old container {self.container.name}...")
-        self.container.remove()
-        time.sleep(2)
+        collection_dir = await self.inspectContainer(["Mounts", 0, "Source"])
+        name = await self.inspectContainer("Name")
+        self.statusBar.SetStatusText(f"Removing old container {name}...")
+        await self.container.delete()
+        await asyncio.sleep(2)
         self.statusBar.SetStatusText(f"Creating new container...")
-        print(collection_dir)
-        self.createContainer(collection_dir)
+        await self.createContainer(collection_dir)
+
+        if self.container is None:
+            self.busy = False
+            return
+
+        timed_out_waiting = await wait_until(
+            lambda x: (
+                await self.inspectContainer(["State", "Status"]) == "running"
+                for _ in "_"
+            ).__anext__(),
+            1,
+            10,
+            None,
+        )
+        if timed_out_waiting:
+            self.statusBar.SetStatusText(f"Could not start LooPyGen")
+            self.busy = False
+            return
+        time.sleep(2)
 
         self.openUI()
+        self.busy = False
+
+    async def inspectContainer(self, branches=[]):
+        if self.container is None:
+            return None
+
+        if isinstance(branches, str):
+            branches = [branches]
+
+        node = await self.container.show()
+        for b in branches:
+            node = node[b]
+
+        return node
 
 
-app = wx.App(False)
-frame = MainWindow(None, "LooPyGen Companion").Show()
-app.MainLoop()
+async def main():
+    app = WxAsyncApp(False)
+    frame = MainWindow(None, "LooPyGen Companion")
+    frame.Show()
+    await app.MainLoop()
+    if frame.client:
+        await frame.client.close()
+
+
+asyncio.run(main())

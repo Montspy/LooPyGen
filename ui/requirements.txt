@@ -1,3 +1,7 @@
 docker
 wxPython
 pyinstaller
+wxasync
+asyncio
+aiohttp
+aiodocker
