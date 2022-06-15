@@ -91,7 +91,7 @@
                         <div class="trait-row wide">
                             <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
                             <div data-tooltip="Color: The fill color of this background variation">
                                 <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
@@ -129,7 +129,7 @@
                         <div class="trait-row wide">
                             <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
                             <div data-tooltip="Image: Choose the image file that should be used for this variation.">
                                 <label for="trait<?php echo $trait_var ?>_r">Filename:</label><br />
