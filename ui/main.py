@@ -28,6 +28,7 @@ async def wait_until(condition, interval=0.1, timeout=1, *args):
 class MainWindow(wx.Frame):
     client: aiodocker.docker.Docker
     container: aiodocker.docker.DockerContainer
+    status: str
     container_image_id: str
     latest_image_id: str
     busy: bool
@@ -37,6 +38,7 @@ class MainWindow(wx.Frame):
     def __init__(self, parent, title):
         self.client = None
         self.container = None
+        self.status = "exited"
         self.container_image_id = None
         self.latest_image_id = None
         self.busy = True
@@ -44,6 +46,9 @@ class MainWindow(wx.Frame):
         wx.Frame.__init__(self, parent, title=title)
         self.statusBar = self.CreateStatusBar()
         self.panel = wx.Panel(self, wx.ID_ANY)
+
+        self.buttonTimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.refreshButtons, self.buttonTimer)
 
         self.startButton = wx.Button(self.panel, wx.ID_ANY, "Open LooPyGen UI")
         self.stopButton = wx.Button(self.panel, wx.ID_ANY, "Stop LooPyGen")
@@ -68,6 +73,7 @@ class MainWindow(wx.Frame):
         StartCoroutine(self.initDocker, self)
         self.busy = False
         StartCoroutine(self.udpateUI, self)
+        self.buttonTimer.Start(500)
 
     async def refreshDockerStatus(self):
         self.container = None
@@ -85,6 +91,9 @@ class MainWindow(wx.Frame):
                 self.container = ctnr
                 break
 
+        if self.container:
+            self.status = (await self.inspectContainer(["State", "Status"]))
+
         # Read image ID from container
         try:
             self.container_image_id = await self.inspectContainer("Image")
@@ -97,12 +106,10 @@ class MainWindow(wx.Frame):
     async def udpateUI(self):
         while True:
             if not self.busy:
-                await self.refreshButtons()
+                await self.refreshDockerStatus()
             await asyncio.sleep(1)
 
-    async def refreshButtons(self):
-        await self.refreshDockerStatus()
-
+    def refreshButtons(self, event):
         if not self.client:
             self.startButton.Disable()
             self.startButton.SetLabel("Start LooPyGen")
@@ -112,7 +119,7 @@ class MainWindow(wx.Frame):
 
         if (
             self.container
-            and (await self.inspectContainer(["State", "Status"])) == "running"
+            and self.status == "running"
         ):
             self.startButton.Enable()
             self.startButton.SetLabel("Open LooPyGen UI")
@@ -216,7 +223,6 @@ class MainWindow(wx.Frame):
     async def createContainer(self, collection_dir: str = None):
         if not collection_dir:
             dialog = wx.DirDialog(
-
                 self,
                 "Select your collections directory:",
                 style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
