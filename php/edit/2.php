@@ -33,11 +33,11 @@
                 $w = (isset($traits['thumbnail_size']) and count($traits['thumbnail_size']) >= 1) ? $traits['thumbnail_size'][0] : null;
                 $h = (isset($traits['thumbnail_size']) and count($traits['thumbnail_size']) >= 2) ? $traits['thumbnail_size'][1] : null;
                 ?>
-                <div class="trait-row">
+                <div class="trait-row" data-tooltip="Thumbnail Size: The dimensions in pixels of your thumbnails&#xa;[height: optional]">
                     <label>
-                        Size of your thumbnails (height is optional):
+                        Thumbnail size:
                     </label>
-                    <div class="labeled" data-tooltip="Thumbnail Size: The dimensions in pixels of your thumbnails [height: optional]">
+                    <div class="labeled">
                         <input required type="number" class="form size" id="thumbnail_width" min="1" name="thumbnail_width" placeholder="WIDTH" value="<?php echo $w; ?>" />x
                         <input type="number" class="form size" id="thumbnail_height" min="1" name="thumbnail_height" placeholder="HEIGHT" value="<?php echo $h; ?>" />
                     </div>
@@ -45,8 +45,10 @@
             <?php } if ($new_traits['animation'] === true) {
                 $format = isset($traits['animation']) ? $traits['animation'] : null;
                 ?>
-                <div class="trait-row" data-tooltip="Animated file format: The file format of your animated NFTs (does not affect thumbnails). GIF: quickest export, largest file. WebM: Slower export, small file. MP4: Slower export, small file, no transparency">
-                    <label for="animated_format">Animation output format:&nbsp;&nbsp;</label>
+                <div class="trait-row" data-tooltip="Animated file format: The file format for animated NFTs (does not affect thumbnails).&#xa;- GIF: quickest export, largest file.&#xa;- WebM: Slower export, small file.&#xa;- MP4: Slower export, small file, no transparency">
+                    <label for="animated_format">
+                        Animation file format:
+                    </label>
                     <select required class="form small" id="animated_format" name="animated_format" value="<?php echo $format; ?>" >
                         <option value=".gif">GIF</option>
                         <option value=".webm">WEBM</option>
@@ -76,11 +78,11 @@
                             <input required type="number" class="form number" id="trait<?php echo $s ?>_vars" min="1" name="trait<?php echo $s ?>_vars" placeholder="1" value="<?php echo isset($layer) ? $layer['variations'] : null; ?>" />
                         </div>
                     </div>
-                    <div class="trait-row">
+                    <div class="trait-row" data-tooltip="Image Size: The dimensions in pixels of your images">
                         <label>
                             Size of your images:
                         </label>
-                        <div class="labeled" data-tooltip="Image Size: The dimensions in pixels of your images">
+                        <div class="labeled">
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_x" min="1" name="trait<?php echo $s ?>_x" placeholder="WIDTH" value="<?php echo $x ?>" />x
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_y" min="1" name="trait<?php echo $s ?>_y" placeholder="HEIGHT" value="<?php echo $y ?>" />
                         </div>

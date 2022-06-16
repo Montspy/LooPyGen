@@ -28,19 +28,21 @@
         </div>
         <form method="post" action="/setup/2?collection=<?php echo $collection_lower; ?>">
             <?php if ($traits['thumbnails'] === true) { ?>
-                <div class="trait-row">
+                <div class="trait-row" data-tooltip="Thumbnail Size: The dimensions in pixels of your thumbnails&#xa;[height: optional]">
                     <label>
-                        Size of your thumbnails (height is optional):
+                        Thumbnails size:
                     </label>
-                    <div class="labeled" data-tooltip="Thumbnail Size: The dimensions in pixels of your thumbnails [height: optional]">
+                    <div class="labeled">
                         <input required type="number" class="form size" id="thumbnail_width" min="1" name="thumbnail_width" placeholder="WIDTH" />x
                         <input type="number" class="form size" id="thumbnail_height" min="1" name="thumbnail_height" placeholder="HEIGHT" />
                     </div>
                 </div>
                 <?php }
             if ($traits['animation'] === true) { ?>
-                <div class="trait-row" data-tooltip="Animated file format: The file format of your animated NFTs (does not affect thumbnails). GIF: quickest export, largest file. WebM: Slower export, small file. MP4: Slower export, small file, no transparency">
-                    <label for="animated_format">Animation output format:&nbsp;&nbsp;</label>
+                <div class="trait-row" data-tooltip="Animated file format: The file format for animated NFTs (does not affect thumbnails).&#xa;- GIF: quickest export, largest file.&#xa;- WebM: Slower export, small file.&#xa;- MP4: Slower export, small file, no transparency">
+                    <label for="animated_format">
+                        Animation file format:
+                    </label>
                     <select required class="form small" id="animated_format" name="animated_format">
                         <option value=".gif">GIF</option>
                         <option value=".webm">WEBM</option>
@@ -60,11 +62,11 @@
                             <input required type="number" class="form number" id="trait<?php echo $s ?>_vars" min="1" name="trait<?php echo $s ?>_vars" placeholder="1" />
                         </div>
                     </div>
-                    <div class="trait-row">
+                    <div class="trait-row" data-tooltip="Image Size: The dimensions in pixels of your images">
                         <label>
                             Size of your images:
                         </label>
-                        <div class="labeled" data-tooltip="Image Size: The dimensions in pixels of your images">
+                        <div class="labeled">
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_x" min="1" name="trait<?php echo $s ?>_x" placeholder="WIDTH" />x
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_y" min="1" name="trait<?php echo $s ?>_y" placeholder="HEIGHT" />
                         </div>
@@ -72,7 +74,9 @@
                 <?php } else { ?>
                     <h4>Setup Trait #<?php echo $s ?>:</h4>
                     <div class="trait-row">
-                        <div data-tooltip="Display Name: The pretty name of this trait/layer"><input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Trait #<?php echo $s ?> Display Name" /></div>
+                        <div data-tooltip="Display Name: The pretty name of this trait/layer">
+                            <input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Trait #<?php echo $s ?> Display Name" />
+                        </div>
                         <div class="labeled" data-tooltip="Variations Count: The number of possible values for this trait/layer">
                             <label for="trait<?php echo $s ?>_vars">
                                 How many variations?

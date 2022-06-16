@@ -89,15 +89,15 @@
                             <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
                         </div>
                         <div class="trait-row">
-                            <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
+                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
-                            <div data-tooltip="Color: The fill color of this background variation">
+                            <div data-tooltip="Color: The color of this background variation">
                                 <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
                                 <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" value="<?php echo isset($var_name) ? $color_hex : '#000000'; ?>" />
                             </div>
-                            <div data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
+                            <div data-tooltip="Opacity: The transparency of this background variation&#xa;(0: invisible, 255: opaque)">
                                 <label for="trait<?php echo $trait_var ?>_a">Opacity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" value="<?php echo isset($var_name) ? $opacity : 255; ?>" />
                             </div>
@@ -126,11 +126,11 @@
                             <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
                         </div>
                         <div class="trait-row">
-                            <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
+                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
-                            <div data-tooltip="Image: Choose the image file that should be used for this variation.">
+                            <div data-tooltip="Image: Pick the image file for this variation.&#xa;(Browse or drag'n'drop)">
                                 <label for="trait<?php echo $trait_var ?>_r">Filename:</label><br />
                                 <?php if (isset($var_name) and $file_exists) {  // File exists, pre-fill field with filename (no need to upload it again) ?>
                                     <input required type="text" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" value="<?php echo isset($var_name) ? $filename : null; ?>" onclick="this.type='file'" oninput="this.type='file'" />

@@ -194,9 +194,12 @@ form {
 }
 
 .trait-row label {
+    padding-left: 5px;
+}
+
+.labeled label {
     max-width: 150px;
     text-align: right;
-    padding-left: 5px;
 }
 
 .small {

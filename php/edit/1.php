@@ -57,22 +57,22 @@
         <form method="post" action="/edit/1?collection=<?php echo $collection ?>">
             <h3>Artist Info</h3>
             <section id="artist">
-                <div data-tooltip="Artist Name: The name of the artist to show in the metadata [optional]"><input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" value="<?php echo htmlspecialchars($artist_name); ?>" /></div>
-                <div data-tooltip="Royalty Address: The address which will receive the royalties (L2, ENS or acccount ID) [optional]"><input type="text" class="form wide" id="royalty_address" name="royalty_address" placeholder="Royalty Address (Optional)" value="<?php echo htmlspecialchars($royalty_address); ?>" /></div>
+                <div data-tooltip="Artist Name: The name of the artist (shown in the metadata)&#xa;[optional]"><input type="text" class="form wide" id="artist_name" name="artist_name" placeholder="Artist Name (Optional, shown in metadata)" value="<?php echo htmlspecialchars($artist_name); ?>" /></div>
+                <div data-tooltip="Royalty Address: The address which will receive the trade royalties (L2, ENS or acccount ID)&#xa;[optional]"><input type="text" class="form wide" id="royalty_address" name="royalty_address" placeholder="Royalty Address (Optional)" value="<?php echo htmlspecialchars($royalty_address); ?>" /></div>
             </section>
             <h3>Collection Info</h3>
             <section id="collection">
-                <div data-tooltip="Collection Name: A pretty name for your collection"><input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" value="<?php echo htmlspecialchars($collection_name); ?>" /></div>
-                <div data-tooltip="Collection Description: A pretty description for your collection"><input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" value="<?php echo htmlspecialchars($description); ?>" /></div>
-                <div data-tooltip="Generation Seed: A seed for the random generator (use one for reproducible results) [optional]"><input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" value="<?php echo htmlspecialchars($seed); ?>" /></div>
+                <div data-tooltip="Collection Name: The pretty name of the collection"><input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" value="<?php echo htmlspecialchars($collection_name); ?>" /></div>
+                <div data-tooltip="Collection Description: The pretty description of the collection"><input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" value="<?php echo htmlspecialchars($description); ?>" /></div>
+                <div data-tooltip="Generation Seed: A seed for the random number generator (use one for reproducible results)&#xa;[optional]"><input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" value="<?php echo htmlspecialchars($seed); ?>" /></div>
                 <div class="row">
-                    <div data-tooltip="Royalty Percentage: Percentage of the price of a sale that will go to the Royalty Address">
+                    <div data-tooltip="Royalty Percentage: How much of the sell price will go to the Royalty Address during a trade">
                         <label for="trait_count">
                             Royalty Percentage:
                         </label>
-                        <input required type="number" class="form number" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="0-10" value="<?php echo htmlspecialchars($royalty_percentage); ?>" />
+                        <input required type="number" class="form number" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="0-10" value="<?php echo htmlspecialchars($royalty_percentage); ?>" />&nbsp;%
                     </div>
-                    <div data-tooltip="Traits Count: How many traits will your NFT have (excluding background color)">
+                    <div data-tooltip="Traits Count: How many traits/layers your NFT has">
                         <label for="trait_count">
                             How many Traits?
                         </label>
@@ -80,13 +80,13 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Background Color: Check this box to specify a set of background fill colors">
+                    <div data-tooltip="Background Color: Check this box for LooPyGen to add background colors behind your NFT">
                         <label for="background_color">
-                            Pick background colors?
+                            Add background colors?
                         </label>
                         <input type="checkbox" id="background_color" name="background_color" <?php echo $background_color ? 'checked' : ''; ?> />
                     </div>
-                    <div data-tooltip="Thumbnails: Check this box to include a thumbnail in your NFTs for faster previews and widest compatibility with dAPPs">
+                    <div data-tooltip="Thumbnails: Check this box for LooPyGen to generate thumbnails of your NFTs for faster previews and widest compatibility with wallets">
                         <label for="thumbnails">
                             Generate thumbnails?
                         </label>
