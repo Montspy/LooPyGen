@@ -88,7 +88,7 @@
                         <div data-tooltip="Display Name: The pretty name of this variation">
                             <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
                         </div>
-                        <div class="trait-row wide">
+                        <div class="trait-row">
                             <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
@@ -125,7 +125,7 @@
                         <div data-tooltip="Display Name: The pretty name of this variation">
                             <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
                         </div>
-                        <div class="trait-row wide">
+                        <div class="trait-row">
                             <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
