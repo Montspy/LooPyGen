@@ -82,7 +82,7 @@
                             </div>
                             <div data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
                                 <label for="trait<?php echo $trait_var ?>_a">Opacity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" />
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" value="255"/>
                             </div>
                         </div>
                     <?php $v = $v + 1; }

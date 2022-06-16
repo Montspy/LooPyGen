@@ -95,11 +95,11 @@
                             </div>
                             <div data-tooltip="Color: The fill color of this background variation">
                                 <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
-                                <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" value="<?php echo isset($var_name) ? $color_hex : null; ?>" />
+                                <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" value="<?php echo isset($var_name) ? $color_hex : '#000000'; ?>" />
                             </div>
                             <div data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
                                 <label for="trait<?php echo $trait_var ?>_a">Opacity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" value="<?php echo isset($var_name) ? $opacity : null; ?>" />
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" value="<?php echo isset($var_name) ? $opacity : 255; ?>" />
                             </div>
                         </div>
                     <?php $v = $v + 1; }
