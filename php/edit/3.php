@@ -105,8 +105,7 @@
                     <?php $v = $v + 1; }
                 } else {
                     $s_offset = 0;
-                    if ($traits['background_color'] === true and $new_traits['background_color'] === false) { $s_offset = 1; }
-                    else if ($traits['background_color'] === false and $new_traits['background_color'] === true) { $s_offset = -1; }
+                    if ($traits['background_color'] === false) { $s_offset = -1; }
                     unset($layer);
                     if (isset($traits['image_layers'][$s + $s_offset])) {
                         $layer = $traits["image_layers"][$s + $s_offset];
@@ -119,7 +118,7 @@
                         if (isset($layer) and isset($layer['weights'][$v - 1])) {
                             $var_name = array_keys($layer['filenames'])[$v - 1];
                             $filename = $layer['filenames'][$var_name];
-                            $filepath =  "./collections/" . $collection . "/config/source_layers/layer" . sprintf('%02d', $t) . "/" . $filename;
+                            $filepath =  "./collections/" . $collection . "/config/source_layers/layer" . sprintf('%02d', $s) . "/" . $filename;
                             $file_exists = file_exists($filepath);
                         } ?>
                         <h4>Variation #<?php echo $v ?>:</h4>
