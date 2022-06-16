@@ -174,7 +174,7 @@
                 while ($v <= $new_traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
                     $var_name = $_POST["trait${trait_var}_name"];
-                    $var_weight =(int)$_POST["trait${trait_var}_weight"];
+                    $var_weight =(int)$_POST["trait${trait_var}_rarity"];
 
                     if (isset($_FILES["trait${trait_var}_file"])) { // New file was uploaded
                         $filename = $_FILES["trait${trait_var}_file"]['name'];
