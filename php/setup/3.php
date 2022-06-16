@@ -26,62 +26,81 @@
                 <p><b>Total Traits</b>: <?php echo $t_display ?></p>
             </section>
         </div>
-        <form enctype="multipart/form-data" method="post" action="/setup/3?collection=<?php echo $collection_lower; ?>">
+        <script>
+            const rarityCheck = (form) => {
+                let valid = true;
+                let rarities = [];
+                // Build rarities array (rarities[t][v] = r => Trair 't', variation 'v' has rarity 'r'%)
+                for (const input of form) {
+                    const match = input.id.match(/trait(\d+)_(\d+)_rarity/);
+                    if (match) {
+                        const [/*ignore*/, trait, variation] = match;
+                        if (rarities[trait] === undefined) {
+                            rarities[trait] = [];
+                        }
+                        rarities[trait][variation-1] = parseInt(input.value);
+                    }
+                }
+                // Iterate through rarities backwards and make sure the sum is 100, or display message
+                const first_t = (rarities[0] === undefined) ? 1 : 0;
+                for (let t = rarities.length - 1; t >= first_t; t--) {
+                    console.log(t);
+                    const errorH3 = document.getElementById(`trait${t}_error`);
+                    const sum = rarities[t].reduce((cum, el) => cum + el, 0);
+                    if (sum !== 100) {
+                        errorH3.innerHTML = `The rarity percentages should add up to 100% (not ${sum}%)`;
+                        errorH3.hidden = false;
+                        window.location.hash = `trait${t}`;
+                        valid = false;
+                    }
+                    else {
+                        errorH3.innerHTML = 'No error'
+                        errorH3.hidden = true;
+                    }
+                }
+                return valid;
+            }
+        </script>
+        <form enctype="multipart/form-data" onSubmit="return rarityCheck(this);" method="post" action="/setup/3?collection=<?php echo $collection_lower; ?>">
             <?php $t = 0;
             while ($s <= $traits['trait_count']) {
                 if ($t == 0 and $traits['background_color'] === true) { ?>
-                    <h3 class="trait-title">Setup Background Colors:</h3>
+                    <h3 class="trait-title" id="trait<?php echo $s; ?>">Setup Background Colors:</h3>
+                    <h3 hidden class="error" id="trait<?php echo $s; ?>_error">No error</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
                         $trait_var = $s . "_" . $v; ?>
                         <h4>Color #<?php echo $v ?>:</h4>
                         <div data-tooltip="Display Name: The pretty name of this variation"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" /></div>
                         <div class="trait-row wide">
-                            <div class="trait-row" data-tooltip="Rarity: How rare this variation is">
-                                <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
-                                <select required class="form" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
-                                    <option value="50">Common</option>
-                                    <option value="25">Uncommon</option>
-                                    <option value="10">Rare</option>
-                                    <option value="5">Epic</option>
-                                    <option value="4">Legendary</option>
-                                    <option value="3">Mythical</option>
-                                    <option value="2">Transcendent</option>
-                                    <option value="1">Godlike</option>
-                                </select>
+                            <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
+                                <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
                             </div>
-                            <div class="trait-row" data-tooltip="Color: The fill color of this background variation">
-                                <label for="trait<?php echo $trait_var ?>_r">Color:&nbsp;&nbsp;</label>
+                            <div data-tooltip="Color: The fill color of this background variation">
+                                <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
                                 <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" />
                             </div>
-                            <div class="trait-row small" data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
-                                <label for="trait<?php echo $trait_var ?>_a">Opacity:&nbsp;&nbsp;</label>
-                                <input required type="number" class="form number" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" />
+                            <div data-tooltip="Opacity: The transparency of this background variation (0: invisible, 255: opaque)">
+                                <label for="trait<?php echo $trait_var ?>_a">Opacity:</label><br />
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" />
                             </div>
                         </div>
                     <?php $v = $v + 1; }
                 } else { ?>
-                    <h3 class="trait-title">Setup "<?php echo $traits['image_layers'][$t]['layer_name'] ?>" Trait:</h3>
+                    <h3 class="trait-title" id="trait<?php echo $s; ?>">Setup "<?php echo $traits['image_layers'][$t]['layer_name'] ?>" Trait:</h3>
+                    <h3 hidden class="error" id="trait<?php echo $s; ?>_error">No error</h3>
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
                         $trait_var = $s . "_" . $v; ?>
                         <h4>Variation #<?php echo $v ?>:</h4>
                         <div data-tooltip="Display Name: The pretty name of this variation"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" /></div>
                         <div class="trait-row wide">
-                            <div data-tooltip="Rarity: How rare this variation is">
-                                <label for="trait<?php echo $trait_var ?>_weight">Set Rarity:&nbsp;&nbsp;</label>
-                                <select required class="form" id="trait<?php echo $trait_var ?>_weight" name="trait<?php echo $trait_var ?>_weight">
-                                    <option value="50">Common</option>
-                                    <option value="25">Uncommon</option>
-                                    <option value="10">Rare</option>
-                                    <option value="5">Epic</option>
-                                    <option value="4">Legendary</option>
-                                    <option value="3">Mythical</option>
-                                    <option value="2">Transcendent</option>
-                                    <option value="1">Godlike</option>
-                                </select>
+                            <div data-tooltip="Rarity: Chance for this variation to be picked in percent">
+                                <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
+                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
                             </div>
                             <div data-tooltip="Image: Choose the image file that should be used for this variation.">
-                                <label for="trait<?php echo $trait_var ?>_r">Filename:&nbsp;&nbsp;</label>
-                                <input required type="file" class="form" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
+                                <label for="trait<?php echo $trait_var ?>_r">Filename:</label><br />
+                                <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
                             </div>
                         </div>
                     <?php $v = $v + 1; }
@@ -108,7 +127,7 @@
                     $trait_var = $s . "_" . $v;
                     $rgb = str_split(str_replace("#", "", $_POST["trait${trait_var}_color"]), 2);
                     $traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array(hexdec($rgb[0]), hexdec($rgb[1]), hexdec($rgb[2]), (int)$_POST["trait${trait_var}_alpha"]);
-                    array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
+                    array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_rarity"]);
                     $v = $v + 1;
                 }
             } else {
@@ -118,7 +137,7 @@
                 while ($v <= $traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
                     $traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_FILES["trait${trait_var}_file"]['name'];
-                    array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_weight"]);
+                    array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_rarity"]);
                     $target_file = $target_dir . "/" . $_FILES["trait${trait_var}_file"]['name'];
                     move_uploaded_file($_FILES["trait${trait_var}_file"]['tmp_name'], $target_file);
                     $v = $v + 1;
