@@ -17,7 +17,6 @@ __pycache__/
 *$py.class
 *.jpg
 *.jpeg
-*.png
 *.mp4
 *.webm
 *.json
