@@ -124,8 +124,10 @@ class ImageBuilder(object):
         self._make_canvas(self.descriptors[0])
 
         for desc in self.descriptors:
+            await asyncio.sleep(0)
             self.img = await self.composite(self.img, desc)
 
+        await asyncio.sleep(0)
         self.final = ImageDescriptor(type = self.img.type, img=self.img.img, fp=self.img.fp)
         self.img = await self.final_export(self.final)
 
