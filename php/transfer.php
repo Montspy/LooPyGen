@@ -70,11 +70,11 @@
             <button onclick="openModal('loading-fees')" class="form btn" name="submit">REVIEW TRANSFER</button>
         </form>
         <div class="modal" id="loading-fees">
-            <h2>Retrieving estimated fees...</h2>
             <div class="modal-content">
+                <h2>Retrieving estimated fees...</h2>
                 <img loading="lazy" src="/css/images/fees.gif" alt="GETTING FEES..." />
+                <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
             </div>
-            <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
         </div>
     <?php } else if (empty($_GET['run'])) {
         // Build command from inputs
@@ -123,11 +123,11 @@
             <button onclick="openModal('loading')" class="form btn" type="submit" name="submit">TRANSFER</button>
         </form>
         <div class="modal" id="loading">
-            <h2><?php echo $loading_msg; ?></h2>
             <div class="modal-content">
+                <h2><?php echo $loading_msg; ?></h2>
                 <img loading="lazy" src="/css/images/transfer.gif" alt="TRANSFERRING..." />
+                <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
             </div>
-            <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
         </div>
     <?php } else if (!empty($_GET['run'])) {
         $wallet_file = "/tmp/wallets.txt";

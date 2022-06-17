@@ -57,11 +57,11 @@
             <button onclick="openModal('loading-fees')" class="form btn" name="submit">REVIEW MINT</button>
         </form>
         <div class="modal" id="loading-fees">
-            <h2>Retrieving estimated fees...</h2>
             <div class="modal-content">
+                <h2>Retrieving estimated fees...</h2>
                 <img loading="lazy" src="/css/images/fees.gif" alt="GETTING FEES..." />
+                <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
             </div>
-            <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
         </div>
     <?php } else if (empty($_GET['run'])) {
         // Build command from inputs
