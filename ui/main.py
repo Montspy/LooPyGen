@@ -163,8 +163,6 @@ class MainWindow(wx.Frame):
         # Attempt to start
         if platform.system() == "Linux":
             # Linux
-            await asyncio.create_subprocess_shell(
-                "systemctl --user start docker-desktop"
             proc = await asyncio.create_subprocess_shell(
                 "systemctl --user start docker-desktop",
                 stdout=asyncio.subprocess.PIPE,
@@ -211,7 +209,7 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage(
                 "Failed to start Docker Desktop. Please install Docker Desktop manually."
             )
-            webbrowser.open("https://www.docker.com/docker-desktop")
+            webbrowser.open("https://www.docker.com/products/docker-desktop/")
             return False
 
         # Wait for docker daemon to be up and running
@@ -232,7 +230,7 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage(
                 "Failed to start Docker Desktop. Please install Docker Desktop manually."
             )
-            webbrowser.open("https://www.docker.com/docker-desktop")
+            webbrowser.open("https://www.docker.com/products/docker-desktop/")
             return False
         else:
             self.setStatusBarMessage("Docker Desktop started successfully")
