@@ -262,7 +262,8 @@ async def load_config(args, paths: Struct):
     # True/False representing validity of each cfg.tosRaw element
     cfg.tosRawValid = []
     # Validate each entry by getting Loopring account ID and address
-    for to in cfg.tosRaw:
+    for i, to in enumerate(cfg.tosRaw):
+        set_progress_for_ui("Resolving wallets", i + 1, len(cfg.tosRaw))
         valid = False
         try:
             to_account, to_address = await retry_async(get_account_info, to, retries=3)
@@ -714,7 +715,9 @@ async def main() -> None:
         approved_off_chain_fees = offchain_parameters["off_chain_fee"]
 
         # NFT transfer sequence
-        for i, (to_account, to_address) in enumerate(cfg.tos):
+        for i, (to_account, to_address) in enumerate(cfg.tos):        
+            set_progress_for_ui("Transferring", i + 1, cfg.tosCount)
+
             info = {"to_account": to_account, "to_address": to_address}
 
             if args.single:
@@ -794,8 +797,6 @@ async def main() -> None:
                 )
 
             transfer_info.append(info)
-        
-            set_progress_for_ui("transfer", i + 1, cfg.tosCount)
 
         if not all(cfg.tosRawValid):
             invalid_to_addresses = [

@@ -438,6 +438,8 @@ async def main():
 
         # NFT Mint sequence
         for i, cid in enumerate(filtered_cids):
+            set_progress_for_ui("Minting", i + 1, len(filtered_cids))
+            
             id = cid['ID']
             cid_hash = cid['CID']
 
@@ -479,8 +481,7 @@ async def main():
                 print(f"{i+1}/{len(filtered_cids)} NFT {id}: Skipping mint (test mint mode) ({args.amount}x {cid_hash})")
 
             mint_info.append(info)
-        
-            set_progress_for_ui("minter", i + 1, len(filtered_cids))
+
     finally:
         with open(paths.mint_info, 'w+') as f:
             json.dump(mint_info, f, indent=4)

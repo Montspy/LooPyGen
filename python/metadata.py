@@ -46,7 +46,7 @@ async def get_file_cid(filepath: str, version: int=0, id: int=None):
         raise RuntimeError(f"Could not get CIDv{version} of file '{filepath}':\n\t{stderr.decode()}")
     
     if id is None:
-    return stdout.decode().strip()
+        return stdout.decode().strip()
     else:
         return stdout.decode().strip(), id
 
@@ -136,7 +136,9 @@ def main():
             print(f"Some thumbnail file(s) missing, using full resolution image")
         all_thumbs_cids = all_images_cids
 
+    utils.set_progress_for_ui("Writing metadata", 0, len(all_images))
     for i, (cid, thumb_cid, image) in enumerate(zip(all_images_cids, all_thumbs_cids, all_images)):
+        utils.set_progress_for_ui("Writing metadata", i + 1, len(all_images))
         token_id = image['ID']
         json_path = os.path.join(paths.metadata, f"{traits.collection_lower}_{token_id:03}.json")
 
@@ -186,8 +188,6 @@ def main():
 
         # Calculate metadata CIDs
         all_metadata_cids.append({"ID": token_id, "CID": asyncio.run(get_file_cid(json_path))})
-        
-        utils.set_progress_for_ui("metadata", i + 1, len(all_images))
 
     metadata_cids_path = paths.metadata_cids
     with open(metadata_cids_path, 'w') as outfile:

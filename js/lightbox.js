@@ -16,17 +16,13 @@ const updateProgressModal = async (modalId) => {
     }
 
     const progress = await readProgress();
-    if (progress !== null && progress.completed !== undefined && progress.total !== undefined) {
+    console.log(progress);
+    if (progress !== null && progress.operation && progress.completed !== undefined && progress.total !== undefined) {
         const progressId = `${modalId}-progress`;
         const spinnerId = `${progressId}--spinner`;
-        document.getElementById(progressId).innerHTML = `Progress: ${progress.completed}/${progress.total}`
+        document.getElementById(progressId).innerHTML = `${progress.operation}: ${progress.completed}/${progress.total}`
         const spinner = updateProgressModal.counter % 3 + 1;
         document.getElementById(spinnerId).innerHTML = ''.padEnd(spinner, '.').padEnd(3, '\u00A0')
-
-        // Stop update if task completed
-        if(progress.completed === progress.total) {
-            return;
-        }
     }
 
     setTimeout(updateProgressModal, 1000, modalId);
@@ -36,7 +32,10 @@ const readProgress = async () => {
     try {
         var response = await fetch('http://localhost:8080/php/progress.json');
     } catch (error) {
-        console.log('updateProgressModal: ', error);
+        console.log('updateProgressModal fetch: ', error);
+        return null;
+    }
+    if (response.status !== 200) {
         return null;
     }
 
@@ -44,7 +43,7 @@ const readProgress = async () => {
         var progress = await response.json();
         return progress;
     } catch (error) {
-        console.log('updateProgressModal: ', error);
+        console.log('updateProgressModal json parse: ', error);
         return null;
     }
 
