@@ -139,11 +139,11 @@
             <button onclick="openModal('loading')" class="form btn" type="submit" name="submit">TRANSFER</button>
         </form>
         <div class="modal" id="loading">
-            <h2><?php echo $loading_msg; ?></h2>
             <div class="modal-content">
+                <h2><?php echo $loading_msg; ?></h2>
                 <img loading="lazy" src="/css/images/transfer.gif" alt="TRANSFERRING..." />
+                <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
             </div>
-            <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
         </div>
     <?php
     } else if (!empty($_GET['run'])) {
