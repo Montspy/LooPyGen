@@ -26,7 +26,7 @@
             <h3>Transfer Options</h3>
             <section id="artist">
                 <div class="row">
-                    <div data-tooltip="List of L2 addresses or ENS to send to, one per line.">
+                    <div data-tooltip="Wallets: List of L2 addresses or ENS to send to, one per line.&#xa;[required]">
                         <label for="wallets">
                             Wallets:
                         </label>
@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="List of CIDs or NFT IDs to send.&#xa;Random: At least as many NFTs as wallets must be in the sender wallet, including copies&#xa;Ordered: List the same number of NFTs as wallets">
+                    <div data-tooltip="NFTs: List of CIDs or NFT IDs to send.&#xa;Random: At least as many NFTs as wallets must be in the sender wallet, including copies&#xa;Ordered: List the same number of NFTs as wallets&#xa;[required]">
                         <label for="nfts">
                             NFTs:
                         </label>
@@ -42,7 +42,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Random: Each wallet will receive a random NFT from the list&#xa;Ordered: One-to-one association between wallet and NFT. The 1st wallet will receive the 1st NFT in the list, The 2nd wallet the 2nd NFT, etc...">
+                    <div data-tooltip="Transfer Mode:&#xa;- Random: Each wallet will receive a random NFT from the list&#xa;- Ordered: One-to-one association between wallet and NFT. The 1st wallet will receive the 1st NFT in the list, The 2nd wallet the 2nd NFT, etc...">
                         <label for="mode">
                             Transfer mode
                         </label>
@@ -59,7 +59,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="The passphrase to your transfer config file">
+                    <div data-tooltip="The passphrase to your transfer config file&#xa;[required]">
                         <label for="configpass">
                             Transfer config passphrase
                         </label>

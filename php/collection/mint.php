@@ -52,13 +52,13 @@
             <h3>Minter Options</h3>
             <section id="artist">
                 <div class="row">
-                    <div data-tooltip="Start ID: (Optional) Choose a token ID to start with.">
+                    <div data-tooltip="Start ID: The NFTs will be minted starting at this ID&#xa;Defaults to 1&#xa;[optional]">
                         <label for="start_id">
                             Start ID:
                         </label>
                         <input type="number" class="form small" id="start_id" name="start_id" />
                     </div>
-                    <div data-tooltip="End ID: (Optional) Choose a token ID to end with.">
+                    <div data-tooltip="End ID: The NFTs will be minted up to and including this ID&#xa;Defaults to minting until the end&#xa;[optional]">
                         <label for="end_id">
                             End ID:
                         </label>
@@ -66,7 +66,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Copies: (Required) How many copies of each NFT should be minted?">
+                    <div data-tooltip="Copies: The number of copies of each NFT to mint&#xa;[required]">
                         <label for="amount">
                             Copies:
                         </label>
@@ -80,7 +80,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="The passphrase to your mint config file">
+                    <div data-tooltip="The passphrase to your mint config file&#xa;[required]">
                         <label for="configpass">
                             Mint config passphrase:
                         </label>

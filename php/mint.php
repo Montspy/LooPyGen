@@ -25,14 +25,14 @@
             <h3 class="info">Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
             <h3>Minter Options</h3>
             <section id="artist">
-                <div data-tooltip="CID: (Required) Paste your metadata file's CID from Pinata.">
+                <div data-tooltip="CID: The metadata file's IPFS CID&#xa;[required]">
                     <label for="cid">
                         CID:
                     </label>
                     <input required type="text" pattern="^Qm[a-zA-Z0-9]{44}$" class="form wide" id="cid" name="cid" />
                 </div>
                 <div class="row">
-                    <div data-tooltip="Copies: (Required) How many copies of the NFT should be minted?">
+                    <div data-tooltip="Copies: The number of copies to mint&#xa;[required]">
                         <label for="amount">
                             Copies:
                         </label>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="The passphrase to your mint config file">
+                    <div data-tooltip="The passphrase to your mint config file&#xa;[required]">
                         <label for="configpass">
                             Mint config passphrase
                         </label>

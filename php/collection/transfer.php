@@ -52,7 +52,7 @@
             <h3>Transfer Options</h3>
             <section>
                 <div class="row">
-                    <div data-tooltip="Wallets: The L2 addresses or ENS to send to, one per line.">
+                    <div data-tooltip="Wallets: List of L2 addresses or ENS to send to, one per line.&#xa;[required]">
                         <label for="wallets">
                             Wallets:
                         </label>
@@ -60,7 +60,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Transfer mode: Send the NFTs ordered by ID or in a random order.">
+                    <div data-tooltip="Transfer Mode:&#xa;- Random: Each wallet will receive a random NFT from the collection&#xa;- Ordered: One-to-one association between wallet and NFT. The 1st wallet will receive the 1st available NFT, The 2nd wallet the 2nd NFT">
                         <label for="mode">
                             Transfer mode
                         </label>
@@ -77,7 +77,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="The passphrase to your transfer config file">
+                    <div data-tooltip="The passphrase to your transfer config file&#xa;[required]">
                         <label for="configpass">
                             Transfer config passphrase
                         </label>

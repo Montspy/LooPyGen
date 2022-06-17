@@ -34,13 +34,13 @@
             <h3>Generator Options</h3>
             <section id="artist">
                 <div class="row">
-                    <div data-tooltip="Count: (Required) How many unique images do you want to generate?">
+                    <div data-tooltip="Count: The number of unique NFTs to generate&#xa;[required]">
                         <label for="count">
                             How many?
                         </label>
                         <input required type="number" class="form small" id="count" name="count" />
                     </div>
-                    <div data-tooltip="Start ID: (Optional) Choose a token ID to start with.">
+                    <div data-tooltip="Start ID: The NFTs will generate starting at this ID&#xa;[optional]">
                         <label for="start_id">
                             Start ID:
                         </label>
@@ -48,13 +48,13 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Empty: (Optional) Delete any previously generated images and start fresh.">
+                    <div data-tooltip="Empty: Delete any previously generated images and start fresh&#xa;[optional]">
                         <label for="empty">
                             Empty old images?
                         </label>
                         <input type="checkbox" id="empty" name="empty" />
                     </div>
-                    <div data-tooltip="Threaded: (Optional) Compile 4 images at a time. ONLY USE IF YOU HAVE A POWERFUL COMPUTER!">
+                    <div data-tooltip="Threaded: Generate 4 NFTs in parallel.&#xa;ONLY USE IF YOU HAVE A POWERFUL COMPUTER!&#xa;[optional]">
                         <label for="threaded">
                             Multi-threaded?
                         </label>
