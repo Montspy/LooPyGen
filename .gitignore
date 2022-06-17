@@ -9,6 +9,8 @@ collections/*/
 composer.lock
 vendor/
 .secrets/
+loopygen_companion
+*wallet_list.txt
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
