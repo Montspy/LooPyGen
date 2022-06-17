@@ -109,7 +109,7 @@
         <h3 class="success">Confirm transfer. This might take a while.</h3>
         <?php
             echo $printable_output;
-            if (strpos($command, "--testmint") !== false) {
+            if (strpos($command, "--test") !== false) {
                 echo "<h3 class='info'>Test Mode enabled. Fees will not be paid.</h3>";
                 $loading_msg = "Hang tight, we're test transferring your NFT(s)...";
             } else {
