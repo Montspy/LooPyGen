@@ -8,6 +8,7 @@ config.json
 collections/*/
 composer.lock
 vendor/
+.secrets/
 
 # ---> Python
 # Byte-compiled / optimized / DLL files
