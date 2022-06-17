@@ -1,13 +1,11 @@
+from numpy import std
 from wxasync import WxAsyncApp, AsyncBind, AsyncShowDialogModal, StartCoroutine
-import asyncio
-import aiohttp
-import re
 import os
-import subprocess
 import wx
 import time
+import asyncio
+import aiohttp
 import aiodocker
-import docker
 import webbrowser
 
 IMAGE = "sk33z3r/loopygen"
@@ -17,7 +15,7 @@ IMAGE = "sk33z3r/loopygen"
 async def wait_until(condition, interval=0.1, timeout=1, *args):
     start = time.time()
     timed_out = False
-    while not condition(*args):
+    while not await condition(*args):
         await asyncio.sleep(interval)
         if time.time() - start >= timeout:
             timed_out = True
@@ -69,47 +67,56 @@ class MainWindow(wx.Frame):
         self.stopButton.Disable()
         self.updateButton.Disable()
 
-        self.client = None
         StartCoroutine(self.initDocker, self)
         self.busy = False
-        StartCoroutine(self.udpateUI, self)
         self.buttonTimer.Start(500)
 
-    async def refreshDockerStatus(self):
-        self.container = None
-        self.container_image_id = None
+    def setStatusBarMessage(self, message):
+        if self.busy:
+            message = "Busy: " + message
+        self.statusBar.SetStatusText(message)
 
+    async def getContainerByName(self, name):
+        containers = await self.client.containers.list(all=True, filters={})
+        for ctnr in containers:
+            # print((await ctnr.show())["Name"])
+            if (await ctnr.show())["Name"] == "/" + name:
+                return ctnr
+        return None
+
+    async def refreshDockerStatus(self):
         try:
             if not self.client:
                 self.client = aiodocker.Docker()
-        except docker.errors.DockerException as e:
+        except Exception as e:
+            self.client = None
             return
 
-        containers = await self.client.containers.list(all=True, filters={})
-        for ctnr in containers:
-            if (await ctnr.show())["Name"] == "/loopygen":
-                self.container = ctnr
-                break
+        self.container = await self.getContainerByName("loopygen")
 
         if self.container:
-            self.status = (await self.inspectContainer(["State", "Status"]))
+            self.status = await self.inspectContainer(["State", "Status"])
 
         # Read image ID from container
         try:
             self.container_image_id = await self.inspectContainer("Image")
-            # print('current')
-            # print(self.container_image_id)
         except Exception as e:
             print("Failed to check for updates:")
             print(e)
 
-    async def udpateUI(self):
+    async def updateUI(self):
         while True:
             if not self.busy:
                 await self.refreshDockerStatus()
             await asyncio.sleep(1)
 
     def refreshButtons(self, event):
+        if self.busy:
+            self.startButton.Disable()
+            self.stopButton.Disable()
+            self.updateButton.Disable()
+            return
+
         if not self.client:
             self.startButton.Disable()
             self.startButton.SetLabel("Start LooPyGen")
@@ -117,10 +124,7 @@ class MainWindow(wx.Frame):
             self.updateButton.Disable()
             self.updateButton.SetLabel("LooPyGen is up-to-date")
 
-        if (
-            self.container
-            and self.status == "running"
-        ):
+        if self.container and self.status == "running":
             self.startButton.Enable()
             self.startButton.SetLabel("Open LooPyGen UI")
             self.stopButton.Enable()
@@ -141,63 +145,105 @@ class MainWindow(wx.Frame):
             self.updateButton.SetLabel("LooPyGen is up-to-date")
 
     async def ensureDockerDesktop(self):
+        import shutil
         import platform
 
-        self.statusBar.SetStatusText(f"Starting Docker Desktop...")
+        was_detected = False
 
         res = await asyncio.create_subprocess_shell("docker ps")
         if res.returncode == 0:
+            print("Docker Desktop is running")
             return True
+
+        this_os = platform.system()
+        if this_os == "Darwin":
+            this_os = "macOS"
+        self.setStatusBarMessage(f"Starting Docker Desktop for {this_os}...")
 
         # Attempt to start
         if platform.system() == "Linux":
             # Linux
             await asyncio.create_subprocess_shell(
                 "systemctl --user start docker-desktop"
+            proc = await asyncio.create_subprocess_shell(
+                "systemctl --user start docker-desktop",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
+            stdout, stderr = await proc.communicate()
+            print(stdout)
+            print(stderr)
+            if proc.returncode == 0:
+                was_detected = True
         elif platform.system() == "Darwin":
             # macOS
-            await asyncio.create_subprocess_shell("open -a Docker")
+            proc = await asyncio.create_subprocess_shell(
+                "open -a Docker",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout, stderr = await proc.communicate()
+            print(stdout)
+            print(stderr)
+            if proc.returncode == 0:
+                was_detected = True
         elif platform.system() == "Windows":
             # Windows
-            import shutil
-
             docker_exe_path = shutil.which("docker.exe")
             if docker_exe_path:
                 self.DOCKER_PATHS_WIN.insert(
                     0,
-                    re.sub(
-                        r"resources\\bin\\docker.exe",
-                        r"Docker Desktop.exe",
-                        docker_exe_path,
-                        re.IGNORECASE,
+                    docker_exe_path.replace(
+                        r"resources\bin\docker.exe", r"Docker Desktop.exe"
                     ),
                 )
             for potential_path in self.DOCKER_PATHS_WIN:
                 if os.path.exists(potential_path):
-                    subprocess.Popen(potential_path)
+                    print(f"Found Docker Desktop at {potential_path}")
+                    os.spawnl(os.P_NOWAIT, potential_path, potential_path)
+                    was_detected = True
                     break
         else:
             print(f"Unknown platform {platform.system()}")
             return False
 
+        if not was_detected:
+            self.setStatusBarMessage(
+                "Failed to start Docker Desktop. Please install Docker Desktop manually."
+            )
+            webbrowser.open("https://www.docker.com/docker-desktop")
+            return False
+
         # Wait for docker daemon to be up and running
+        print("Waiting for Docker daemon to be up and running...")
+        self.setStatusBarMessage("Waiting for Docker Desktop to start...")
         timed_out_waiting = await wait_until(
             lambda cmd: (
-                await asyncio.create_subprocess_shell(cmd).returncode == 0 for _ in "_"
+                await (await asyncio.create_subprocess_shell(cmd)).wait() == 0
+                for _ in "_"
             ).__anext__(),
-            3,
+            0.5,
             30,
             "docker ps",
         )
-        return not timed_out_waiting
+
+        if timed_out_waiting:
+            print("Timed out waiting for Docker daemon to start")
+            self.setStatusBarMessage(
+                "Failed to start Docker Desktop. Please install Docker Desktop manually."
+            )
+            webbrowser.open("https://www.docker.com/docker-desktop")
+            return False
+        else:
+            self.setStatusBarMessage("Docker Desktop started successfully")
+            return True
 
     async def initDocker(self):
         if await self.ensureDockerDesktop():
-            self.statusBar.SetStatusText(f"Docker Desktop started")
+            self.setStatusBarMessage(f"Docker Desktop started")
             await self.refreshDockerStatus()
         else:
-            self.statusBar.SetStatusText(f"Could not start Docker Desktop")
+            self.setStatusBarMessage(f"Could not start Docker Desktop")
 
         # Get image ID of latest from Docker hub
         try:
@@ -214,11 +260,12 @@ class MainWindow(wx.Frame):
                     },
                 )
                 self.latest_image_id = (await resp.json())["config"]["digest"]
-                # print('latest')
-                # print(self.latest_image_id)
+                # print("latest_image_id", self.latest_image_id)
         except Exception as e:
             print("Failed to check for updates:")
             print(e)
+
+        StartCoroutine(self.updateUI, self)
 
     async def createContainer(self, collection_dir: str = None):
         if not collection_dir:
@@ -234,9 +281,9 @@ class MainWindow(wx.Frame):
             collection_dir = dialog.GetPath()
             dialog.Destroy()
 
-        self.statusBar.SetStatusText(f"Getting docker image {IMAGE}...")
+        self.setStatusBarMessage(f"Downloading new docker image {IMAGE}...")
         loopygen_image = await self.client.images.pull(IMAGE)
-        self.statusBar.SetStatusText(f"Starting new container loopygen...")
+        self.setStatusBarMessage(f"Starting new container loopygen...")
         self.container = await self.client.containers.run(
             {
                 "Image": IMAGE,
@@ -251,7 +298,6 @@ class MainWindow(wx.Frame):
         )
 
     def openUI(self):
-        self.statusBar.SetStatusText("Opening LooPyGen UI...")
         webbrowser.open("http://localhost:8080/")
 
     async def onStartButton(self, event):
@@ -264,12 +310,13 @@ class MainWindow(wx.Frame):
             just_started = True
         elif (await self.inspectContainer(["State", "Status"])) != "running":
             name = await self.inspectContainer("Name")
-            self.statusBar.SetStatusText(f"Starting container {name}...")
+            self.setStatusBarMessage(f"Starting container {name}...")
             await self.container.start()
             just_started = True
 
         if self.container is None:
             self.busy = False
+            self.setStatusBarMessage("Could not start LooPyGen")
             return
 
         timed_out_waiting = await wait_until(
@@ -282,8 +329,8 @@ class MainWindow(wx.Frame):
             None,
         )
         if timed_out_waiting:
-            self.statusBar.SetStatusText(f"Could not start LooPyGen")
             self.busy = False
+            self.setStatusBarMessage("Could not start LooPyGen")
             return
 
         if just_started:
@@ -291,6 +338,7 @@ class MainWindow(wx.Frame):
 
         self.openUI()
         self.busy = False
+        self.setStatusBarMessage("Opening LooPyGen UI")
 
     async def onStopButton(self, event):
         self.busy = True
@@ -300,7 +348,8 @@ class MainWindow(wx.Frame):
             and (await self.inspectContainer(["State", "Status"])) == "running"
         ):
             await self.container.kill()
-            self.busy = False
+        self.busy = False
+        self.setStatusBarMessage("LooPyGen stopped")
 
     async def onUpdateButton(self, event):
         self.busy = True
@@ -308,11 +357,12 @@ class MainWindow(wx.Frame):
 
         if self.container is None:
             self.busy = False
+            self.setStatusBarMessage("Failed to update LooPyGen")
             return
 
         if (await self.inspectContainer(["State", "Status"])) == "running":
             name = await self.inspectContainer("Name")
-            self.statusBar.SetStatusText(f"Stopping container {name}...")
+            self.setStatusBarMessage(f"Stopping container {name}...")
             await self.container.kill()
             await wait_until(
                 lambda x: (
@@ -326,43 +376,63 @@ class MainWindow(wx.Frame):
 
         # Get collections path from existing container
         collection_dir = await self.inspectContainer(["Mounts", 0, "Source"])
+
+        # Delete old backup container
+        old_container = await self.getContainerByName("old-loopygen")
+        if old_container:
+            name = await self.inspectContainer("Name", old_container)
+            self.setStatusBarMessage(f"Removing old container {name}...")
+            await old_container.remove()
+
+        # Move existing container to backup container
         name = await self.inspectContainer("Name")
-        self.statusBar.SetStatusText(f"Removing old container {name}...")
-        await self.container.delete()
+        self.setStatusBarMessage(f"Moving outdated container {name} to old-loopygen...")
+        await self.container.rename("old-loopygen")
         await asyncio.sleep(2)
-        self.statusBar.SetStatusText(f"Creating new container...")
+
+        # Create new container
+        self.setStatusBarMessage(f"Creating new container...")
         await self.createContainer(collection_dir)
 
         if self.container is None:
             self.busy = False
+            self.setStatusBarMessage("Failed to update LooPyGen")
             return
 
+        async def isUIRunning():
+            async with aiohttp.ClientSession() as session:
+                try:
+                    resp = await session.get(f"http://localhost:8080/", timeout=0.9)
+                    return resp.status == 200
+                except Exception as e:
+                    return False
+
         timed_out_waiting = await wait_until(
-            lambda x: (
-                await self.inspectContainer(["State", "Status"]) == "running"
-                for _ in "_"
-            ).__anext__(),
+            lambda x: (await isUIRunning() for _ in "_").__anext__(),
             1,
-            10,
+            40,  # 10s for docker to start, 30s for PHP to serve
             None,
         )
         if timed_out_waiting:
-            self.statusBar.SetStatusText(f"Could not start LooPyGen")
             self.busy = False
+            self.setStatusBarMessage(f"Could not start LooPyGen")
             return
-        time.sleep(2)
+        await asyncio.sleep(2)
 
         self.openUI()
         self.busy = False
+        self.setStatusBarMessage("Opening LooPyGen UI")
 
-    async def inspectContainer(self, branches=[]):
-        if self.container is None:
+    async def inspectContainer(self, branches=[], container=None):
+        if container is None:
+            container = self.container
+        if container is None:
             return None
 
         if isinstance(branches, str):
             branches = [branches]
 
-        node = await self.container.show()
+        node = await container.show()
         for b in branches:
             node = node[b]
 
