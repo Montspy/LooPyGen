@@ -34,7 +34,7 @@ const updateProgressModal = async (modalId) => {
 
 const readProgress = async () => {
     try {
-        var response = await fetch('http://localhost:8080/progress');
+        var response = await fetch('http://localhost:8080/php/progress.json');
     } catch (error) {
         console.log('updateProgressModal: ', error);
         return null;

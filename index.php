@@ -55,16 +55,6 @@
         $redirect = "FALSE";
     }
 
-    if ($page === "progress") {
-        header('Content-Type: application/json; charset=utf-8');
-        if (file_exists($progress_file)) {
-            include $progress_file;
-        } else {
-            echo 'null';
-        }
-        exit(0);
-    }
-
     if ($page === "mint-config" or $page === "transfer-config" or $page === "setup" or $page === "edit") {
         $page = "$page/1";
     }
