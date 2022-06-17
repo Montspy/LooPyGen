@@ -26,7 +26,7 @@ def properties_to_attributes(properties: dict):
     return attributes
 
 # CID pre-calc helper functions
-async def get_file_cid(filepath: str, version: int=0):
+async def get_file_cid(filepath: str, version: int=0, id: int=None):
     # Find matching file
     matching_file = glob.glob(filepath)
     if len(matching_file) == 0:
@@ -44,16 +44,42 @@ async def get_file_cid(filepath: str, version: int=0):
     stdout, stderr = await proc.communicate()
     if proc.returncode > 0:
         raise RuntimeError(f"Could not get CIDv{version} of file '{filepath}':\n\t{stderr.decode()}")
+    
+    if id is None:
     return stdout.decode().strip()
-
-def make_image_path(paths: utils.Struct, traits: utils.Struct, image: dict, thumbnail: bool):
-    if thumbnail:
-        return os.path.join(paths.thumbnails, f"{traits.collection_lower}_{image['ID']:03}_thumb.*")
     else:
-        return os.path.join(paths.images, f"{traits.collection_lower}_{image['ID']:03}.*")
+        return stdout.decode().strip(), id
 
-async def get_image_cids(paths: utils.Struct, traits: utils.Struct, images: list, thumbnail: bool=False):
-    return await asyncio.gather(*[get_file_cid(make_image_path(paths, traits, image, thumbnail)) for image in images])
+def make_image_path(paths: utils.Struct, collection_lower: str, image: dict, thumbnail: bool):
+    if thumbnail:
+        return os.path.join(paths.thumbnails, f"{collection_lower}_{image['ID']:03}_thumb.*")
+    else:
+        return os.path.join(paths.images, f"{collection_lower}_{image['ID']:03}.*")
+
+async def get_image_cids(paths: utils.Struct, collection_lower: str, images: list, thumbnail: bool=False):
+    semaphore = asyncio.Semaphore(16)
+    async def sem_task(task):
+        async with semaphore:
+            return await task
+
+    task_completed_count = 0
+    results = [None] * len(images)
+    operation = "Calculating thumbnail CIDs" if thumbnail else "Calculating CIDs"
+
+    tasks = [ sem_task( 
+        get_file_cid( 
+            make_image_path(paths, collection_lower, image, thumbnail),
+            id=id
+        )
+    ) for id, image in enumerate(images) ]
+
+    for task in asyncio.as_completed(tasks):
+        result, id = await task
+        results[id] = result
+        task_completed_count += 1
+        utils.set_progress_for_ui(operation, task_completed_count, len(images))
+
+    return results
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -98,11 +124,11 @@ def main():
         all_images = json.load(f)
 
     # Calculate image CIDs
-    all_images_cids = asyncio.run(get_image_cids(paths, traits, all_images))
+    all_images_cids = asyncio.run(get_image_cids(paths, traits.collection_lower, all_images))
     all_metadata_cids = []
 
     # Calculate thumbnail CIDs (if they all exist)
-    all_thumbs_cids = asyncio.run(get_image_cids(paths, traits, all_images, thumbnail=True))
+    all_thumbs_cids = asyncio.run(get_image_cids(paths, traits.collection_lower, all_images, thumbnail=True))
     if any( [c is None for c in all_thumbs_cids] ):
         if all( [c is None for c in all_thumbs_cids] ):
             print("No thumbnail found, using full resolution image")
