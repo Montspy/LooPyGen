@@ -233,6 +233,17 @@ def get_variation_cnt(layers: list):
         cnt *= len(layer["weights"])
     return cnt
 
+def set_progress_for_ui(op: str, completed: int, total: int):
+    with open("php/progress.json", "w+") as progress_file:
+        json.dump({
+                "operation": op,
+                "completed": completed,
+                "total": total
+            },
+            progress_file
+        )
+    os.chmod("php/progress.json", 0o777)
+
 # JSON conversion
 class SemVerFilter(object):
     regex = r"^(?P<major>x|0|[1-9]\d*)\.(?P<minor>x|0|[1-9]\d*)\.(?P<patch>x|0|[1-9]\d*)?$"

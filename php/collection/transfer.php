@@ -85,13 +85,14 @@
                     </div>
                 </div>
             </section>
-            <button onclick="openModal('loading')" class="form btn" name="submit">REVIEW TRANSFER</button>
+            <button onclick="openModal('loading-fees')" class="form btn" name="submit">REVIEW TRANSFER</button>
         </form>
-        <div class="modal" id="loading">
+        <div class="modal" id="loading-fees">
             <h2>Retrieving estimated fees...</h2>
             <div class="modal-content">
                 <img loading="lazy" src="/css/images/fees.gif" alt="GETTING FEES..." />
             </div>
+            <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
         </div>
     <?php } else if (empty($_GET['run'])) {
         // Build command from inputs
@@ -142,6 +143,7 @@
             <div class="modal-content">
                 <img loading="lazy" src="/css/images/transfer.gif" alt="TRANSFERRING..." />
             </div>
+            <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
         </div>
     <?php
     } else if (!empty($_GET['run'])) {
@@ -156,10 +158,14 @@
             $code = "Error: ${code} (see output below)";
             $type = "error";
         }
+
         if (file_exists($wallet_file)) {
             unlink($wallet_file);
         }
-        ?>
+        
+        if (file_exists($progress_file)) {
+            unlink($progress_file);
+        } ?>
         <h3 class="<?php echo $type; ?>">Transfers Done!</h3>
         <pre>
 Result: <?php echo $code; ?>

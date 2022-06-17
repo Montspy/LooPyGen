@@ -9,7 +9,7 @@ import base58
 import json
 import re
 
-from utils import generate_paths, load_config_json, load_traits, Struct
+from utils import generate_paths, load_config_json, load_traits, set_progress_for_ui, Struct
 
 from DataClasses import *
 from LoopringMintService import LoopringMintService, NFTDataEddsaSignHelper, NFTEddsaSignHelper
@@ -479,6 +479,8 @@ async def main():
                 print(f"{i+1}/{len(filtered_cids)} NFT {id}: Skipping mint (test mint mode) ({args.amount}x {cid_hash})")
 
             mint_info.append(info)
+        
+            set_progress_for_ui("minter", i + 1, len(filtered_cids))
     finally:
         with open(paths.mint_info, 'w+') as f:
             json.dump(mint_info, f, indent=4)

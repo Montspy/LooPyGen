@@ -110,7 +110,7 @@ def main():
             print(f"Some thumbnail file(s) missing, using full resolution image")
         all_thumbs_cids = all_images_cids
 
-    for cid, thumb_cid, image in zip(all_images_cids, all_thumbs_cids, all_images):
+    for i, (cid, thumb_cid, image) in enumerate(zip(all_images_cids, all_thumbs_cids, all_images)):
         token_id = image['ID']
         json_path = os.path.join(paths.metadata, f"{traits.collection_lower}_{token_id:03}.json")
 
@@ -160,6 +160,8 @@ def main():
 
         # Calculate metadata CIDs
         all_metadata_cids.append({"ID": token_id, "CID": asyncio.run(get_file_cid(json_path))})
+        
+        utils.set_progress_for_ui("metadata", i + 1, len(all_images))
 
     metadata_cids_path = paths.metadata_cids
     with open(metadata_cids_path, 'w') as outfile:

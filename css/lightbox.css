@@ -10,16 +10,31 @@
     height: 100%;
     overflow: auto;
     background-color: #2d2f4b;
+
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    justify-content: flex-start;
+
 }
 
 .modal h2 {
-    margin: 0 0 35px 0;
+    margin: 10px 0 35px 0;
     font-size: 30px;
     display: flex;
     flex-direction: row;
     align-items: center;
     align-content: center;
-    justify-content: space-evenly;
+    justify-content: center;
+}
+
+.modal h4 {
+    margin: 10px 0 35px 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
 }
 
 .modal button {

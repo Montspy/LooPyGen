@@ -169,6 +169,7 @@ async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threa
             results.append(result)
             task_ids.remove(result)
             print(f"Generated #{result:03} ({len(task_ids)} images remaining)")
+            utils.set_progress_for_ui("generate", len(results), len(results) + len(task_ids))
     else:   # Make it more human readable
         with yaspin.kbi_safe_yaspin().line as spinner:
             if len(task_ids) > 10:
@@ -183,6 +184,7 @@ async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threa
                     spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids[:10]] )} (+ {len(task_ids) - 10} others)"
                 else:
                     spinner.text = f"Generating {' '.join( [f'#{id:03}' for id in task_ids] )}"
+                utils.set_progress_for_ui("generate", len(results), len(results) + len(task_ids))
 
     return results
 

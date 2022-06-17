@@ -10,7 +10,7 @@ import base58
 import json
 import re
 
-from utils import Struct, generate_paths, load_config_json, load_traits, sanitize
+from utils import Struct, generate_paths, load_config_json, load_traits, sanitize, set_progress_for_ui
 from minter import get_account_info
 
 from DataClasses import *
@@ -794,6 +794,8 @@ async def main() -> None:
                 )
 
             transfer_info.append(info)
+        
+            set_progress_for_ui("transfer", i + 1, cfg.tosCount)
 
         if not all(cfg.tosRawValid):
             invalid_to_addresses = [

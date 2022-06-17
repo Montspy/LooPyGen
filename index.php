@@ -3,6 +3,7 @@
     $version = file_get_contents('./.version');
     $mint_config = "./.secrets/config.json";
     $transfer_config = "./.secrets/transfer_config.json";
+    $progress_file = "./php/progress.json";
 
     if (!empty($_GET['page'])) {
         $page = $_GET['page'];
@@ -52,6 +53,16 @@
         $redirect = $_POST['redirect'];
     } else {
         $redirect = "FALSE";
+    }
+
+    if ($page === "progress") {
+        header('Content-Type: application/json; charset=utf-8');
+        if (file_exists($progress_file)) {
+            include $progress_file;
+        } else {
+            echo 'null';
+        }
+        exit(0);
     }
 
     if ($page === "mint-config" or $page === "transfer-config" or $page === "setup" or $page === "edit") {

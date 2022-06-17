@@ -83,6 +83,7 @@
             <div class="modal-content">
                 <img loading="lazy" src="/css/images/generate.gif" alt="GENERATING IMAGES..." />
             </div>
+            <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
         </div>
     <?php } else if (!empty($_GET['run'])) {
         $lower = $_GET['collection'];
@@ -94,6 +95,10 @@
         } else {
             $code = "Error: ${code} (see output below)";
             $type = "error";
+        }
+        
+        if (file_exists($progress_file)) {
+            unlink($progress_file);
         } ?>
         <h3 class="<?php echo $type; ?>">Image Generation Done!</h3>
         <pre>
