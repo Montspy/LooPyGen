@@ -1,11 +1,27 @@
 #!/usr/bin/env bash
 
+version=$(cat .version)
+
+read -r -d '' startup_msg <<EOF
++-------------------------------------------------+
+|                                                 |
+|   ░▒█░░░░▄▀▀▄░▄▀▀▄░▒█▀▀█░█░░█░▒█▀▀█░█▀▀░█▀▀▄    |
+|   ░▒█░░░░█░░█░█░░█░▒█▄▄█░█▄▄█░▒█░▄▄░█▀▀░█░▒█    |
+|   ░▒█▄▄█░░▀▀░░░▀▀░░▒█░░░░▄▄▄▀░▒█▄▄▀░▀▀▀░▀░░▀    |
+|                                                 |
+|           Created and Maintained By:            |
+|                  sk33z3r.eth                    |
+|                  itsmonty.eth                   |
+|                                                 |
++-------------------------------------------------+
+EOF
+
 if [ -f .env ]; then
     . .env
 fi
 
 if [ -z $HUB_TAG ]; then
-    if $(git --version); then
+    if $(git --version 2>/dev/null); then
         branch=$(git rev-parse --abbrev-ref HEAD | sed 's,/,-,g')
     else
         branch=$(cat .version)
@@ -155,17 +171,20 @@ case $1 in
         mkdir -p .secrets
         chmod -R 777 .secrets
         chmod 777 /loopygen
+        list=""
         for f in $(ls); do
-            if [ $f = 'python' ] || [ $f = 'ipfs-hash' ]; then
+            if [ $f = 'python' ] || [ $f = 'ipfs-hash' ] || [ $f = '.git' ]; then
                 echo "[startup] Skipping $f"
             else
-                chmod -R 777 $f
+                list="$list $f"
             fi
         done &&
+        chmod -R 777 $list
         echo "[startup] Starting PHP FPM..."
         php-fpm &
-        echo "[startup] Starting nginx..."
+        echo "$startup_msg"
         echo "[LooPyGen v$(cat .version)] Server Running..."
+
         nginx -g "daemon off;"
     ;;
     ci) ci;;
