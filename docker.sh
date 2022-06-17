@@ -182,9 +182,8 @@ case $1 in
         chmod -R 777 $list
         echo "[startup] Starting PHP FPM..."
         php-fpm &
-        echo "$startup_msg"
         echo "[LooPyGen v$(cat .version)] Server Running..."
-
+        echo "$startup_msg"
         nginx -g "daemon off;"
     ;;
     ci) ci;;
