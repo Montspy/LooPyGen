@@ -33,7 +33,7 @@ class MainWindow(wx.Frame):
 
     DOCKER_PATHS_WIN = [r"C:\Program Files\Docker\Docker\Docker Desktop.exe"]
 
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, style=wx.DEFAULT_FRAME_STYLE):
         self.client = None
         self.container = None
         self.status = "exited"
@@ -439,7 +439,7 @@ class MainWindow(wx.Frame):
 
 async def main():
     app = WxAsyncApp(False)
-    frame = MainWindow(None, "LooPyGen Companion")
+    frame = MainWindow(None, "LooPyGen Companion", style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
     frame.Show()
     await app.MainLoop()
     if frame.client:
