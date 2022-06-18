@@ -1,0 +1,1 @@
+pyinstaller --onefile --strip --clean --windowed --name loopygen_companion --icon ../css/images/favicon/android-chrome-192x192.png main.py && open ./dist/loopygen_companion.app
