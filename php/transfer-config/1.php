@@ -8,10 +8,11 @@
                     <li>Login to the <a href="https://loopring.io/#/layer2" target="_blank">Loopring Wallet</a></li>
                     <li>Go to <b>L2 Wallet -> Security -> Export Account</b></p></li>
                 </ol>
-                <p>STEP 02 - Export your L1 Private Key from Metamask.</p>
-                <ol>
-                    <li>Follow <a href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-Export-an-Account-Private-Key" target="_blank">this guide</a></li>
-                </ol>
+                <p>STEP 02 - Export your L1 Private Key from Metamask or GameStopNFT Wallet.</p>
+                <ul>
+                    <li><b>MetaMask</b>: Follow <a href="https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-Export-an-Account-Private-Key" target="_blank">this guide</a></li>
+                    <li><b>GameStopNFT Wallet</b>:<br />Click your User Icon -> Settings -> Export Account - Private Key</li>
+                </ul>
             </section>
         </div>
         <form method="post" action="/transfer-config/1">
@@ -19,7 +20,7 @@
             <section id="artist">
                 <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address, ENS, or Account ID" /></div>
                 <div data-tooltip="Loopring L2 Private Key: The Loopring private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Loopring L2 Private Key (from step 01)" /></div>
-                <div data-tooltip="MetaMask L1 Private Key: The MetaMask private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="MetaMask L1 Private Key (from step 02)" /></div>
+                <div data-tooltip="L1 Private Key: The private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="L1 Private Key (from step 02)" /></div>
                 <div data-tooltip="Config Passphrase: A passphrase to encrypt your private key with [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="secret" name="secret" placeholder="Config Passphrase" /></div>
                 <div class="row">
                     <div data-tooltip="Fee Token: The token to be used to pay protocol fees">
