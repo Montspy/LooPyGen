@@ -1,6 +1,7 @@
 from wxasync import WxAsyncApp, AsyncBind, StartCoroutine
 import os
 import wx
+import sys
 import time
 import asyncio
 import aiohttp
@@ -40,7 +41,12 @@ class MainWindow(wx.Frame):
         self.latest_image_id = None
         self.busy = True
 
-        wx.Frame.__init__(self, parent, title=title)
+        wx.Frame.__init__(self, parent, title=title, style=style)
+
+        icon = wx.EmptyIcon()
+        if getattr(sys, 'frozen', False):
+            icon.CopyFromBitmap(wx.Bitmap(os.path.join(sys._MEIPASS, "files/favicon.ico"), wx.BITMAP_TYPE_ANY))
+        self.SetIcon(icon)
         self.statusBar = self.CreateStatusBar()
         self.panel = wx.Panel(self, wx.ID_ANY)
 
