@@ -56,21 +56,30 @@ class MainWindow(wx.Frame):
         self.startButton = wx.Button(self.panel, wx.ID_ANY, "Open LooPyGen UI")
         self.stopButton = wx.Button(self.panel, wx.ID_ANY, "Stop LooPyGen")
         self.updateButton = wx.Button(self.panel, wx.ID_ANY, "LooPyGen is up-to-date")
+        self.nukeButton = wx.Button(self.panel, wx.ID_ANY, "Uninstall LooPyGen")
         AsyncBind(wx.EVT_BUTTON, self.onStartButton, self.startButton)
         AsyncBind(wx.EVT_BUTTON, self.onStopButton, self.stopButton)
         AsyncBind(wx.EVT_BUTTON, self.onUpdateButton, self.updateButton)
+        AsyncBind(wx.EVT_BUTTON, self.onNukeButton, self.nukeButton)
 
-        grid = wx.BoxSizer(wx.HORIZONTAL)
-        grid.Add(self.startButton, 0, wx.ALL, 5)
-        grid.Add(self.stopButton, 0, wx.ALL, 5)
-        grid.Add(self.updateButton, 0, wx.ALL, 5)
+        horz_grid = wx.BoxSizer(wx.HORIZONTAL)
+        left_grid = wx.BoxSizer(wx.VERTICAL)
+        right_grid = wx.BoxSizer(wx.VERTICAL)
+        left_grid.Add(self.startButton, 0, wx.ALL | wx.EXPAND, 5)
+        right_grid.Add(self.stopButton, 0, wx.ALL | wx.EXPAND, 5)
+        left_grid.Add(self.updateButton, 0, wx.ALL | wx.EXPAND, 5)
+        right_grid.Add(self.nukeButton, 0, wx.ALL | wx.EXPAND, 5)
 
-        self.panel.SetSizer(grid)
-        grid.Fit(self)
+        horz_grid.Add(left_grid, 0, wx.ALL | wx.EXPAND, 5)
+        horz_grid.Add(right_grid, 0, wx.ALL | wx.EXPAND, 5)
+
+        self.panel.SetSizer(horz_grid)
+        horz_grid.Fit(self)
 
         self.startButton.Disable()
         self.stopButton.Disable()
         self.updateButton.Disable()
+        self.nukeButton.Disable()
 
         StartCoroutine(self.initDocker, self)
         self.buttonTimer.Start(500)
@@ -122,6 +131,7 @@ class MainWindow(wx.Frame):
             self.startButton.Disable()
             self.stopButton.Disable()
             self.updateButton.Disable()
+            self.nukeButton.Disable()
             return
 
         if not self.client:
@@ -130,6 +140,13 @@ class MainWindow(wx.Frame):
             self.stopButton.Disable()
             self.updateButton.Disable()
             self.updateButton.SetLabel("LooPyGen is up-to-date")
+            self.nukeButton.Disable()
+            return
+
+        if self.container:
+            self.nukeButton.Enable()
+        else:
+            self.nukeButton.Disable()
 
         if self.container and self.status == "running":
             self.startButton.Enable()
@@ -428,6 +445,37 @@ class MainWindow(wx.Frame):
         self.openUI()
         self.busy = False
         self.setStatusBarMessage("Opening LooPyGen UI")
+
+    async def onNukeButton(self, event):
+        self.busy = True
+        print("nuke", event)
+
+        if not self.container:
+            self.busy = False
+            return
+
+        # Ask for confirmation
+        dialog = wx.MessageDialog(
+            self,
+            message="Are you sure you want to uninstall LooPyGen?\nThis will delete your private keys but *not* your collections.",
+            caption="Uninstall LooPyGen?",
+            style=wx.OK | wx.CANCEL | wx.ICON_WARNING,
+        )
+        # dialog.SetOKCancelLabels("Uninstall", "Cancel")
+        if (dialog.ShowModal()) != wx.ID_OK:
+            self.busy = False
+            return
+        dialog.Destroy()
+        print("nuke confirmed")
+
+        # Continue with removing current container and image
+        self.setStatusBarMessage("Uninstalling LooPyGen...")
+        await self.container.delete(force=True)
+        if self.container_image_id:
+            await self.client.images.delete(self.container_image_id)
+
+        self.busy = False
+        self.setStatusBarMessage("LooPyGen uninstalled")
 
     async def inspectContainer(self, branches=[], container=None):
         if container is None:
