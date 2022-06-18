@@ -108,6 +108,19 @@ class MainWindow(wx.Frame):
         if not self.client:
             return
 
+        # await self.client.containers.run(
+        #     {
+        #         "Image": "sk33z3r/loopygen:dev-sk33z3r",
+        #         "HostConfig": {
+        #             "Binds": [f"C:\\Users\\Valentin\\Desktop\\collections:/loopygen/collections:rw"],
+        #             "PortBindings": {
+        #                 "80/tcp": [{"HostPort": "8080"}],
+        #             },
+        #         },
+        #     },
+        #     name="loopygen",
+        # )
+
         self.container = await self.getContainerByName("loopygen")
 
         if self.container:
@@ -303,7 +316,7 @@ class MainWindow(wx.Frame):
             dialog.Destroy()
 
         self.setStatusBarMessage(f"Downloading new docker image {IMAGE}...")
-        loopygen_image = await self.client.images.pull(IMAGE)
+        loopygen_image = await self.client.images.pull(IMAGE + ":latest")
         self.setStatusBarMessage(f"Starting new container loopygen...")
         self.container = await self.client.containers.run(
             {
