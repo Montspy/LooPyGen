@@ -273,7 +273,7 @@ class MainWindow(wx.Frame):
                 "Select your collections directory:",
                 style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,
             )
-            if (await AsyncShowDialogModal(dialog)) != wx.ID_OK:
+            if (dialog.ShowModal()) != wx.ID_OK:
                 dialog.Destroy()
                 return
 
