@@ -34,7 +34,12 @@ ADD dockerfiles/scripts/* /usr/local/bin/
 # add nginx conf
 ADD dockerfiles/nginx.conf /etc/nginx/http.d/default.conf
 # add app files
-ADD . .
+ADD ./python .
+ADD ./php .
+ADD ./css .
+ADD ./js .
+ADD ./index.php .
+ADD ./docker.sh .
 # run nginx
 EXPOSE 80
 STOPSIGNAL SIGKILL
