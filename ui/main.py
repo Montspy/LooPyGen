@@ -68,7 +68,6 @@ class MainWindow(wx.Frame):
         self.updateButton.Disable()
 
         StartCoroutine(self.initDocker, self)
-        self.busy = False
         self.buttonTimer.Start(500)
 
     def setStatusBarMessage(self, message):
@@ -90,6 +89,9 @@ class MainWindow(wx.Frame):
                 self.client = aiodocker.Docker()
         except Exception as e:
             self.client = None
+            return
+
+        if not self.client:
             return
 
         self.container = await self.getContainerByName("loopygen")
@@ -208,7 +210,7 @@ class MainWindow(wx.Frame):
 
         if not was_detected:
             self.setStatusBarMessage(
-                "Failed to start Docker Desktop. Please install Docker Desktop manually."
+                "Failed to start Docker Desktop. Please install Docker Desktop and restart the app."
             )
             webbrowser.open("https://www.docker.com/products/docker-desktop/")
             return False
@@ -229,7 +231,7 @@ class MainWindow(wx.Frame):
         if timed_out_waiting:
             print("Timed out waiting for Docker daemon to start")
             self.setStatusBarMessage(
-                "Failed to start Docker Desktop. Please install Docker Desktop manually."
+                "Failed to start Docker Desktop. Please install Docker Desktop and restart the app."
             )
             webbrowser.open("https://www.docker.com/products/docker-desktop/")
             return False
@@ -239,10 +241,10 @@ class MainWindow(wx.Frame):
 
     async def initDocker(self):
         if await self.ensureDockerDesktop():
+            self.busy = False
             self.setStatusBarMessage(f"Docker Desktop started")
             await self.refreshDockerStatus()
-        else:
-            self.setStatusBarMessage(f"Could not start Docker Desktop")
+            StartCoroutine(self.updateUI, self)
 
         # Get image ID of latest from Docker hub
         try:
@@ -263,8 +265,6 @@ class MainWindow(wx.Frame):
         except Exception as e:
             print("Failed to check for updates:")
             print(e)
-
-        StartCoroutine(self.updateUI, self)
 
     async def createContainer(self, collection_dir: str = None):
         if not collection_dir:
