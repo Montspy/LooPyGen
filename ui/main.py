@@ -315,9 +315,9 @@ class MainWindow(wx.Frame):
             collection_dir = dialog.GetPath()
             dialog.Destroy()
 
-        self.setStatusBarMessage(f"Downloading new docker image {IMAGE}...")
+        self.setStatusBarMessage(f"Downloading {IMAGE}, this can take a minute...")
         loopygen_image = await self.client.images.pull(IMAGE + ":latest")
-        self.setStatusBarMessage(f"Starting new container loopygen...")
+        self.setStatusBarMessage(f"Starting LooPyGen, this can take a minute...")
         self.container = await self.client.containers.run(
             {
                 "Image": IMAGE,
@@ -508,7 +508,9 @@ class MainWindow(wx.Frame):
 
 async def main():
     app = WxAsyncApp(False)
-    frame = MainWindow(None, "LooPyGen Companion", style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
+    frame = MainWindow(
+        None, "LooPyGen Companion", style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX
+    )
     frame.Show()
     await app.MainLoop()
     if frame.client:
