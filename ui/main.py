@@ -1,5 +1,4 @@
-from numpy import std
-from wxasync import WxAsyncApp, AsyncBind, AsyncShowDialogModal, StartCoroutine
+from wxasync import WxAsyncApp, AsyncBind, StartCoroutine
 import os
 import wx
 import time
@@ -296,6 +295,14 @@ class MainWindow(wx.Frame):
             name="loopygen",
         )
 
+    async def isUIRunning(self):
+        async with aiohttp.ClientSession() as session:
+            try:
+                resp = await session.get(f"http://localhost:8080/", timeout=0.9)
+                return resp.status == 200
+            except Exception as e:
+                return False
+
     def openUI(self):
         webbrowser.open("http://localhost:8080/")
 
@@ -319,21 +326,15 @@ class MainWindow(wx.Frame):
             return
 
         timed_out_waiting = await wait_until(
-            lambda x: (
-                await self.inspectContainer(["State", "Status"]) == "running"
-                for _ in "_"
-            ).__anext__(),
+            lambda x: (await self.isUIRunning() for _ in "_").__anext__(),
             1,
-            10,
+            40,  # 10s for docker to start, 30s for PHP to serve
             None,
         )
         if timed_out_waiting:
             self.busy = False
             self.setStatusBarMessage("Could not start LooPyGen")
             return
-
-        if just_started:
-            await asyncio.sleep(2)
 
         self.openUI()
         self.busy = False
@@ -398,16 +399,8 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage("Failed to update LooPyGen")
             return
 
-        async def isUIRunning():
-            async with aiohttp.ClientSession() as session:
-                try:
-                    resp = await session.get(f"http://localhost:8080/", timeout=0.9)
-                    return resp.status == 200
-                except Exception as e:
-                    return False
-
         timed_out_waiting = await wait_until(
-            lambda x: (await isUIRunning() for _ in "_").__anext__(),
+            lambda x: (await self.isUIRunning() for _ in "_").__anext__(),
             1,
             40,  # 10s for docker to start, 30s for PHP to serve
             None,
