@@ -150,8 +150,9 @@ class MainWindow(wx.Frame):
 
         was_detected = False
 
-        res = await asyncio.create_subprocess_shell("docker ps")
-        if res.returncode == 0:
+        proc = await asyncio.create_subprocess_shell("docker ps")
+        returncode = await proc.wait()
+        if returncode == 0:
             print("Docker Desktop is running")
             return True
 
