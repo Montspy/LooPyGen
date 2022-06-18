@@ -366,6 +366,7 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage("Failed to update LooPyGen")
             return
 
+        # Stop current container
         if (await self.inspectContainer(["State", "Status"])) == "running":
             name = await self.inspectContainer("Name")
             self.setStatusBarMessage(f"Stopping container {name}...")
@@ -383,18 +384,20 @@ class MainWindow(wx.Frame):
         # Get collections path from existing container
         collection_dir = await self.inspectContainer(["Mounts", 0, "Source"])
 
-        # Delete old backup container
+        # Delete old backup container if it exists
         old_container = await self.getContainerByName("old-loopygen")
         if old_container:
             name = await self.inspectContainer("Name", old_container)
             self.setStatusBarMessage(f"Removing old container {name}...")
-            await old_container.remove()
+            await old_container.delete()
 
         # Move existing container to backup container
-        name = await self.inspectContainer("Name")
+        backup_container = self.container
+        backup_image = self.container_image_id
+        name = await self.inspectContainer("Name", backup_container)
         self.setStatusBarMessage(f"Moving outdated container {name} to old-loopygen...")
-        await self.container.rename("old-loopygen")
-        await asyncio.sleep(2)
+        await backup_container.rename("old-loopygen")
+        await asyncio.sleep(1)
 
         # Create new container
         self.setStatusBarMessage(f"Creating new container...")
@@ -415,7 +418,12 @@ class MainWindow(wx.Frame):
             self.busy = False
             self.setStatusBarMessage(f"Could not start LooPyGen")
             return
-        await asyncio.sleep(2)
+
+        # Remove backup container and associated image
+        if backup_container:
+            await backup_container.delete()
+            await asyncio.sleep(1)
+            await self.client.images.delete(backup_image)
 
         self.openUI()
         self.busy = False
