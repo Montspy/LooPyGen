@@ -1,0 +1,10 @@
+# cd ui/
+# python3.8 -m virtualenv .
+# . ./bin/activate
+# pip install -r requirements.txt
+
+ICON_PATH="../css/images/favicon/favicon.ico:files"
+
+pyinstaller --onefile --strip --clean --name loopygen_companion \
+    --add-data="$ICON_PATH" \
+    main.py && ./dist/loopygen_companion
