@@ -1,15 +1,11 @@
 name: Docker Registry CI
 
 on:
-  push:
-    branches: [ "main" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
 
 env:
-  HUB_TAG: ${{ github.ref_name }}
+  HUB_TAG: ${{ github.base_ref }}
 
 jobs:
   docker:
