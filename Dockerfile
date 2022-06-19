@@ -40,6 +40,7 @@ ADD ./css ./css
 ADD ./js ./js
 ADD ./index.php ./index.php
 ADD ./docker.sh ./docker.sh
+ADD ./.version ./.version
 RUN ls -l
 # run nginx
 EXPOSE 80
