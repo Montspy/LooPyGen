@@ -18,7 +18,7 @@
         <form method="post" action="/transfer-config/1">
             <h3>Transfer Tool Info</h3>
             <section id="artist">
-                <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address, ENS, or Account ID" /></div>
+                <div data-tooltip="From Address: The L2 wallet address or ENS or Account ID of the MetaMask wallet sending the NFTs"><input required type="text" class="form wide" id="sender" name="sender" placeholder="From Address [Wallet, ENS, or Account ID]" /></div>
                 <div data-tooltip="Loopring L2 Private Key: The Loopring private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Loopring L2 Private Key (from step 01)" /></div>
                 <div data-tooltip="L1 Private Key: The private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="L1 Private Key (from step 02)" /></div>
                 <div data-tooltip="Config Passphrase: A passphrase to encrypt your private key with [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="secret" name="secret" placeholder="Config Passphrase" /></div>

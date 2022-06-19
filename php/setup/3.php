@@ -70,9 +70,9 @@
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
                         $trait_var = $s . "_" . $v; ?>
                         <h4>Color #<?php echo $v ?>:</h4>
-                        <div data-tooltip="Display Name: The pretty name of this variation"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" /></div>
+                        <div data-tooltip="Color Display Name: The pretty name of this variation (show in the metadata)"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" /></div>
                         <div class="trait-row">
-                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
+                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent (all values within a trait should add up to 100)">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
                             </div>
@@ -92,14 +92,14 @@
                     <?php $v = 1; while ($v <= $traits['image_layers'][$t]['variations']) {
                         $trait_var = $s . "_" . $v; ?>
                         <h4>Variation #<?php echo $v ?>:</h4>
-                        <div data-tooltip="Display Name: The pretty name of this variation"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" /></div>
+                        <div data-tooltip="Variation Name: The pretty name of this variation (shown in the metadata)"><input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" /></div>
                         <div class="trait-row">
-                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
+                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent (all values within a trait should add up to 100)">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
                                 <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
                             </div>
-                            <div data-tooltip="Image: Pick the image file for this variation.&#xa;(Browse or drag'n'drop)">
-                                <label for="trait<?php echo $trait_var ?>_r">Filename:</label><br />
+                            <div data-tooltip="Image File: Pick the image file for this variation.&#xa;(Browse or drag'n'drop)">
+                                <label for="trait<?php echo $trait_var ?>_r">Image File:</label><br />
                                 <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
                             </div>
                         </div>

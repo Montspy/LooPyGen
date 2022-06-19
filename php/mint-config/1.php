@@ -13,10 +13,10 @@
         <form method="post" action="/mint-config/1">
             <h3>Minter Info</h3>
             <section id="artist">
-                <div data-tooltip="Minter Address: The L2 wallet address or ENS or Account ID of the minter"><input required type="text" class="form wide" id="minter" name="minter" placeholder="Wallet Address, ENS, or Account ID" /></div>
-                <div data-tooltip="Minter Private Key: The Loopring private key of the minter [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Private Key" /></div>
+                <div data-tooltip="Minter Address: The L2 wallet address or ENS or Account ID of the minter"><input required type="text" class="form wide" id="minter" name="minter" placeholder="Minter Address [Wallet Address, ENS, or Account ID]" /></div>
+                <div data-tooltip="Minter Private Key: The Loopring private key of the minter [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Minter Private Key" /></div>
                 <div data-tooltip="Config Passphrase: A passphrase to encrypt your private key with [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="secret" name="secret" placeholder="Config Passphrase" /></div>
-                <div data-tooltip="Royalty Percentage: Percentage of the price of a sale that will go to the Royalty Address (LooPyGen generated collections override this percentage)">
+                <div data-tooltip="Default Royalty Percentage: Percentage of the price of a sale that will go to the Royalty Address (LooPyGen generated collections override this percentage)">
                     <input required type="number" class="form wide" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="Default Royalty Percentage: 0-10" />
                 </div>
                 <div class="row">

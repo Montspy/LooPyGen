@@ -35,15 +35,15 @@
             <h3 class="warning">DO NOT CLOSE OR REFRESH THIS WINDOW/TAB</h3>
             <section id="artist">
                 <div class="row">
-                    <div data-tooltip="Empty: Delete any previously generated metadata and start fresh&#xa;[optional]">
+                    <div data-tooltip="Empty Old Metadata: Delete any previously generated metadata and start fresh&#xa;[optional]">
                         <label for="empty">
-                            Empty old metadata?
+                            Empty Old Metadata:
                         </label>
                         <input type="checkbox" id="empty" name="empty" />
                     </div>
-                    <div data-tooltip="Overwrite: Check this to overwrite existing metadata files with new trait information&#xa;Leave unchecked to keep the existing metadata and refresh the image and animation_url CIDs only&#xa;[optional]">
+                    <div data-tooltip="Overwrite Metadata: Check this to overwrite existing metadata files with new trait information&#xa;Leave unchecked to keep the existing metadata and refresh the image and animation_url CIDs only&#xa;[optional]">
                         <label for="overwrite">
-                            Overwrite metadata?
+                            Overwrite Metadata:
                         </label>
                         <input type="checkbox" id="overwrite" name="overwrite" />
                     </div>

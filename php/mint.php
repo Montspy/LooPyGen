@@ -25,7 +25,7 @@
             <h3 class="info">Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
             <h3>Minter Options</h3>
             <section id="artist">
-                <div data-tooltip="CID: The metadata file's IPFS CID&#xa;[required]">
+                <div data-tooltip="CID: The metadata file's IPFS CID (must be CIDv0 and start with 'Qm')&#xa;[required]">
                     <label for="cid">
                         CID:
                     </label>
@@ -38,17 +38,17 @@
                         </label>
                         <input required type="number" class="form small" id="amount" name="amount" />
                     </div>
-                    <div data-tooltip="Test: (Recommended) Run a test mint, but don't actually mint anything.">
+                    <div data-tooltip="Run as Test: (Recommended) Run a test mint, but don't actually mint anything">
                         <label for="testmint">
-                            Run as a test?
+                            Run as Test:
                         </label>
                         <input checked type="checkbox" id="testmint" name="testmint" />
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="The passphrase to your mint config file&#xa;[required]">
+                    <div data-tooltip="Mint Config Passphrase: The passphrase to your mint config file&#xa;[required]">
                         <label for="configpass">
-                            Mint config passphrase
+                            Mint Config Passphrase:
                         </label>
                         <input type="password" class="form med" id="configpass" name="configpass" />
                     </div>

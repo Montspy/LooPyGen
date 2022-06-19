@@ -14,8 +14,8 @@
             </section>
             <h3>Collection Info</h3>
             <section id="collection">
-                <div data-tooltip="Collection Name: The pretty name of the collection"><input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" /></div>
-                <div data-tooltip="Collection Description: The pretty description of the collection"><input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" /></div>
+                <div data-tooltip="Collection Name: The pretty name of the collection (shown in the metadata and on marketplaces)"><input required type="text" class="form wide" id="collection_name" name="collection_name" placeholder="Collection Name" /></div>
+                <div data-tooltip="Collection Description: The pretty description of the collection (shown in the metadata and on marketplaces)"><input required type="text" class="form wide" id="description" name="description" placeholder="Collection Description" /></div>
                 <div data-tooltip="Generation Seed: A seed for the random number generator (use one for reproducible results)&#xa;[optional]"><input type="text" class="form wide" id="seed" name="seed" placeholder="Generation Seed (Optional)" /></div>
                 <div class="row">
                     <div data-tooltip="Royalty Percentage: How much of the sell price will go to the Royalty Address during a trade">
@@ -26,27 +26,27 @@
                     </div>
                     <div data-tooltip="Traits Count: How many traits/layers your NFT has">
                         <label for="trait_count">
-                            How many Traits?
+                            Traits Count:
                         </label>
                         <input required type="number" class="form number" id="trait_count" min="2" name="trait_count" placeholder="2+" />
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Background Color: Check this box for LooPyGen to add background colors behind your NFT">
+                    <div data-tooltip="Background Colors: Check this box for LooPyGen to add background colors behind your NFT">
                         <label for="background_color">
-                            Add background colors?
+                            Background Colors:
                         </label>
                         <input type="checkbox" id="background_color" name="background_color" />
                     </div>
-                    <div data-tooltip="Thumbnails: Check this box for LooPyGen to generate thumbnails of your NFTs for faster previews and widest compatibility with wallets">
+                    <div data-tooltip="Generate Thumbnails: Check this box for LooPyGen to generate thumbnails of your NFTs for faster previews and widest compatibility with wallets">
                         <label for="thumbnails">
-                            Generate thumbnails?
+                            Generate Thumbnails:
                         </label>
                         <input type="checkbox" id="thumbnails" name="thumbnails" />
                     </div>
-                    <div data-tooltip="Animated collection: Check this box to indicate that this collection contains animated traits (GIF, MP4 or WebM)">
+                    <div data-tooltip="Animated Collection: Check this box to indicate that this collection contains animated traits (GIF, MP4 or WebM)">
                         <label for="animation">
-                            Animated collection?
+                            Animated Collection:
                         </label>
                         <input type="checkbox" id="animation" name="animation" />
                     </div>

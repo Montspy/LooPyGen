@@ -30,7 +30,7 @@
             <?php if ($traits['thumbnails'] === true) { ?>
                 <div class="trait-row" data-tooltip="Thumbnail Size: The dimensions in pixels of your thumbnails&#xa;[height: optional]">
                     <label>
-                        Thumbnails size:
+                        Thumbnail Size:
                     </label>
                     <div class="labeled">
                         <input required type="number" class="form size" id="thumbnail_width" min="1" name="thumbnail_width" placeholder="WIDTH" />x
@@ -39,9 +39,9 @@
                 </div>
                 <?php }
             if ($traits['animation'] === true) { ?>
-                <div class="trait-row" data-tooltip="Animated file format: The file format for animated NFTs (does not affect thumbnails).&#xa;- GIF: quickest export, largest file.&#xa;- WebM: Slower export, small file.&#xa;- MP4: Slower export, small file, no transparency">
+                <div class="trait-row" data-tooltip="Animated File Format: The file format for animated NFTs (does not affect thumbnails).&#xa;- GIF: quickest export, largest file.&#xa;- WebM: Slower export, small file.&#xa;- MP4: Slower export, small file, no transparency">
                     <label for="animated_format">
-                        Animation file format:
+                        Animation File Format:
                     </label>
                     <select required class="form small" id="animated_format" name="animated_format">
                         <option value=".gif">GIF</option>
@@ -54,17 +54,17 @@
                 if ($traits['background_color'] === true and $i == 0) { ?>
                     <h4>Setup Background Color Trait:</h4>
                     <div class="trait-row">
-                        <div data-tooltip="Display Name: The pretty name of this trait/layer"><input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Background Display Name" /></div>
+                        <div data-tooltip="Background Display Name: The pretty name of this trait/layer (shown in the metadata)"><input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Background Display Name" /></div>
                         <div class="labeled" data-tooltip="Colors Count: The number of possible background colors">
                             <label for="trait<?php echo $s ?>_vars">
-                                How many variations?
+                                Colors Count:
                             </label>
                             <input required type="number" class="form number" id="trait<?php echo $s ?>_vars" min="1" name="trait<?php echo $s ?>_vars" placeholder="1" />
                         </div>
                     </div>
                     <div class="trait-row" data-tooltip="Image Size: The dimensions in pixels of your images">
                         <label>
-                            Size of your images:
+                            Image Size:
                         </label>
                         <div class="labeled">
                             <input required type="number" class="form size" id="trait<?php echo $s ?>_x" min="1" name="trait<?php echo $s ?>_x" placeholder="WIDTH" />x
@@ -74,12 +74,12 @@
                 <?php } else { ?>
                     <h4>Setup Trait #<?php echo $s ?>:</h4>
                     <div class="trait-row">
-                        <div data-tooltip="Display Name: The pretty name of this trait/layer">
+                        <div data-tooltip="Display Name: The pretty name of this trait/layer (shown in the metadata)">
                             <input required type="text" class="form med" id="trait<?php echo $s ?>_name" name="trait<?php echo $s ?>_name" placeholder="Trait #<?php echo $s ?> Display Name" />
                         </div>
                         <div class="labeled" data-tooltip="Variations Count: The number of possible values for this trait/layer">
                             <label for="trait<?php echo $s ?>_vars">
-                                How many variations?
+                                Variations Count:
                             </label>
                             <input required type="number" class="form number" id="trait<?php echo $s ?>_vars" min="1" name="trait<?php echo $s ?>_vars" placeholder="1" />
                         </div>

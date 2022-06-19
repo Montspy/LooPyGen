@@ -36,7 +36,7 @@
                 <div class="row">
                     <div data-tooltip="Count: The number of unique NFTs to generate&#xa;[required]">
                         <label for="count">
-                            How many?
+                            Count:
                         </label>
                         <input required type="number" class="form small" id="count" name="count" />
                     </div>
@@ -48,15 +48,15 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="Empty: Delete any previously generated images and start fresh&#xa;[optional]">
+                    <div data-tooltip="Empty Old Images: Delete any previously generated images and start fresh&#xa;[optional]">
                         <label for="empty">
-                            Empty old images?
+                            Empty Old Images:
                         </label>
                         <input type="checkbox" id="empty" name="empty" />
                     </div>
                     <div data-tooltip="Threaded: Generate 4 NFTs in parallel.&#xa;ONLY USE IF YOU HAVE A POWERFUL COMPUTER!&#xa;[optional]">
                         <label for="threaded">
-                            Multi-threaded?
+                            Threaded:
                         </label>
                         <input type="checkbox" id="threaded" name="threaded" />
                     </div>

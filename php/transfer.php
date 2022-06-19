@@ -26,7 +26,7 @@
             <h3>Transfer Options</h3>
             <section id="artist">
                 <div class="row">
-                    <div data-tooltip="Wallets: List of L2 addresses or ENS to send to, one per line.&#xa;[required]">
+                    <div data-tooltip="Wallets: List of L2 addresses or ENS to send to, one per line&#xa;[required]">
                         <label for="wallets">
                             Wallets:
                         </label>
@@ -34,7 +34,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="NFTs: List of CIDs or NFT IDs to send.&#xa;Random: At least as many NFTs as wallets must be in the sender wallet, including copies&#xa;Ordered: List the same number of NFTs as wallets&#xa;[required]">
+                    <div data-tooltip="NFTs: List of CIDs or NFT IDs to send, one per line&#xa;[required]">
                         <label for="nfts">
                             NFTs:
                         </label>
@@ -44,24 +44,24 @@
                 <div class="row">
                     <div data-tooltip="Transfer Mode:&#xa;- Random: Each wallet will receive a random NFT from the list&#xa;- Ordered: One-to-one association between wallet and NFT. The 1st wallet will receive the 1st NFT in the list, The 2nd wallet the 2nd NFT, etc...">
                         <label for="mode">
-                            Transfer mode
+                            Transfer Mode:
                         </label>
                         <select required class="form med" id="mode" name="mode">
                             <option selected value="--random">Random</option>
                             <option value="--ordered">Ordered</option>
                         </select>
                     </div>
-                    <div data-tooltip="Test: (Recommended) Run a test, but don't actually transfer anything.">
+                    <div data-tooltip="Run as Test: (Recommended) Run a test, but don't actually transfer anything">
                         <label for="test">
-                            Run as a test?
+                            Run as Test:
                         </label>
                         <input checked type="checkbox" id="test" name="test" />
                     </div>
                 </div>
                 <div class="row">
-                    <div data-tooltip="The passphrase to your transfer config file&#xa;[required]">
+                    <div data-tooltip="Transfer Config Passphrase: The passphrase to your transfer config file&#xa;[required]">
                         <label for="configpass">
-                            Transfer config passphrase
+                            Transfer Config Passphrase:
                         </label>
                         <input type="password" class="form med" id="configpass" name="configpass" />
                     </div>
