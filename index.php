@@ -62,7 +62,7 @@
     if ($redirect !== "TRUE") {
         include "php/header.html"; ?>
         <div class="content">
-            <h1><a href="/">LooPyGen</a> (<?php echo $version ?>)</h1>
+            <h1><a href="/">LooPyGen</a> v<?php echo $version ?></h1>
             <?php include "php/$page.php"; ?>
         </div>
     <?php } else {
