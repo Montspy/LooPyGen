@@ -10,6 +10,20 @@ import webbrowser
 
 IMAGE = "sk33z3r/loopygen"
 
+LOG_ENABLED = False
+
+def log_debug(content: str):
+    if not LOG_ENABLED:
+        return
+    DEBUG_FILE = './loopygen_debug.txt'
+    
+    if not isinstance(content, list):
+        content = [content]
+
+    with open(DEBUG_FILE, 'a+') as f:
+        for line in content: 
+            f.write(time.strftime('%Y-%m-%dT%H:%M:%SZ') + ": " + str(line) + "\n")
+
 # Checks condition(args) every interval until it is ture or until timeout seconds is elapsed
 # Returns True if it timed out
 async def wait_until(condition, interval=0.1, timeout=1, *args):
@@ -32,6 +46,7 @@ class MainWindow(wx.Frame):
     busy: bool
 
     DOCKER_PATHS_WIN = [r"C:\Program Files\Docker\Docker\Docker Desktop.exe"]
+    DOCKER_PATH_MACOS = r"/usr/local/bin:"
 
     def __init__(self, parent, title, style=wx.DEFAULT_FRAME_STYLE):
         self.client = None
@@ -181,49 +196,56 @@ class MainWindow(wx.Frame):
             self.updateButton.Disable()
             self.updateButton.SetLabel("LooPyGen is up-to-date")
 
+    async def runCommand(self, cmd):
+        proc = await asyncio.create_subprocess_shell(cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+        print(stdout)
+        print(stderr)
+        log_debug(stdout)
+        log_debug(stderr)
+        return await proc.wait()
+
+
     async def ensureDockerDesktop(self):
         import shutil
         import platform
 
         was_detected = False
 
-        proc = await asyncio.create_subprocess_shell("docker ps")
-        returncode = await proc.wait()
-        if returncode == 0:
-            print("Docker Desktop is running")
-            return True
-
         this_os = platform.system()
         if this_os == "Darwin":
             this_os = "macOS"
+            if self.DOCKER_PATH_MACOS not in os.environ["PATH"]:
+                os.environ["PATH"] = self.DOCKER_PATH_MACOS + os.environ["PATH"]
+
+        returncode = await self.runCommand("docker ps")
+        if returncode == 0:
+            print("Docker Desktop is running")
+            log_debug("Docker Desktop is running")
+            return True
+        
         self.setStatusBarMessage(f"Starting Docker Desktop for {this_os}...")
 
         # Attempt to start
-        if platform.system() == "Linux":
+        if this_os == "Linux":
             # Linux
-            proc = await asyncio.create_subprocess_shell(
-                "systemctl --user start docker-desktop",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await proc.communicate()
-            print(stdout)
-            print(stderr)
-            if proc.returncode == 0:
+            returncode = self.runCommand("systemctl --user start docker-desktop")
+            if returncode == 0:
                 was_detected = True
-        elif platform.system() == "Darwin":
+        elif this_os == "macOS":
+            log_debug("on macOS")
             # macOS
-            proc = await asyncio.create_subprocess_shell(
-                "open -a Docker",
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
-            stdout, stderr = await proc.communicate()
-            print(stdout)
-            print(stderr)
-            if proc.returncode == 0:
+            log_debug(os.getenv("PATH"))
+            log_debug(shutil.which("docker"))
+            await self.runCommand("whoami")
+            log_debug("$ open -a Docker")
+            returncode = self.runCommand("open -a Docker")
+            if returncode == 0:
                 was_detected = True
-        elif platform.system() == "Windows":
+        elif this_os == "Windows":
             # Windows
             docker_exe_path = shutil.which("docker.exe")
             if docker_exe_path:
@@ -252,10 +274,11 @@ class MainWindow(wx.Frame):
 
         # Wait for docker daemon to be up and running
         print("Waiting for Docker daemon to be up and running...")
+        log_debug("Waiting for Docker daemon to be up and running...")
         self.setStatusBarMessage("Waiting for Docker Desktop to start...")
         timed_out_waiting = await wait_until(
             lambda cmd: (
-                await (await asyncio.create_subprocess_shell(cmd)).wait() == 0
+                (await self.runCommand(cmd)) == 0
                 for _ in "_"
             ).__anext__(),
             0.5,
