@@ -37,13 +37,13 @@ function BrowserRedirect($url) {
     exit();
 }
 
-function set_progress_file($operation) {
-    if (file_exists($progress_file)) { unlink($progress_file); }
+function set_progress_file($operation, $file) {
+    if (file_exists($file)) { unlink($file); }
     $progress = array(
         "operation" => $operation,
         "completed" => "-",
         "total" => "-"
     );
     $json = json_encode($progress, JSON_UNESCAPED_SLASHES);
-    file_put_contents($progress_file, $json);
+    file_put_contents($file, $json);
 }

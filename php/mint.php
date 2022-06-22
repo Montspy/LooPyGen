@@ -107,7 +107,7 @@
         <div class="modal" id="loading">
             <div class="modal-content">
                 <?php //hard set progress.json
-                    set_progress_file("Initializing Mint Engine");
+                    set_progress_file("Initializing Mint Engine", $progress_file);
                 ?>
                 <h2><?php echo $loading_msg; ?></h2>
                 <img loading="lazy" src="/css/images/minting.gif" alt="MINTING..." />

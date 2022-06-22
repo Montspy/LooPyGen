@@ -81,7 +81,7 @@
         <div class="modal" id="loading">
             <div class="modal-content">
                 <?php //hard set progress.json
-                    set_progress_file("Initializing Image Generator");
+                    set_progress_file("Initializing Image Generator", $progress_file);
                 ?>
                 <h2>Hang tight, we're generating <?php echo $count; ?> images for you...</h2>
                 <img loading="lazy" src="/css/images/generate.gif" alt="GENERATING IMAGES..." />
