@@ -29,15 +29,12 @@ if [ -z $HUB_TAG ]; then
     if [ $branch == "main" ]; then
         branch="latest"
     fi
-    if [ -f .env ]; then
-        cat .env | sed "s/^HUB_TAG=.*$/HUB_TAG=$branch/g" > .temp
-        mv .temp .env
-    fi
 else
     branch=$HUB_TAG
-    if [ $branch == "main" ]; then
-        branch="latest"
-    fi
+fi
+
+if [ $branch == "main" ]; then
+    branch="latest"
 fi
 
 tag="sk33z3r/loopygen:$branch"
@@ -132,7 +129,7 @@ remove_start_menu_shortcuts() {
 usage() {
 cat <<EOF
 
-    LooPyGen Docker Environment Utility Script
+    LooPyGen v$version Docker Utility Script
 
     Usage: $0 [command]
 
