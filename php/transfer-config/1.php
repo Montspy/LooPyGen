@@ -22,6 +22,7 @@
                 <div data-tooltip="Loopring L2 Private Key: The Loopring private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key" name="private_key" placeholder="Loopring L2 Private Key (from step 01)" /></div>
                 <div data-tooltip="L1 Private Key: The private key of the from address [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="private_key_mm" name="private_key_mm" placeholder="L1 Private Key (from step 02)" /></div>
                 <div data-tooltip="Config Passphrase: A passphrase to encrypt your private key with [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="secret" name="secret" placeholder="Config Passphrase" /></div>
+                <div data-tooltip="Confirm Passphrase: Re-type the passphrase you previously entered [DO NOT SHARE THIS INFO WITH ANYONE]"><input required type="password" class="form wide" id="pass_confirm" name="pass_confirm" placeholder="Confirm Passphrase" onpaste="return false;" /></div>
                 <div class="row">
                     <div data-tooltip="Fee Token: The token to be used to pay protocol fees">
                         <label for="fee_token" class="med">
@@ -41,23 +42,28 @@
         $sender = $_POST['sender'];
         $private_key = $_POST['private_key'];
         $secret = base64_encode($_POST['secret']);
+        $pass_confirm = $_POST['pass_confirm'];
         $private_key_mm = $_POST['private_key_mm'];
         $fee_token = $_POST['fee_token'];
 
-        if(!str_starts_with($private_key_mm, '0x'))
-            $private_key_mm = '0x' . $private_key_mm;
+        if ($secret !== $pass_confirm) {
+            $code = "100";
+        } else {
+            if(!str_starts_with($private_key_mm, '0x'))
+                $private_key_mm = '0x' . $private_key_mm;
 
-        $config_data = array("sender"=>$sender,
-                             "private_key"=>$private_key,
-                             "private_key_mm"=>$private_key_mm,
-                             "fee_token"=>(int)$fee_token);
+            $config_data = array("sender"=>$sender,
+                                "private_key"=>$private_key,
+                                "private_key_mm"=>$private_key_mm,
+                                "fee_token"=>(int)$fee_token);
 
-        $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
-        file_put_contents($transfer_config, $config_json);
+            $config_json = json_encode($config_data, JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT);
+            file_put_contents($transfer_config, $config_json);
 
-        # encrypt the config file
-        $command = "encrypt --transfer --secret ${secret}";
-        exec($command, $output, $code);
+            # encrypt the config file
+            $command = "encrypt --transfer --secret ${secret}";
+            exec($command, $output, $code);
+        }
 
         Redirect("/transfer-config/finish?result=${code}", false);
     }
