@@ -124,6 +124,9 @@
         </form>
         <div class="modal" id="loading">
             <div class="modal-content">
+                <?php //hard set progress.json
+                    set_progress_file("Initializing Transfer Engine");
+                ?>
                 <h2><?php echo $loading_msg; ?></h2>
                 <img loading="lazy" src="/css/images/transfer.gif" alt="TRANSFERRING..." />
                 <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
