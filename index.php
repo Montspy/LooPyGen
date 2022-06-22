@@ -11,7 +11,7 @@
         $page = "home";
     }
 
-    require 'modules/functions.php';
+    require 'php/functions.php';
 
     if (!empty($_POST['redirect'])) {
         $redirect = $_POST['redirect'];
