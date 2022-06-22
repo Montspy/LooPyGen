@@ -36,6 +36,7 @@ ADD dockerfiles/nginx.conf /etc/nginx/http.d/default.conf
 # add app files
 ADD ./python ./python
 ADD ./php ./php
+ADD ./.user.ini ./.user.ini
 ADD ./css ./css
 ADD ./js ./js
 ADD ./index.php ./index.php
