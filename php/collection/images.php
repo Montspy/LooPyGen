@@ -80,6 +80,9 @@
         </form>
         <div class="modal" id="loading">
             <div class="modal-content">
+                <?php //hard set progress.json
+                    set_progress_file("Initializing Image Generator");
+                ?>
                 <h2>Hang tight, we're generating <?php echo $count; ?> images for you...</h2>
                 <img loading="lazy" src="/css/images/generate.gif" alt="GENERATING IMAGES..." />
                 <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>

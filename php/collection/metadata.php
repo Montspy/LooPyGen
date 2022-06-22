@@ -53,6 +53,9 @@
         </form>
         <div class="modal" id="loading">
             <div class="modal-content">
+                <?php //hard set progress.json
+                    set_progress_file("Initializing Metadata Generator");
+                ?>
                 <h2>Hang tight, we're generating metadata for you...</h2>
                 <img loading="lazy" src="/css/images/metadata.gif" alt="GENERATING METADATA..." />
                 <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
