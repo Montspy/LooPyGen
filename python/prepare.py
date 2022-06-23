@@ -16,7 +16,7 @@ def parse_args():
     input_grp = parser.add_mutually_exclusive_group(required=True)
     input_grp.add_argument('--file', help='Specify an input file', type=str)
     input_grp.add_argument('--idir', help='Specify an input directory', type=str)
-    parser.add_argument('--royalty_percentage', metavar='PERCENTAGE', help='Specify the royalty percentage, required with --metadata', type=int)
+    parser.add_argument('--royalty_percentage', help='Specify the royalty percentage', type=int, required=True)
     parser.add_argument('--metadata', help='Generate metadata templates instead of the CIDs list', action='store_true')
     parser.add_argument('--overwrite', help='Overwrite the metadata files and all metadata fields', action='store_true')
     parser.add_argument('--php', help=argparse.SUPPRESS, action='store_true')
@@ -35,7 +35,6 @@ def load_config(args):
 
     if args.metadata:
         cfg.file_filter = '*'
-        assert args.royalty_percentage is not None, '--royalty_percentage is required with --metadata'
     else:
         cfg.file_filter = '*.json'
 
