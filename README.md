@@ -29,7 +29,10 @@ The LooPyGen CLI client is run in Docker, but on-demand and headless as opposed 
 Download the script from GitHub with to your local working directory
 
 ```shell
+# using wGET
 $ wget -O ./loopygen-cli.sh https://github.com/sk33z3r/LooPyGen/blob/main/cli.sh && chmod +x loopygen-cli.sh
+# using cURL
+$ curl https://github.com/sk33z3r/LooPyGen/blob/main/cli.sh -o loopygen-cli.sh && chmod +x loopygen-cli.sh
 ```
 
 Pull the latest image
