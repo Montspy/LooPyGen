@@ -18,9 +18,9 @@ Please see our [wiki](https://loopygen.ezl2.app) for more details on how to use 
 
 ## LooPyGen CLI
 
-The LooPyGen CLI client is run in Docker, but on-demand and headless as opposed to as a service through the GUI client. Below you will find a list the command reference, and how to pull the latest images and helper scripts.
+The headless CLI component is meant for use in automating dApps when it comes to minting or transferring. The headless component can also be used to take advantage of server resources to generate high quality GIF or MP4 collections that require more than the average workstation.
 
-For more details, see our [wiki](https://wiki.ezl2.app/v1/docker)
+Below is the command reference for the headless component. For more details, see our [wiki](https://wiki.ezl2.app/v1/docker)
 
 **Notes**:
 
