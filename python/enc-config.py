@@ -7,7 +7,7 @@ import json
 import sys
 from glob import glob
 
-from utils import Struct, generate_paths, save_config_json
+from utils import generate_paths, save_config_json, print_exception_secret
 
 # Parse CLI arguments
 def parse_args():
@@ -23,7 +23,11 @@ def parse_args():
 
 def main():
     # check for command line arguments
-    args = parse_args()
+    try:
+        args = parse_args()
+    except Exception as err:
+        print_exception_secret()
+        sys.exit(f"Unable to parse arguments")
 
     # Generate paths and make directories
     paths = generate_paths()
