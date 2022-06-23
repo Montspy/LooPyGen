@@ -8,13 +8,19 @@ This is the unofficial Loopring Python Image Generator and Minter on Layer 2.
 
 ⚠️ **NEVER SHARE YOUR PRIVATE KEYS OR PASSPHRASES WITH ANYONE** ⚠️
 
-Checkout the [Wiki pages](https://loopygen.ezl2.app) for up to date info on using the app!
+Please report issues in the [issues section](https://github.com/sk33z3r/LooPyGen/issues)
 
-Checkout the [issues section](https://github.com/sk33z3r/LooPyGen/issues) to report any problems, make feature requests, or keep up with our progress!
+## LooPyGen GUI
+
+The LooPyGen GUI makes it easier to create generative collections for those that want to focus on the art rather than the tech.
+
+Please see our [wiki](https://loopygen.ezl2.app) for more details on how to use the app.
 
 ## LooPyGen CLI
 
 The LooPyGen CLI client is run in Docker, but on-demand and headless as opposed to as a service through the GUI client. Below you will find a list the command reference, and how to pull the latest images and helper scripts.
+
+For more details, see our [wiki](https://wiki.ezl2.app/v1/docker)
 
 **Notes**:
 
