@@ -38,6 +38,7 @@ if [ $branch == "main" ]; then
 fi
 
 tag="sk33z3r/loopygen:$branch"
+cli_tag="sk33z3r/loopygen-cli:$branch"
 
 checkDotenv() {
     uid=$(id -u)
@@ -54,11 +55,15 @@ checkDotenv() {
     fi
 }
 
-ci() {
+local_hub() {
     docker login -u "$HUB_USER" -p "$HUB_KEY" &&
-    echo "Building image with tag: $tag"
+    echo "Building GUI image with tag: $tag"
     docker build -t $tag . &&
+    echo "Building CLI image with tag: $cli_tag"
+    docker build -t $cli_tag -f Dockerfile.cli . &&
+    echo "Pushing images to hub..."
     docker push $tag &&
+    docker push $cli_tag &&
     docker logout
 }
 
@@ -134,7 +139,7 @@ cat <<EOF
     Usage: $0 [command]
 
     Commands:
-    build                 | Build the container locally
+    build                 | Build the images locally
     reload                | Tear down and rebuild the container
     update                | Update and reload the repository
     up                    | Spin up container
@@ -143,14 +148,17 @@ cat <<EOF
     remove_start_menu     | Remove Windows Start Menu
     migrate               | Migrate collection files
     container             | Runs commands for the container, meant for Docker
-    ci                    | Build, tag, and push container to Docker Hub
+    hub                   | Build, tag, and push images to Docker Hub
     {command}             | Run a command inside the container
 
 EOF
 }
 
 case $1 in
-    build) docker-compose build;;
+    build)
+        docker-compose build &&
+        docker build -t $cli_tag -f Dockerfile.cli .
+    ;;
     reload) reload;;
     update) update;;
     up)
@@ -183,7 +191,7 @@ case $1 in
         echo "$startup_msg"
         nginx -g "daemon off;"
     ;;
-    ci) ci;;
+    hub) local_hub;;
     -h|-help|help) usage;;
     *)
         if ! $(docker ps -q --filter "name=loopygen" | grep -q .); then

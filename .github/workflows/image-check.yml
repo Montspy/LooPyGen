@@ -17,8 +17,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-    - name: Build the Docker image
-      run: docker-compose build
+      -
+        name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      -
+        name: Build the GUI image
+        run: docker-compose build
+      -
+        name: Build the CLI image
+        run: docker build -t sk33z3r/loopygen-cli:${{ env.HUB_TAG }} -f Dockerfile.cli .

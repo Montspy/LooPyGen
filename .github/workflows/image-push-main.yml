@@ -21,8 +21,15 @@ jobs:
           username: ${{ secrets.HUB_USER }}
           password: ${{ secrets.HUB_KEY }}
       -
-        name: Build and push
+        name: Build and push GUI images
         uses: docker/build-push-action@v2
         with:
           push: true
           tags: sk33z3r/loopygen:${{ env.HUB_TAG }}, sk33z3r/loopygen:latest
+      -
+        name: Build and push GUI images
+        uses: docker/build-push-action@v2
+        with:
+          file: "{{defaultContext}}/Dockerfile.cli"
+          push: true
+          tags: sk33z3r/loopygen-cli:${{ env.HUB_TAG }}, sk33z3r/loopygen-cli:latest
