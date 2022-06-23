@@ -9,7 +9,7 @@ import base58
 import json
 import re
 
-from utils import generate_paths, load_config_json, load_traits, print_exception_secret, set_progress_for_ui, Struct
+from utils import generate_paths, load_config_json, load_traits, set_progress_for_ui, Struct
 
 from DataClasses import *
 from LoopringMintService import LoopringMintService, NFTDataEddsaSignHelper, NFTEddsaSignHelper
@@ -89,18 +89,14 @@ async def load_config(args, paths: Struct, traits: Struct):
         cfg.royaltyAccount, cfg.royaltyAddress = await retry_async(get_account_info, cfg.royalty, retries=3)
         assert cfg.royaltyAddress and cfg.royaltyAccount, f"Invalid royalty account: {cfg.royalty} aka {cfg.royaltyAddress} (account ID {cfg.royaltyAddress})"
 
-    assert secret.loopringPrivateKey, "Missing private key"
-    assert cfg.nftType in [0, 1], f"Invalid NFT type: {cfg.nftType}"
-    assert cfg.royaltyPercentage in range(0, 11), f"Invalid royalty percentage [0-10]: {cfg.royaltyPercentage}"
-    assert cfg.maxFeeTokenId in range(len(token_decimals)), f"Missing or invalid fee token ID: {cfg.maxFeeTokenId}"
+    assert secret.loopringPrivateKey, "Missing private key (LOOPRING_PRIVATE_KEY)"
+    assert cfg.nftType in [0, 1], f"Invalid NFT type (NFT_TYPE): {cfg.nftType}"
+    assert cfg.royaltyPercentage in range(0, 11), f"Invalid royalty percentage [0-10] (ROYALTY_PERCENTAGE): {cfg.royaltyPercentage}"
+    assert cfg.maxFeeTokenId in range(len(token_decimals)), f"Missing or invalid fee token ID (FEE_TOKEN_ID): {cfg.maxFeeTokenId}"
 
-    try:
-        if secret.loopringPrivateKey[:2] != "0x":
-            secret.loopringPrivateKey = "0x{0:0{1}x}".format(int(secret.loopringPrivateKey), 64)
-        secret.loopringPrivateKey = secret.loopringPrivateKey.lower()
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to parse L2 private key")
+    if secret.loopringPrivateKey[:2] != "0x":
+        secret.loopringPrivateKey = "0x{0:0{1}x}".format(int(secret.loopringPrivateKey), 64)
+    secret.loopringPrivateKey = secret.loopringPrivateKey.lower()
 
     return cfg, secret
 
@@ -124,11 +120,7 @@ def parse_args():
     batch_group.add_argument("-j", "--json", help="Specify a json file containing a list of CIDv0 hash to batch mint", type=str)
     batch_group.add_argument("-s", "--start", help="Specify the the starting ID to batch mint", type=int)
     batch_group.add_argument("-e", "--end", help="Specify the last ID to batch mint", type=int)
-    try:
-        args = parser.parse_args()
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to parse arguments")
+    args = parser.parse_args()
 
     # Rebuild command
     args.command = "./docker.sh mint " + " ".join(sys.argv[1:])
@@ -222,11 +214,7 @@ def prompt_yes_no(prompt: str, default: str=None):
 async def get_user_api_key(cfg, secret):
     async with LoopringMintService() as lms:
         # Getting the user api key
-        try:
-            api_key_resp = await lms.getUserApiKey(accountId=cfg.minterAccount, privateKey=secret.loopringPrivateKey)
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get user api key")
+        api_key_resp = await lms.getUserApiKey(accountId=cfg.minterAccount, privateKey=secret.loopringPrivateKey)
         # log(f"User API key: {json.dumps(api_key_resp, indent=2)}")   # DO NOT LOG
         if api_key_resp is None:
             sys.exit("Failed to obtain user api key")
@@ -237,11 +225,7 @@ async def get_offchain_parameters(cfg, secret):
     async with LoopringMintService() as lms:
         parameters = {}
         # Getting the storage id
-        try:
-            storage_id = await lms.getNextStorageId(apiKey=secret.loopringApiKey, accountId=cfg.minterAccount, sellTokenId=cfg.maxFeeTokenId)
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get storage id")
+        storage_id = await lms.getNextStorageId(apiKey=secret.loopringApiKey, accountId=cfg.minterAccount, sellTokenId=cfg.maxFeeTokenId)
         log(f"Storage id: {json.dumps(storage_id, indent=2)}")
         if storage_id is None:
             sys.exit("Failed to obtain storage id")
@@ -250,11 +234,7 @@ async def get_offchain_parameters(cfg, secret):
 
         # Getting the token address
         counterfactual_nft_info = CounterFactualNftInfo(nftOwner=cfg.minterAddress, nftFactory=cfg.nftFactory, nftBaseUri="")
-        try:
-            counterfactual_nft = await lms.computeTokenAddress(apiKey=secret.loopringApiKey, counterFactualNftInfo=counterfactual_nft_info)
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get token address")
+        counterfactual_nft = await lms.computeTokenAddress(apiKey=secret.loopringApiKey, counterFactualNftInfo=counterfactual_nft_info)
         log(f"CounterFactualNFT Token Address: {json.dumps(counterfactual_nft, indent=2)}")
         if counterfactual_nft is None:
             sys.exit("Failed to obtain token address")
@@ -263,11 +243,7 @@ async def get_offchain_parameters(cfg, secret):
         parameters['counterfactual_nft'] = counterfactual_nft
 
         # Getting the offchain fee
-        try:
-            off_chain_fee = await lms.getOffChainFee(apiKey=secret.loopringApiKey, accountId=cfg.minterAccount, requestType=9, tokenAddress=counterfactual_nft['tokenAddress'])
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get offchain fee")
+        off_chain_fee = await lms.getOffChainFee(apiKey=secret.loopringApiKey, accountId=cfg.minterAccount, requestType=9, tokenAddress=counterfactual_nft['tokenAddress'])
         log(f"Offchain fee:  {json.dumps(off_chain_fee['fees'][cfg.maxFeeTokenId], indent=2)}")
         if off_chain_fee is None:
             sys.exit("Failed to obtain offchain fee")
@@ -314,12 +290,8 @@ async def get_hashes_and_sign(cfg, secret, cid: str, amount: int, offchain_param
         cfg.validUntil,
         offchain_parameters['storage_id']['offchainId']
     ]
-    try:
-        hasher = NFTEddsaSignHelper(private_key=secret.loopringPrivateKey)
-        nft_poseidon_hash = hasher.hash(inputs)
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to generate poseidon hash")
+    hasher = NFTEddsaSignHelper(private_key=secret.loopringPrivateKey)
+    nft_poseidon_hash = hasher.hash(inputs)
     # plog(inputs)
     log("Hashed NFT payload: 0x{0:0{1}x}".format(nft_poseidon_hash, 64))
     info['nft_poseidon_hash'] = "0x{0:0{1}x}".format(nft_poseidon_hash, 64)
@@ -345,32 +317,29 @@ async def mint_nft(cfg, secret, nft_data_poseidon_hash: str, nft_id: str, amount
         if test_mode:
             return MintResult.TESTMODE
 
-        try:
-            nft_mint_response = await lms.mintNft(
-                apiKey=secret.loopringApiKey,
-                exchange=cfg.exchange,
-                minterId=cfg.minterAccount,
-                minterAddress=cfg.minterAddress,
-                toAccountId=cfg.minterAccount,
-                toAddress=cfg.minterAddress,
-                royaltyAddress=cfg.royaltyAddress,
-                nftType=cfg.nftType,
-                tokenAddress=offchain_parameters['counterfactual_nft']['tokenAddress'],
-                nftId=nft_id,
-                amount=str(amount),
-                validUntil=cfg.validUntil,
-                royaltyPercentage=cfg.royaltyPercentage,
-                storageId=offchain_parameters['storage_id']['offchainId'],
-                maxFeeTokenId=cfg.maxFeeTokenId,
-                maxFeeAmount=int( (1 + cfg.feeSlippage) * int(offchain_parameters['off_chain_fee']['fees'][cfg.maxFeeTokenId]['fee']) ),
-                forceToMint=False,
-                counterFactualNftInfo=offchain_parameters['counterfactual_nft_info'],
-                eddsaSignature=eddsa_signature
-            )
-            log(f"Nft Mint reponse: {nft_mint_response}")
-            info['nft_mint_response'] = nft_mint_response
-        except Exception as err:
-            print_exception_secret()
+        nft_mint_response = await lms.mintNft(
+            apiKey=secret.loopringApiKey,
+            exchange=cfg.exchange,
+            minterId=cfg.minterAccount,
+            minterAddress=cfg.minterAddress,
+            toAccountId=cfg.minterAccount,
+            toAddress=cfg.minterAddress,
+            royaltyAddress=cfg.royaltyAddress,
+            nftType=cfg.nftType,
+            tokenAddress=offchain_parameters['counterfactual_nft']['tokenAddress'],
+            nftId=nft_id,
+            amount=str(amount),
+            validUntil=cfg.validUntil,
+            royaltyPercentage=cfg.royaltyPercentage,
+            storageId=offchain_parameters['storage_id']['offchainId'],
+            maxFeeTokenId=cfg.maxFeeTokenId,
+            maxFeeAmount=int( (1 + cfg.feeSlippage) * int(offchain_parameters['off_chain_fee']['fees'][cfg.maxFeeTokenId]['fee']) ),
+            forceToMint=False,
+            counterFactualNftInfo=offchain_parameters['counterfactual_nft_info'],
+            eddsaSignature=eddsa_signature
+        )
+        log(f"Nft Mint reponse: {nft_mint_response}")
+        info['nft_mint_response'] = nft_mint_response
 
         if nft_mint_response is None:   # Something failed
             mint_code = lms.last_error['resultInfo']['code']
@@ -470,7 +439,7 @@ async def main():
         # NFT Mint sequence
         for i, cid in enumerate(filtered_cids):
             set_progress_for_ui("Minting", i + 1, len(filtered_cids))
-
+            
             id = cid['ID']
             cid_hash = cid['CID']
 
