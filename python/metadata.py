@@ -30,11 +30,15 @@ async def get_file_cid(filepath: str, version: int=0, id: int=None):
     # Find matching file
     matching_file = glob.glob(filepath)
     if len(matching_file) == 0:
-        return None
+        if id is None:
+            return None
+        return None, id
     matching_file = list(filter(lambda f: len(os.path.splitext(f)[-1]) <= 5, matching_file))  # Remove files with extensions longer than 5 (e.g. '.png:ZoneIdentifier')
     matching_file = sorted(matching_file, key=os.path.getmtime)[-1] # Sort by modified date, keep latest modified
     if not os.path.exists(matching_file):
-        return None
+        if id is None:
+            return None
+        return None, id
 
     proc = await asyncio.create_subprocess_shell(
         f"cid --cid-version={version} {matching_file}",
@@ -44,11 +48,10 @@ async def get_file_cid(filepath: str, version: int=0, id: int=None):
     stdout, stderr = await proc.communicate()
     if proc.returncode > 0:
         raise RuntimeError(f"Could not get CIDv{version} of file '{filepath}':\n\t{stderr.decode()}")
-    
+
     if id is None:
         return stdout.decode().strip()
-    else:
-        return stdout.decode().strip(), id
+    return stdout.decode().strip(), id
 
 def make_image_path(paths: utils.Struct, collection_lower: str, image: dict, thumbnail: bool):
     if thumbnail:
@@ -66,8 +69,8 @@ async def get_image_cids(paths: utils.Struct, collection_lower: str, images: lis
     results = [None] * len(images)
     operation = "Calculating thumbnail CIDs" if thumbnail else "Calculating CIDs"
 
-    tasks = [ sem_task( 
-        get_file_cid( 
+    tasks = [ sem_task(
+        get_file_cid(
             make_image_path(paths, collection_lower, image, thumbnail),
             id=id
         )
@@ -106,7 +109,7 @@ def main():
 
     # Load traits.json
     traits = utils.load_traits(args.name)
-    
+
     # Generate paths
     paths = utils.generate_paths(traits)
 
@@ -178,7 +181,7 @@ def main():
                 token["royalty_address"] = cfg.royaltyAddress
             if traits.artist_name is not None and traits.artist_name != "":
                 token["artist"] = traits.artist_name
-        
+
         # Update CID fields
         token["image"] = os.path.join("ipfs://", thumb_cid)
         token["animation_url"] = os.path.join("ipfs://", cid)
