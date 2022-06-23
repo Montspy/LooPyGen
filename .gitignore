@@ -9,6 +9,7 @@ collections/*/
 composer.lock
 vendor/
 .secrets/
+ui/
 loopygen_companion
 *wallet_list.txt
 
