@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+from dotenv import load_dotenv
 import os
 from shutil import copy2
 import argparse
@@ -16,7 +18,6 @@ def parse_args():
     input_grp = parser.add_mutually_exclusive_group(required=True)
     input_grp.add_argument('--file', help='Specify an input file', type=str)
     input_grp.add_argument('--idir', help='Specify an input directory', type=str)
-    parser.add_argument('--royalty_percentage', help='Specify the royalty percentage', type=int, required=True)
     parser.add_argument('--metadata', help='Generate metadata templates instead of the CIDs list', action='store_true')
     parser.add_argument('--overwrite', help='Overwrite the metadata files and all metadata fields', action='store_true')
     parser.add_argument('--php', help=argparse.SUPPRESS, action='store_true')
@@ -87,6 +88,8 @@ async def get_files_cids(paths: 'list[str]', machine_readable: bool, version: in
     return results
 
 def main():
+    load_dotenv()
+
     # check for command line arguments
     args = parse_args()
 
@@ -143,16 +146,19 @@ def main():
                 token = {
                     'image': os.path.join('ipfs://', cid),
                     'animation_url': os.path.join('ipfs://', cid),
-                    'name': f"COLLECTION_NAME #{id:03}",
-                    'description': f"COLLECTION_DESCRIPTION",
+                    'name':  (os.getenv('COLLECTION_NAME') or 'COLLECTION_NAME') + f" #{id:03}",
+                    'royalty_percentage': os.getenv('ROYALTY_PERCENTAGE') or 0,
                     'attributes': [],
                     'properties': {}
                 }
+                if os.getenv('COLLECTION_DESCRIPTION'):
+                    token['description'] = os.getenv('COLLECTION_DESCRIPTION')
+                if os.getenv('ARTIST'):
+                    token['artist'] = os.getenv('ARTIST')
 
             # Update CID fields
             token['image'] = os.path.join('ipfs://', cid)
             token['animation_url'] = os.path.join('ipfs://', cid)
-            token['royalty_percentage'] = args.royalty_percentage
 
             with open(json_path, 'w+') as f:
                 json.dump(token, f, indent=4)
