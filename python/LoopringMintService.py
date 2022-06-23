@@ -104,10 +104,6 @@ class LoopringMintService(object):
             print(f"Error resolving ENS: {client_err}")
             pprint(parsed)
             self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred resolving ENS: {err}")
-            pprint(parsed)
-            self.last_error = parsed
 
         print(f"done!")
         return address_resp
@@ -128,10 +124,6 @@ class LoopringMintService(object):
             print(f"Error getting account ID: {client_err}")
             pprint(parsed)
             self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred getting account ID: {err}")
-            pprint(parsed)
-            self.last_error = parsed
 
         return account_id
 
@@ -149,10 +141,6 @@ class LoopringMintService(object):
             address_resp = parsed["owner"]
         except aiohttp.ClientError as client_err:
             print(f"Error getting user api key: {client_err}")
-            pprint(parsed)
-            self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred getting user api key: {err}")
             pprint(parsed)
             self.last_error = parsed
 
@@ -182,10 +170,6 @@ class LoopringMintService(object):
             api_key_resp = cast(ApiKeyResponse, parsed)
         except aiohttp.ClientError as client_err:
             print(f"Error getting user api key: {client_err}")
-            pprint(parsed)
-            self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred getting user api key: {err}")
             pprint(parsed)
             self.last_error = parsed
 
@@ -219,12 +203,7 @@ class LoopringMintService(object):
                 nft_balance['data'].extend(nft_balance_limit['data'])
                 nft_balance['totalNum'] += len(nft_balance_limit['data'])
             except aiohttp.ClientError as client_err:
-                print(f"Error getting user NFT balance: {client_err}")
-                pprint(parsed)
-                self.last_error = parsed
-                break
-            except Exception as err:
-                print(f"An error ocurred getting user NFT balance: {err}")
+                print(f"Error getting user NFT balance: ")
                 pprint(parsed)
                 self.last_error = parsed
                 break
@@ -249,10 +228,6 @@ class LoopringMintService(object):
             print(f"Error getting storage id: ")
             pprint(parsed)
             self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred getting storage id: {err}")
-            pprint(parsed)
-            self.last_error = parsed
 
         return storage_id
 
@@ -272,10 +247,6 @@ class LoopringMintService(object):
             counterfactual_nft = cast(CounterFactualNft, parsed)
         except aiohttp.ClientError as client_err:
             print(f"Error computing token address: ")
-            pprint(parsed)
-            self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred computing token address: {err}")
             pprint(parsed)
             self.last_error = parsed
 
@@ -299,10 +270,6 @@ class LoopringMintService(object):
             print(f"Error getting off chain fee: ")
             pprint(parsed)
             self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred getting off chain fee: {err}")
-            pprint(parsed)
-            self.last_error = parsed
 
         return off_chain_fee
 
@@ -320,10 +287,6 @@ class LoopringMintService(object):
             nft_data = cast('list[NftData]', parsed)
         except aiohttp.ClientError as client_err:
             print(f"Error getting nft datas: {client_err}")
-            pprint(parsed)
-            self.last_error = parsed
-        except Exception as err:
-            print(f"An error ocurred getting nft datas: {err}")
             pprint(parsed)
             self.last_error = parsed
 
@@ -392,11 +355,6 @@ class LoopringMintService(object):
             print("Error minting nft: ")
             pprint(parsed)
             self.last_error = parsed
-        except Exception as err:
-            print("An error ocurred minting nft: ")
-            pprint(err)
-            pprint(parsed)
-            self.last_error = parsed
 
         return nft_mint_data
 
@@ -458,11 +416,6 @@ class LoopringMintService(object):
             transfer_data = cast(TransferResponseData, parsed)
         except aiohttp.ClientError as client_err:
             print("Error transferring nft: ")
-            pprint(parsed)
-            self.last_error = parsed
-        except Exception as err:
-            print("An error ocurred transferring nft: ")
-            pprint(err)
             pprint(parsed)
             self.last_error = parsed
 
