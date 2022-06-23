@@ -158,7 +158,7 @@
             $code = "Error: ${code} (see output below)";
             $type = "error";
         }
-        
+
         if (file_exists($progress_file)) {
             unlink($progress_file);
         } ?>
@@ -172,6 +172,7 @@ Result: <?php echo $code; ?>
         </pre>
         <div class="nav">
             <a href="/collection/mint?collection=<?php echo $lower; ?>">MINT AGAIN</a>
+            <a href="/collection/transfer?collection=<?php echo $lower; ?>">TRANSFER</a>
             <a href="/home">MAIN MENU</a>
         </div>
     <?php }
