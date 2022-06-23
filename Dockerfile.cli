@@ -18,31 +18,18 @@ RUN npm install --location=global pkg
 ADD ipfs-hash/* ./
 RUN pkg ./cli.js -o ./ipfs-cid-linux
 
-FROM php:fpm-alpine3.15 AS php
+FROM python:3.9-alpine3.15
 # define workdir
 WORKDIR /loopygen
 # install python3.9 and ffmpeg
-RUN apk --no-cache --update add python3 ffmpeg bash nginx
+RUN apk --no-cache --update add ffmpeg bash
 # get compiled modules from previous stages
-COPY --from=python_modules /usr/local/lib/python3.9 /usr/lib/python3.9
+COPY --from=python_modules /usr/local/lib/python3.9 /usr/local/lib/python3.9
 COPY --from=node_modules /usr/src/app/ipfs-cid-linux /usr/bin/cid
-# setup composer
-# COPY --from=composer /usr/bin/composer /usr/bin/composer
-# RUN composer require web-token/jwt-encryption --ignore-platform-reqs --no-cache
 # add scripts
 ADD dockerfiles/scripts/* /usr/local/bin/
-# add nginx conf
-ADD dockerfiles/nginx.conf /etc/nginx/http.d/default.conf
 # add app files
 ADD ./python ./python
-ADD ./php ./php
-ADD ./.user.ini ./.user.ini
-ADD ./css ./css
-ADD ./js ./js
-ADD ./index.php ./index.php
-ADD ./docker.sh ./docker.sh
 ADD ./.version ./.version
-# run nginx
-EXPOSE 80
-STOPSIGNAL SIGKILL
-CMD ["./docker.sh", "container"]
+RUN mkdir -p ./php && touch php/progress.json
+CMD ["bash"]
