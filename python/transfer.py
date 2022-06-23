@@ -10,15 +10,7 @@ import base58
 import json
 import re
 
-from utils import (
-    Struct,
-    generate_paths,
-    load_config_json,
-    load_traits,
-    print_exception_secret,
-    sanitize,
-    set_progress_for_ui,
-)
+from utils import Struct, generate_paths, load_config_json, load_traits, sanitize, set_progress_for_ui
 from minter import get_account_info
 
 from DataClasses import *
@@ -121,11 +113,7 @@ def parse_args() -> argparse.Namespace:
         "--configpass", help=argparse.SUPPRESS, type=str
     )  # Should be base64 encoded
 
-    try:
-        args = parser.parse_args()
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to parse arguments")
+    args = parser.parse_args()
 
     # Test mode
     if args.test:
@@ -173,26 +161,14 @@ async def load_config(args, paths: Struct):
         len(token_decimals)
     ), f"Missing or invalid fee token ID (FEE_TOKEN_ID): {cfg.maxFeeTokenId}"
 
-    try:
-        if secret.loopringPrivateKey[:2] != "0x":
-            secret.loopringPrivateKey = "0x{0:0{1}x}".format(
-                int(secret.loopringPrivateKey), 64
-            )
-        secret.loopringPrivateKey = secret.loopringPrivateKey.lower()
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to parse L2 private key")
-
-    try:
-        if (
-            len(secret.metamaskPrivateKey) == 64
-            and secret.metamaskPrivateKey[:2] != "0x"
-        ):
-            secret.metamaskPrivateKey = "0x" + secret.metamaskPrivateKey
-        secret.metamaskPrivateKey = secret.metamaskPrivateKey.lower()
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to parse L1 private key")
+    if secret.loopringPrivateKey[:2] != "0x":
+        secret.loopringPrivateKey = "0x{0:0{1}x}".format(
+            int(secret.loopringPrivateKey), 64
+        )
+    secret.loopringPrivateKey = secret.loopringPrivateKey.lower()
+    if len(secret.metamaskPrivateKey) == 64 and secret.metamaskPrivateKey[:2] != "0x":
+        secret.metamaskPrivateKey = "0x" + secret.metamaskPrivateKey
+    secret.metamaskPrivateKey = secret.metamaskPrivateKey.lower()
 
     # Get user API key
     print("Getting user API key... ", end="")
@@ -266,7 +242,7 @@ async def load_config(args, paths: Struct):
     cfg.nftsCount = cfg.nfts["totalNum"]
     assert (
         cfg.nftsCount > 0
-    ), f'No NFT matching "{args.source}" was found in the sender\'s wallet. Make sure --nfts is a valid NFTID, CID, CONTRACT, COLLECTION or LIST.'
+    ), f"No NFT matching \"{args.source}\" was found in the sender's wallet. Make sure --nfts is a valid NFTID, CID, CONTRACT, COLLECTION or LIST."
 
     # Weights based off the amount of each NFT
     cfg.weights = [int(t["total"]) for t in cfg.nfts["data"]]
@@ -433,13 +409,9 @@ def prompt_yes_no(prompt: str, default: str = None) -> bool:
 async def get_user_api_key(cfg, secret) -> None:
     async with LoopringMintService() as lms:
         # Getting the user api key
-        try:
-            api_key_resp = await lms.getUserApiKey(
-                accountId=cfg.fromAccount, privateKey=secret.loopringPrivateKey
-            )
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get user api key")
+        api_key_resp = await lms.getUserApiKey(
+            accountId=cfg.fromAccount, privateKey=secret.loopringPrivateKey
+        )
         # log(f"User API key: {json.dumps(api_key_resp, indent=2)}")   # DO NOT LOG
         if api_key_resp is None:
             sys.exit("Failed to obtain user api key")
@@ -451,15 +423,11 @@ async def get_offchain_parameters(cfg, secret, nftTokenId) -> dict:
     async with LoopringMintService() as lms:
         parameters = {}
         # Getting the storage id
-        try:
-            storage_id = await lms.getNextStorageId(
-                apiKey=secret.loopringApiKey,
-                accountId=cfg.fromAccount,
-                sellTokenId=nftTokenId,
-            )
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get storage id")
+        storage_id = await lms.getNextStorageId(
+            apiKey=secret.loopringApiKey,
+            accountId=cfg.fromAccount,
+            sellTokenId=nftTokenId,
+        )
         log(f"Storage id: {json.dumps(storage_id, indent=2)}")
         if storage_id is None:
             sys.exit("Failed to obtain storage id")
@@ -470,14 +438,9 @@ async def get_offchain_parameters(cfg, secret, nftTokenId) -> dict:
         counterfactual_nft_info = CounterFactualNftInfo(
             nftOwner=cfg.fromAddress, nftFactory=cfg.nftFactory, nftBaseUri=""
         )
-        try:
-            counterfactual_nft = await lms.computeTokenAddress(
-                apiKey=secret.loopringApiKey,
-                counterFactualNftInfo=counterfactual_nft_info,
-            )
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get token address")
+        counterfactual_nft = await lms.computeTokenAddress(
+            apiKey=secret.loopringApiKey, counterFactualNftInfo=counterfactual_nft_info
+        )
         log(
             f"CounterFactualNFT Token Address: {json.dumps(counterfactual_nft, indent=2)}"
         )
@@ -488,16 +451,12 @@ async def get_offchain_parameters(cfg, secret, nftTokenId) -> dict:
         parameters["counterfactual_nft"] = counterfactual_nft
 
         # Getting the offchain fee (requestType=11 is NFT_TRANSFER)
-        try:
-            off_chain_fee = await lms.getOffChainFee(
-                apiKey=secret.loopringApiKey,
-                accountId=cfg.fromAccount,
-                requestType=11,
-                tokenAddress=counterfactual_nft["tokenAddress"],
-            )
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get offchain fee")
+        off_chain_fee = await lms.getOffChainFee(
+            apiKey=secret.loopringApiKey,
+            accountId=cfg.fromAccount,
+            requestType=11,
+            tokenAddress=counterfactual_nft["tokenAddress"],
+        )
         log(
             f"Offchain fee:  {json.dumps(off_chain_fee['fees'][cfg.maxFeeTokenId], indent=2)}"
         )
@@ -513,13 +472,9 @@ async def get_nft_balance(cfg, secret) -> NftBalance:
     async with LoopringMintService() as lms:
         info = {}
         # Getting the NFT balance
-        try:
-            nft_balance = await lms.getUserNftBalance(
-                apiKey=secret.loopringApiKey, accountId=cfg.fromAccount
-            )
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get NFT balance")
+        nft_balance = await lms.getUserNftBalance(
+            apiKey=secret.loopringApiKey, accountId=cfg.fromAccount
+        )
         log(f"NFT balance: {json.dumps(nft_balance, indent=2)}")
         if nft_balance is None:
             sys.exit("Failed to obtain nft balance")
@@ -594,20 +549,16 @@ async def get_hashes_and_sign(
         cfg.validUntil,
         offchain_parameters["storage_id"]["offchainId"],
     ]
-    try:
-        hasher = NFTTransferEddsaSignHelper(private_key=secret.loopringPrivateKey)
-        nft_poseidon_hash = hasher.hash(inputs)
-        log("NFT transfer payload hash inputs:")
-        plog(inputs)
-        log("Hashed NFT transfer payload: 0x{0:0{1}x}".format(nft_poseidon_hash, 64))
-        info["nft_poseidon_hash"] = "0x{0:0{1}x}".format(nft_poseidon_hash, 64)
+    hasher = NFTTransferEddsaSignHelper(private_key=secret.loopringPrivateKey)
+    nft_poseidon_hash = hasher.hash(inputs)
+    log("NFT transfer payload hash inputs:")
+    plog(inputs)
+    log("Hashed NFT transfer payload: 0x{0:0{1}x}".format(nft_poseidon_hash, 64))
+    info["nft_poseidon_hash"] = "0x{0:0{1}x}".format(nft_poseidon_hash, 64)
 
-        eddsa_signature = hasher.sign(inputs)
-        log(f"Signed NFT payload hash: {eddsa_signature}")
-        info["eddsa_signature"] = eddsa_signature
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to generate poseidon hash")
+    eddsa_signature = hasher.sign(inputs)
+    log(f"Signed NFT payload hash: {eddsa_signature}")
+    info["eddsa_signature"] = eddsa_signature
 
     # Generate the ECDSA signature
     EIP712.init_env(
@@ -638,15 +589,11 @@ async def get_hashes_and_sign(
         }
     )
 
-    try:
-        # print(f"{message=}")
-        eth_pkey = int(secret.metamaskPrivateKey, 16).to_bytes(32, byteorder="big")
-        v, r, s = sig_utils.ecsign(message, eth_pkey)
-        ecdsa_signature = "0x" + bytes.hex(v_r_s_to_signature(v, r, s)) + "02"
-        # print(f"{ecdsa_signature=}")
-    except Exception as err:
-        print_exception_secret()
-        sys.exit(f"Unable to generate ECDSA signature")
+    # print(f"{message=}")
+    eth_pkey = int(secret.metamaskPrivateKey, 16).to_bytes(32, byteorder="big")
+    v, r, s = sig_utils.ecsign(message, eth_pkey)
+    ecdsa_signature = "0x" + bytes.hex(v_r_s_to_signature(v, r, s)) + "02"
+    # print(f"{ecdsa_signature=}")
 
     return eddsa_signature, ecdsa_signature
 
@@ -668,36 +615,33 @@ async def transfer_nft(
         if test_mode:
             return TransferResult.TESTMODE, None
 
-        try:
-            nft_transfer_response = await lms.transferNft(
-                apiKey=secret.loopringApiKey,
-                exchange=cfg.exchange,
-                fromAccountId=cfg.fromAccount,
-                fromAddress=cfg.fromAddress,
-                toAccountId=toAccount,
-                toAddress=toAddress,
-                amount=amount,
-                validUntil=cfg.validUntil,
-                storageId=offchain_parameters["storage_id"]["offchainId"],
-                maxFeeTokenId=cfg.maxFeeTokenId,
-                maxFeeAmount=int(
-                    (1 + cfg.feeSlippage)
-                    * int(
-                        offchain_parameters["off_chain_fee"]["fees"][cfg.maxFeeTokenId][
-                            "fee"
-                        ]
-                    )
-                ),
-                memo=cfg.memo,
-                nftInfo=nftInfo,
-                counterFactualNftInfo=offchain_parameters["counterfactual_nft_info"],
-                eddsaSignature=eddsa_signature,
-                ecdsaSignature=ecdsa_signature,
-            )
-            log(f"Nft Transfer reponse: {nft_transfer_response}")
-            info["nft_transfer_response"] = nft_transfer_response
-        except Exception as err:
-            print_exception_secret()
+        nft_transfer_response = await lms.transferNft(
+            apiKey=secret.loopringApiKey,
+            exchange=cfg.exchange,
+            fromAccountId=cfg.fromAccount,
+            fromAddress=cfg.fromAddress,
+            toAccountId=toAccount,
+            toAddress=toAddress,
+            amount=amount,
+            validUntil=cfg.validUntil,
+            storageId=offchain_parameters["storage_id"]["offchainId"],
+            maxFeeTokenId=cfg.maxFeeTokenId,
+            maxFeeAmount=int(
+                (1 + cfg.feeSlippage)
+                * int(
+                    offchain_parameters["off_chain_fee"]["fees"][cfg.maxFeeTokenId][
+                        "fee"
+                    ]
+                )
+            ),
+            memo=cfg.memo,
+            nftInfo=nftInfo,
+            counterFactualNftInfo=offchain_parameters["counterfactual_nft_info"],
+            eddsaSignature=eddsa_signature,
+            ecdsaSignature=ecdsa_signature,
+        )
+        log(f"Nft Transfer reponse: {nft_transfer_response}")
+        info["nft_transfer_response"] = nft_transfer_response
 
     if nft_transfer_response is None:  # Something failed
         mint_code = lms.last_error["resultInfo"]["code"]
@@ -771,7 +715,7 @@ async def main() -> None:
         approved_off_chain_fees = offchain_parameters["off_chain_fee"]
 
         # NFT transfer sequence
-        for i, (to_account, to_address) in enumerate(cfg.tos):
+        for i, (to_account, to_address) in enumerate(cfg.tos):        
             set_progress_for_ui("Transferring", i + 1, cfg.tosCount)
 
             info = {"to_account": to_account, "to_address": to_address}
