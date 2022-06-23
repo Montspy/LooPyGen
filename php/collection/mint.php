@@ -96,6 +96,7 @@
                 <img loading="lazy" src="/css/images/fees.gif" alt="GETTING FEES..." />
                 <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
             </div>
+            <script>window.onunload = () => {};</script> <!-- firefox caching workaround for back button -->
         </div>
     <?php } else if (empty($_GET['run'])) {
         // Build command from inputs
@@ -149,6 +150,7 @@
                 <img loading="lazy" src="/css/images/minting.gif" alt="MINTING..." />
                 <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
             </div>
+            <script>window.onunload = () => {};</script> <!-- firefox caching workaround for back button -->
         </div>
     <?php } else if (!empty($_GET['run'])) {
         $lower = $_GET['collection'];

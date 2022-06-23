@@ -93,6 +93,7 @@
                 <img loading="lazy" src="/css/images/fees.gif" alt="GETTING FEES..." />
                 <h4 style="display: none;"><span id="loading-fees-progress"></span><span id="loading-fees-progress--spinner"></span></h4>
             </div>
+            <script>window.onunload = () => {};</script> <!-- firefox caching workaround for back button -->
         </div>
     <?php } else if (empty($_GET['run'])) {
         // Build command from inputs
@@ -147,6 +148,7 @@
                 <img loading="lazy" src="/css/images/transfer.gif" alt="TRANSFERRING..." />
                 <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
             </div>
+            <script>window.onunload = () => {};</script> <!-- firefox caching workaround for back button -->
         </div>
     <?php
     } else if (!empty($_GET['run'])) {
@@ -165,7 +167,7 @@
         if (file_exists($wallet_file)) {
             unlink($wallet_file);
         }
-        
+
         if (file_exists($progress_file)) {
             unlink($progress_file);
         } ?>

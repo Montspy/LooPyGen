@@ -60,6 +60,7 @@
                 <img loading="lazy" src="/css/images/metadata.gif" alt="GENERATING METADATA..." />
                 <h4><span id="loading-progress"></span><span id="loading-progress--spinner"></span></h4>
             </div>
+            <script>window.onunload = () => {};</script> <!-- firefox caching workaround for back button -->
         </div>
     <?php } else if (!empty($_GET['run'])) {
         $lower = $_GET['collection'];
@@ -74,7 +75,7 @@
             $code = "Error: ${code} (see output below)";
             $type = "error";
         }
-        
+
         if (file_exists($progress_file)) {
             unlink($progress_file);
         } ?>
