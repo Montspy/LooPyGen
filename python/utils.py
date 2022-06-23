@@ -31,6 +31,13 @@ class Struct(dict):
     def __repr__(self):
         return super().__repr__()
 
+# Print exception type and traceback without leaking potentially sensitive information
+def print_exception_secret():
+    from traceback import print_tb
+    from sys import exc_info
+    print(type(exc_info()[0]))
+    print_tb(exc_info()[2])
+
 # Based off of the PHP implementation
 def sanitize(string: str, force_lowercase: bool = True, alphanum_only: bool = False):
     strip = ["~", "`", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "=", "+", "[", "{", "]",
@@ -96,7 +103,11 @@ def save_config_json(config: str, path: str, base64secret: str = None):
     if base64secret is not None:
 
         # Decode passphrase
-        secret = b64decode(base64secret)
+        try:
+            secret = b64decode(base64secret)
+        except Exception as err:
+            print_exception_secret()
+            sys.exit(f"Unable to decode provided passphrase")
 
         # Derive key
         salt = os.urandom(16)
@@ -106,10 +117,18 @@ def save_config_json(config: str, path: str, base64secret: str = None):
             salt=salt,
             iterations=390000,
         )
-        key = kdf.derive(secret)
+        try:
+            key = kdf.derive(secret)
+        except Exception as err:
+            print_exception_secret()
+            sys.exit(f"Unable to derive key from provided passphrase")
 
         # Encrypt
-        cypher = jwe.encrypt(json.dumps(config_json), key, algorithm="dir", encryption="A256GCM")
+        try:
+            cypher = jwe.encrypt(json.dumps(config_json), key, algorithm="dir", encryption="A256GCM")
+        except Exception as err:
+            print_exception_secret()
+            sys.exit(f"Unable to encrypt config")
         enc_config = {
             "cypher": cypher.decode("utf-8"),
             "salt": "0x" + salt.hex()
@@ -127,16 +146,7 @@ def save_config_json(config: str, path: str, base64secret: str = None):
             return False
 
     else:
-
         sys.exit("Unable to encrypt config: No passphrase provided")
-
-def load_config_json(path: str):
-    if not os.path.exists(path):
-        sys.exit(f"Unable to load {path}: Config file not found. Did you create it? If not, go to http://localhost:8080/")
-
-    with open(path) as f:
-        config_json = json.load(f)
-    return Struct(config_json)
 
 # Load a config.json file from disk and decrypts it if needed (passphrase from provided base64secret, or asking the user for it)
 def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool = False):
@@ -159,12 +169,24 @@ def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool 
         # Check for provided passphrase
         if base64secret is not None:
             try:    # Decrypt
-                secret = b64decode(base64secret)
+                try:
+                    secret = b64decode(base64secret)
+                except Exception as err:
+                    print_exception_secret()
+                    sys.exit(f"Unable to decode provided passphrase")
                 kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
-                key = kdf.derive(secret)
+                try:
+                    key = kdf.derive(secret)
+                except Exception as err:
+                    print_exception_secret()
+                    sys.exit(f"Unable to derive key from provided passphrase")
 
                 cypher = enc_config['cypher'].encode('utf-8')
-                config_json = json.loads(jwe.decrypt(cypher, key))
+                try:
+                    config_json = json.loads(jwe.decrypt(cypher, key))
+                except Exception as err:
+                    print_exception_secret()
+                    sys.exit(f"Unable to decrypt config")
             except jwe.JWEError as err:
                 sys.exit(f"Unable to load {path}: Invalid config passphrase provided")
         # Error out if --noprompt
@@ -175,9 +197,13 @@ def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool 
             from getpass import getpass
             attempts = 3
             while attempts > 0:
-                secret = getpass(f"Config file is encrypted, please enter the passphrase for {path} (leave empty to abort): ").encode('utf-8')
-                if secret == b'':    # Abort
-                    sys.exit(f"Aborted by user")
+                try:
+                    secret = getpass(f"Config file is encrypted, please enter the passphrase for {path} (leave empty to abort): ").encode('utf-8')
+                    if secret == b'':    # Abort
+                        sys.exit(f"Aborted by user")
+                except Exception as err:
+                    print_exception_secret()
+                    sys.exit(f"Unable to read passphrase")
 
                 try:    # Decrypt
                     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=390000)
@@ -189,6 +215,9 @@ def load_config_json(path: str, base64secret: str = None, disallow_prompt: bool 
                 except jwe.JWEError as err: # Invalid, ask again
                     print(f"Unable to load {path}: Invalid config passphrase provided")
                     attempts -= 1
+                except Exception as err:
+                    print_exception_secret()
+                    sys.exit(f"Unable to decrypt config")
 
             if attempts == 0:
                 sys.exit(f"Did you forget your passphrase for {path} ? Go to http://localhost:8080/ to recreate the file")
