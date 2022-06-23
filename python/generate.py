@@ -68,7 +68,7 @@ class ImageGenerator(object):
             batch_with_id.append(img)
             batch_with_id[i]["ID"] = starting_id + i
         return batch_with_id
-    
+
     # Sort the list by ID
     def sortID(e):
         return e["ID"]
@@ -119,7 +119,7 @@ async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: 
     with ImageBuilder(animated_format=traits.animated_format) as img_builder:
         for l in traits.image_layers:
             layer_pretty_name = item[l["layer_name"]]
-        
+
             if l["type"] == "filenames":
                 layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
                 img_builder.overlay_image(layer_file)
@@ -136,22 +136,26 @@ async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: 
         if composite.type == ImageType.STATIC:
             file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}.png")
             composite.img.save(file_path)
+            os.chmod(file_path, 0o777)
             if traits.thumbnails:
                 thumb_path = os.path.join(paths.thumbnails, f"{traits.collection_lower}_{item['ID']:03}_thumb.png")
                 thumbnail.img.save(thumb_path)
+                os.chmod(thumb_path, 0o777)
         elif composite.type == ImageType.ANIMATED:
             ext = os.path.splitext(composite.fp)[1]
             file_path = os.path.join(paths.images, f"{traits.collection_lower}_{item['ID']:03}{ext}")
-            shutil.copy2(composite.fp, file_path)
+            shutil.copyfile(composite.fp, file_path)
+            os.chmod(file_path, 0o777)
             if traits.thumbnails:
                 ext = os.path.splitext(thumbnail.fp)[1]
                 thumb_path = os.path.join(paths.thumbnails, f"{traits.collection_lower}_{item['ID']:03}_thumb{ext}")
-                shutil.copy2(thumbnail.fp, thumb_path)
+                shutil.copyfile(thumbnail.fp, thumb_path)
+                os.chmod(thumb_path, 0o777)
 
         # print(f"Generated #{item['ID']:03}: {file_path}")
     return task_id
 
-async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threaded: bool, machine_readable: bool): 
+async def generate(paths: utils.Struct, traits: utils.Struct, batch: list, threaded: bool, machine_readable: bool):
     if threaded:
         semaphore = asyncio.Semaphore(4)   # Limit to 4 image building at once
     else:
@@ -241,7 +245,7 @@ def main():
     for i, l in enumerate(traits.image_layers):
         l["type"] = "filenames" if "filenames" in l else "rgba"
         l["names"] = list(l[l["type"]].keys())
-        
+
         l["path"] = os.path.join(paths.source, f"layer{(first_layer + i):02}")
 
     # Generate the unique combinations based on layer weightings
