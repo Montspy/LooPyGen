@@ -28,7 +28,7 @@ class ImageDescriptor(object):
         return f"{self.img}: fp={self.fp}, type={'STATIC' if self.type == ImageType.STATIC else 'ANIMATED'}"
 
 # Represents an image in memory
-# Able to overlay other images 
+# Able to overlay other images
 # Able to "queue" overlaying images to reduce io overhead
 # Build the image only when requested
 class ImageBuilder(object):
@@ -139,7 +139,7 @@ class ImageBuilder(object):
             thumb_size = [640]
         else:
             thumb_size = size
-            
+
         full_size = self._get_size(self.img)
 
         if len(thumb_size) == 1:    # Only x provided, calculate y
@@ -149,14 +149,14 @@ class ImageBuilder(object):
             scale = min(thumb_size[0] / full_size[0], thumb_size[1] / full_size[1])
             x, y = int(full_size[0] * scale), int(full_size[1] * scale)
             thumb_size = [x, y]
-        
+
         return await self._thumb(self.final, size=thumb_size)
 
     # Make new canvas
     def _make_canvas(self, src: ImageDescriptor) -> None:
         self.img = ImageDescriptor(type=ImageType.STATIC, img=Image.new(mode=self.STATIC_MODE, size=self._get_size(src)))
 
-    # Cached function to get images from 
+    # Cached function to get images from
     def _get_image(self, fp: str) -> Image.Image:
         return Image.open(fp).convert('RGBA')
 
@@ -197,7 +197,7 @@ class ImageBuilder(object):
             self._get_temp_filepath(img1)
         if img2.fp is None:
             self._get_temp_filepath(img2)
-        
+
         # Determine parameters
         ignore_loop = ''    # For GIFs
         image = ''          # For static images
@@ -206,7 +206,7 @@ class ImageBuilder(object):
         src2 = img2.fp
         if img1.type == ImageType.ANIMATED and img2.type == ImageType.ANIMATED:
             if path.splitext(src2)[1] == '.gif':
-                ignore_loop = '-ignore_loop 0'
+                ignore_loop = '-ignore_loop 1'
         elif img1.type == ImageType.STATIC and img2.type == ImageType.ANIMATED:
             image = '-f image2 -pattern_type none -loop 0'
             if path.splitext(src2)[1] == '.gif':
@@ -232,7 +232,7 @@ class ImageBuilder(object):
         with tempfile.NamedTemporaryFile(dir=self.temp_dir.name, suffix=ext, delete=False) as f:
             formatted_cmd = cmd.format(ll=self.FFMPEG_LOGLEVEL, image=image, codec1=codec1, src1=src1, ig=ignore_loop, codec2=codec2, src2=src2, ov_order=ov_order, out=f.name)
             await self._run_async_ffmpeg(formatted_cmd)
-        
+
         return ImageDescriptor(type=ImageType.ANIMATED, fp=f.name)
 
     # Final exporter
@@ -302,4 +302,4 @@ class ImageBuilder(object):
         if proc.returncode > 0:
             raise RuntimeError(f'Could not run ffmpeg command "{cmd}":\n\t{stderr.decode()}')
         return
-        
+
