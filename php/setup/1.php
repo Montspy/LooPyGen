@@ -22,7 +22,7 @@
                         <label for="trait_count">
                             Royalty Percentage:
                         </label>
-                        <input required type="number" class="form number" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="0-10" />&nbsp;%
+                        <input required type="number" step="any" class="form number" id="royalty_percentage" min="0" max="10" name="royalty_percentage" placeholder="0-10" />&nbsp;%
                     </div>
                     <div data-tooltip="Traits Count: How many traits/layers your NFT has">
                         <label for="trait_count">
