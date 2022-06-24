@@ -38,7 +38,7 @@
                         if (rarities[trait] === undefined) {
                             rarities[trait] = [];
                         }
-                        rarities[trait][variation-1] = parseInt(input.value);
+                        rarities[trait][variation-1] = parseFloat(input.value);
                     }
                 }
                 // Iterate through rarities backwards and make sure the sum is 100, or display message
@@ -74,7 +74,7 @@
                         <div class="trait-row">
                             <div data-tooltip="Rarity: Chance for this variation to be picked, in percent (all values within a trait should add up to 100)">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
+                                <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
                             </div>
                             <div data-tooltip="Color: The color of this background variation">
                                 <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
@@ -96,7 +96,7 @@
                         <div class="trait-row">
                             <div data-tooltip="Rarity: Chance for this variation to be picked, in percent (all values within a trait should add up to 100)">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
+                                <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100">&nbsp;%
                             </div>
                             <div data-tooltip="Image File: Pick the image file for this variation.&#xa;(Browse or drag'n'drop)">
                                 <label for="trait<?php echo $trait_var ?>_r">Image File:</label><br />
