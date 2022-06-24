@@ -127,7 +127,7 @@
                     $trait_var = $s . "_" . $v;
                     $rgb = str_split(str_replace("#", "", $_POST["trait${trait_var}_color"]), 2);
                     $traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array(hexdec($rgb[0]), hexdec($rgb[1]), hexdec($rgb[2]), (int)$_POST["trait${trait_var}_alpha"]);
-                    array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_rarity"]);
+                    array_push($traits["image_layers"][$t]['weights'], (float)$_POST["trait${trait_var}_rarity"]);
                     $v = $v + 1;
                 }
             } else {
@@ -137,7 +137,7 @@
                 while ($v <= $traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
                     $traits["image_layers"][$t]['filenames'][$_POST["trait${trait_var}_name"]] = $_FILES["trait${trait_var}_file"]['name'];
-                    array_push($traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_rarity"]);
+                    array_push($traits["image_layers"][$t]['weights'], (float)$_POST["trait${trait_var}_rarity"]);
                     $target_file = $target_dir . "/" . $_FILES["trait${trait_var}_file"]['name'];
                     move_uploaded_file($_FILES["trait${trait_var}_file"]['tmp_name'], $target_file);
                     $v = $v + 1;

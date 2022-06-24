@@ -40,7 +40,7 @@
                         if (rarities[trait] === undefined) {
                             rarities[trait] = [];
                         }
-                        rarities[trait][variation-1] = parseInt(input.value);
+                        rarities[trait][variation-1] = parseFloat(input.value);
                     }
                 }
                 // Iterate through rarities backwards and make sure the sum is 100, or display message
@@ -91,7 +91,7 @@
                         <div class="trait-row">
                             <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
+                                <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
                             <div data-tooltip="Color: The color of this background variation">
                                 <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
@@ -128,7 +128,7 @@
                         <div class="trait-row">
                             <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
                                 <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
+                                <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
                             <div data-tooltip="Image: Pick the image file for this variation.&#xa;(Browse or drag'n'drop)">
                                 <label for="trait<?php echo $trait_var ?>_r">Filename:</label><br />
@@ -163,7 +163,7 @@
                     $trait_var = $s . "_" . $v;
                     $rgb = str_split(str_replace("#", "", $_POST["trait${trait_var}_color"]), 2);
                     $new_traits["image_layers"][$t]['rgba'][$_POST["trait${trait_var}_name"]] = array(hexdec($rgb[0]), hexdec($rgb[1]), hexdec($rgb[2]), (int)$_POST["trait${trait_var}_alpha"]);
-                    array_push($new_traits["image_layers"][$t]['weights'], (int)$_POST["trait${trait_var}_rarity"]);
+                    array_push($new_traits["image_layers"][$t]['weights'], (float)$_POST["trait${trait_var}_rarity"]);
                     $v = $v + 1;
                 }
             } else {
@@ -173,7 +173,7 @@
                 while ($v <= $new_traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
                     $var_name = $_POST["trait${trait_var}_name"];
-                    $var_weight =(int)$_POST["trait${trait_var}_rarity"];
+                    $var_weight =(float)$_POST["trait${trait_var}_rarity"];
 
                     if (isset($_FILES["trait${trait_var}_file"])) { // New file was uploaded
                         $filename = $_FILES["trait${trait_var}_file"]['name'];
