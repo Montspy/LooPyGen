@@ -1,6 +1,6 @@
 <?php
 
-    $version = file_get_contents('./.version');
+    $version = "v" . file_get_contents('./.version');
     $mint_config = "./.secrets/config.json";
     $transfer_config = "./.secrets/transfer_config.json";
     $progress_file = "./php/progress.json";
@@ -26,7 +26,14 @@
     if ($redirect !== "TRUE") {
         include "php/header.html"; ?>
         <div class="content">
-            <h1><a href="/">LooPyGen</a> v<?php echo $version ?></h1>
+            <h1><a href="/">LooPyGen</a> <?php echo $version ?></h1>
+            <?php
+                $ver_cmd = 'curl --silent "https://api.github.com/repos/sk33z3r/LooPyGen/releases/latest" | grep \'"tag_name":\' | sed -E \'s/.*"([^"]+)".*/\1/\'';
+                exec($ver_cmd, $latest, $code);
+                if ($version !== $latest[0]) {
+                    echo "<h3 class='info'>LooPyGen $latest[0] is available!<br />Download the update from the companion app.</h3>";
+                }
+            ?>
             <?php include "php/$page.php"; ?>
         </div>
     <?php } else {
