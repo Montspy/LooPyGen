@@ -1,6 +1,6 @@
 <?php
 
-    if (!file_exists($mint_config)) {
+    if (!file_exists($mint_config) and empty($_GET['result'])) {
         BrowserRedirect('/mint-config/1');
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-    if (!file_exists($transfer_config)) {
+    if (!file_exists($transfer_config) and empty($_GET['result'])) {
         BrowserRedirect('/transfer-config/1');
     }
 
