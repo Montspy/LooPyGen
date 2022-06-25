@@ -42,15 +42,16 @@
         $sender = $_POST['sender'];
         $private_key = $_POST['private_key'];
         $secret = base64_encode($_POST['secret']);
-        $pass_confirm = $_POST['pass_confirm'];
+        $pass_confirm = base64_encode($_POST['pass_confirm']);
         $private_key_mm = $_POST['private_key_mm'];
         $fee_token = $_POST['fee_token'];
 
         if ($secret !== $pass_confirm) {
             $code = "100";
         } else {
-            if(!str_starts_with($private_key_mm, '0x'))
+            if(!str_starts_with($private_key_mm, '0x')) {
                 $private_key_mm = '0x' . $private_key_mm;
+            }
 
             $config_data = array("sender"=>$sender,
                                 "private_key"=>$private_key,
