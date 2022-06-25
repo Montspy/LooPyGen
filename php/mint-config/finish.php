@@ -1,5 +1,9 @@
 <?php
 
+    if (!file_exists($mint_config)) {
+        BrowserRedirect('/mint-config/1');
+    }
+
     if ($_GET['result'] === "0") { ?>
         <h3 class="success">Configuration Successfully Encrypted</h3>
         <div id="guide">
