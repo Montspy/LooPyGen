@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 name="loopygen-cli"
-tag="sk33z3r/$name:1.0.1a"
+tag="sk33z3r/$name"
 
 update() {
 cat <<EOF
