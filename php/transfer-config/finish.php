@@ -28,5 +28,5 @@
         </div>
         <div class="nav"><a href="/transfer-config/1">RETRY CONFIG</a></div>
     <?php }
-
+    }
 ?>
