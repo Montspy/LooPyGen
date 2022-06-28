@@ -92,6 +92,10 @@ def adjusted_weights(picks_node: PickTree, orig_weights: tuple, layer: int=0) ->
     # print(*[' ']*layer*2, f"Adjusted weights: {adj_weights}")
     return tuple(adj_weights)
 
+@lru_cache(maxsize=256)
+def calc_cum_weights(weights: tuple) -> tuple:
+    return tuple([sum(weights[:i+1]) for i in range(len(weights))])
+
 def add_pick_to_tree(picks_node: PickTree, pick: tuple, orig_weights:tuple, layer: int=0) -> bool:
     if layer == len(pick):  # Leaf reached
         return picks_node.cached
@@ -130,7 +134,7 @@ def sample_variations():
                 # print(f"Adjusted weights: {adj_weights}")
                 odds.append(adj_weights)
                 adj_ratio =  sum(adj_weights)
-                cweights = [sum(adj_weights[:i+1]) for i in range(len(adj_weights))] # Cumulative weights for the current layer
+                cweights = calc_cum_weights(adj_weights) # Cumulative weights for the current layer
                 layer_rand = (r % 100) / 100 * adj_ratio
                 r //= 100
 
