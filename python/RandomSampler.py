@@ -1,5 +1,6 @@
 from functools import lru_cache
 import random
+from typing import Iterable, List, Tuple
 
 class PickTree(dict):
     cached: bool
@@ -18,29 +19,37 @@ def cum_weights(weights: tuple) -> tuple:
     return tuple([sum(weights[:i+1]) for i in range(len(weights))])
 
 class RandomSampler:
-    def __init__(self, weights: list, seed: str = None):
+    weights: Tuple[Tuple[float]]
+    layer_cnt: int
+    random_range: int
+    var_cnt: int
+    all_picks: List[Tuple[int]]
+    picks_tree: PickTree
+    cache_dict: dict
+
+    def __init__(self, weights: Iterable[Iterable[float]], seed: str = None):
         assert all(
             [abs(sum(w) - 1.0) < 1e-10 for w in weights]
         ), "Weights in a layer must sum to 1.0"
-        self.weights = weights
+        self.weights = tuple([ tuple([ w for w in layer_weights]) for layer_weights in weights ])
         self.layer_cnt = len(weights)
         self.random_range = [0, 100**self.layer_cnt]
 
         self.var_cnt = [len(w) for w in weights]
 
         random.seed(seed)
-        self.all_picks = set()
+        self.all_picks = []
         # Tree with previous picks
         # keys: 1, 2, ... n are children
         # If no keys are present, it's a leaf
         # If attribute path is None, it's the root
         # Depth is the number of layers (layer_cnt)
-        self.picks_tree = PickTree({})
+        self.picks_tree = PickTree()
         self.picks_tree.path = None
 
         self.cache_dict = {}
 
-    def adjusted_weights(self, picks_node: PickTree, layer: int=0) -> tuple:
+    def adjusted_weights(self, picks_node: PickTree, layer: int=0) -> Tuple:
         if picks_node is None:
             return self.weights[0]
         if len(picks_node.keys()) == 0 and picks_node.path is not None:  # Is this a leaf?
@@ -56,13 +65,13 @@ class RandomSampler:
                     picks_node[i].cached = True
         return tuple(adj_weights)
 
-    def add_pick(self, picks_node: PickTree, pick: tuple, layer: int=0) -> bool:
+    def add_pick(self, picks_node: PickTree, pick: Tuple[int], layer: int=0) -> bool:
         if layer == len(pick):  # Leaf reached
             return picks_node.cached
         var_pick = pick[layer]
         # Create new branch if necessary, new branches are marked as not cached
         if var_pick not in picks_node:
-            picks_node[var_pick] = PickTree({})
+            picks_node[var_pick] = PickTree()
             picks_node[var_pick].cached = False
             picks_node[var_pick].path = pick[:layer+1]
         # Recurse down the tree. Mark the node as not cached if the branch we explored was not cached
@@ -72,14 +81,14 @@ class RandomSampler:
                 self.cache_dict.pop(tuple([picks_node.path[:-1], picks_node.path[-1]]), None)
         return picks_node.cached
 
-    def add_samples(self, picks: set) -> None:
+    def add_samples(self, picks: Iterable[Tuple[int]]) -> None:
         if picks is None:
             return
         for pick in picks:
             self.add_pick(self.picks_tree, pick)
-            self.all_picks.add(pick)
+            self.all_picks.append(pick)
 
-    def sample(self, count: int) -> set:
+    def sample(self, count: int) -> List[Tuple[int]]:
         for i in range(count):
             r = random.randrange(*self.random_range)
             picks_tree_current = self.picks_tree
@@ -106,6 +115,6 @@ class RandomSampler:
             self.add_pick(self.picks_tree, new_pick)
             # print(f"Picked: {new_pick} with odds {odds}")
 
-            self.all_picks.add(new_pick)
+            self.all_picks.append(new_pick)
 
         return self.all_picks
