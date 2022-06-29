@@ -3,8 +3,8 @@ import random
 from typing import Iterable, List, Tuple, Callable
 
 class PickTree(dict):
-    cached: bool
-    path: tuple
+    cached: bool    # True if the adjusted weights at that node have been cached
+    path: tuple     # The path from the root to this node
     def list_instance_attributes(self):
         inst_attr = []
         for attribute, value in self.__dict__.items():
@@ -19,15 +19,15 @@ def cum_weights(weights: tuple) -> tuple:
     return tuple([sum(weights[:i+1]) for i in range(len(weights))])
 
 class RandomSampler:
-    weights: Tuple[Tuple[float]]
-    layer_cnt: int
-    random_range: int
-    var_cnt: int
-    seed: str
-    all_picks: List[Tuple[int]]
-    picks_tree: PickTree
-    cache_dict: dict
-    progress_cb: Callable[[int, int], None]
+    weights: Tuple[Tuple[float]]    # Weights for each layer (each layer sums to 1.0)
+    layer_cnt: int                  # Number of layers
+    var_cnt: List[int]              # Number of variations for each layer
+    random_range: List[int]         # Range for the random number generated
+    seed: str                       # Seed for the random number generator
+    all_picks: List[Tuple[int]]     # List of all picks
+    picks_tree: PickTree            # The pick tree
+    cache_dict: dict                # Cache for the adjusted weights calculation
+    progress_cb: Callable[[int, int], None] # A progress callback function
 
     def __init__(self, weights: Iterable[Iterable[float]], seed: str = None):
         assert all(
@@ -42,7 +42,7 @@ class RandomSampler:
         self.seed = seed
         random.seed(self.seed)
         self.all_picks = []
-        # Tree with previous picks
+        # Tree with previous picks (leafs are picks that should have probability 0 for the next pick)
         # keys: 1, 2, ... n are children
         # If no keys are present, it's a leaf
         # If attribute path is None, it's the root
@@ -54,6 +54,7 @@ class RandomSampler:
 
         self.cache_dict = {}
 
+    # Add a pick to the pick tree and invalidate cache if necessary
     def add_pick(self, picks_node: PickTree, pick: Tuple[int], layer: int=0) -> bool:
         if layer == len(pick):  # Leaf reached
             return picks_node.cached
@@ -70,6 +71,7 @@ class RandomSampler:
                 self.cache_dict.pop(tuple([picks_node.path[:-1], picks_node.path[-1]]), None)
         return picks_node.cached
 
+    # Add a list of samples (aka picks) to the pick tree
     def add_samples(self, picks: Iterable[Tuple[int]]) -> None:
         if picks is None:
             return
@@ -77,6 +79,7 @@ class RandomSampler:
             self.add_pick(self.picks_tree, pick)
             self.all_picks.append(pick)
 
+    # Recursively compute the adjusted weights for a given layer variations based on the pick tree
     def adjusted_weights(self, picks_node: PickTree, layer: int=0) -> Tuple:
         if picks_node is None:
             return self.weights[0]
@@ -93,33 +96,39 @@ class RandomSampler:
                     picks_node[i].cached = True
         return tuple(adj_weights)
 
+    # Set the progress callback function
     def set_progress_callback(self, callback: Callable[[int, int], None]) -> bool:
         if isinstance(callback, Callable):
             self.progress_cb = callback
             return True
         return False
 
+    # Sample unique random picks without replacement
     def sample(self, count: int, ids: Iterable[int] = None) -> List[Tuple[int]]:
         if ids:
             assert len(ids) == count, "Number of ids must match the number of samples"
 
         for i in range(count):
+            # Progress callback
             if self.progress_cb and (count >= 100) and (i % 100 == 0):
                 self.progress_cb(i, count)
+            # Seed randomness based on ids if provided
             if ids:
                 random.seed(f"{self.seed}{ids[i]}")
+            # Sample enough randomness for all layers at once
             r = random.randrange(*self.random_range)
             picks_tree_current = self.picks_tree
             new_pick = []
             # odds = []
-            for j in range(self.layer_cnt):
+            for j in range(self.layer_cnt): # For each layer
+                # Compute adjusted weights based on the pick tree
                 adj_weights = self.adjusted_weights(picks_tree_current, j)
                 # odds.append(adj_weights)
                 adj_ratio =  sum(adj_weights)
+                # Determine the variation based on randomness
                 cweights = cum_weights(adj_weights) # Cumulative weights for the current layer
                 layer_rand = (r % 100) / 100 * adj_ratio
                 r //= 100
-
                 index = [i for i, cw in enumerate(cweights) if cw > layer_rand][0]
                 new_pick.append(index)
                 if picks_tree_current and index in picks_tree_current:
@@ -130,6 +139,7 @@ class RandomSampler:
             new_pick = tuple(new_pick)
             assert new_pick not in self.all_picks, "Duplicate pick"
 
+            # Add the new pick to the pick tree
             self.add_pick(self.picks_tree, new_pick)
             # print(f"Picked: {new_pick} with odds {odds}")
 
