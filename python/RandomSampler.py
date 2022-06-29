@@ -1,6 +1,6 @@
 from functools import lru_cache
 import random
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Tuple, Callable
 
 class PickTree(dict):
     cached: bool
@@ -27,6 +27,7 @@ class RandomSampler:
     all_picks: List[Tuple[int]]
     picks_tree: PickTree
     cache_dict: dict
+    progress_cb: Callable[[int, int], None]
 
     def __init__(self, weights: Iterable[Iterable[float]], seed: str = None):
         assert all(
@@ -49,23 +50,9 @@ class RandomSampler:
         self.picks_tree = PickTree()
         self.picks_tree.path = None
 
-        self.cache_dict = {}
+        self.progress_cb = None
 
-    def adjusted_weights(self, picks_node: PickTree, layer: int=0) -> Tuple:
-        if picks_node is None:
-            return self.weights[0]
-        if len(picks_node.keys()) == 0 and picks_node.path is not None:  # Is this a leaf?
-            return tuple([0])  # The probability of a leaf that has already been picked is 0
-        adj_weights = list(self.weights[layer]) # Adjusted weights
-        for i in range(len(adj_weights)):
-            if i in picks_node:
-                if tuple([picks_node.path, i]) in self.cache_dict and picks_node[i].cached:
-                    adj_weights[i] *= self.cache_dict[tuple([picks_node.path, i])]
-                else:
-                    self.cache_dict[tuple([picks_node.path, i])] = sum(self.adjusted_weights(picks_node[i], layer+1))
-                    adj_weights[i] *= self.cache_dict[tuple([picks_node.path, i])]
-                    picks_node[i].cached = True
-        return tuple(adj_weights)
+        self.cache_dict = {}
 
     def add_pick(self, picks_node: PickTree, pick: Tuple[int], layer: int=0) -> bool:
         if layer == len(pick):  # Leaf reached
@@ -90,17 +77,41 @@ class RandomSampler:
             self.add_pick(self.picks_tree, pick)
             self.all_picks.append(pick)
 
+    def adjusted_weights(self, picks_node: PickTree, layer: int=0) -> Tuple:
+        if picks_node is None:
+            return self.weights[0]
+        if len(picks_node.keys()) == 0 and picks_node.path is not None:  # Is this a leaf?
+            return tuple([0])  # The probability of a leaf that has already been picked is 0
+        adj_weights = list(self.weights[layer]) # Adjusted weights
+        for i in range(len(adj_weights)):
+            if i in picks_node:
+                if tuple([picks_node.path, i]) in self.cache_dict and picks_node[i].cached:
+                    adj_weights[i] *= self.cache_dict[tuple([picks_node.path, i])]
+                else:
+                    self.cache_dict[tuple([picks_node.path, i])] = sum(self.adjusted_weights(picks_node[i], layer+1))
+                    adj_weights[i] *= self.cache_dict[tuple([picks_node.path, i])]
+                    picks_node[i].cached = True
+        return tuple(adj_weights)
+
+    def set_progress_callback(self, callback: Callable[[int, int], None]) -> bool:
+        if isinstance(callback, Callable):
+            self.progress_cb = callback
+            return True
+        return False
+
     def sample(self, count: int, ids: Iterable[int] = None) -> List[Tuple[int]]:
         if ids:
             assert len(ids) == count, "Number of ids must match the number of samples"
 
         for i in range(count):
+            if self.progress_cb and (count >= 100) and (i % 100 == 0):
+                self.progress_cb(i, count)
             if ids:
                 random.seed(f"{self.seed}{ids[i]}")
             r = random.randrange(*self.random_range)
             picks_tree_current = self.picks_tree
             new_pick = []
-            odds = []
+            # odds = []
             for j in range(self.layer_cnt):
                 adj_weights = self.adjusted_weights(picks_tree_current, j)
                 # odds.append(adj_weights)
@@ -124,4 +135,6 @@ class RandomSampler:
 
             self.all_picks.append(new_pick)
 
+        if self.progress_cb:
+            self.progress_cb(count, count)
         return self.all_picks[-count:]
