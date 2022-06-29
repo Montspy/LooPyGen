@@ -1,9 +1,9 @@
 from copy import deepcopy
-from PIL import Image
+from typing import List, Tuple
 from base64 import b64encode
 import yaspin
-from ImageBuilder import ImageBuilder, ImageDescriptor, ImageType
-import random
+from ImageBuilder import ImageBuilder, ImageType
+from RandomSampler import RandomSampler
 import time
 import json
 import os
@@ -16,65 +16,84 @@ import utils
 
 # Image generation class
 class ImageGenerator(object):
-    seed: str               # Randomness seed
-    prev_batches: list      # Pre-existing images
-    this_batch: list        # New images
-    dup_cnt_limit: int      # Maximum number of tries to create a unique image
+    seed: str                           # Randomness seed
+    prev_batches: List[dict]            # Pre-existing images
+    prev_picks: List[Tuple[int]]        # Pre-existing picks
+    this_batch: List[dict]              # New images
+    new_picks: List[Tuple[int]]         # New picks
+    layer_names: List[str]              # Layer names
+    variation_names: List[List[str]]    # Variation names for each layer
 
-    layers: list
+    layers: List[dict]
 
-    def __init__(self, layers: list, seed: str, prev_batches: list, dup_cnt_limit: int):
+    def __init__(self, layers: List[dict], seed: str, prev_batches: List[dict], dup_cnt_limit: int) -> None:
+        utils.set_progress_for_ui("Setup unique trait generator", 0, 1)
         self.layers = layers
         self.seed = seed
-        # Keep trait properties only, to make comparison to new image easier
+
         self.prev_batches = []
-        for image in prev_batches:
-            layer_names = [l["layer_name"] for l in self.layers]
-            self.prev_batches.append({name: image[name] for name in layer_names})
+        self.prev_picks = []
+        self.layer_names = [str(l["layer_name"]) for l in self.layers]   # Extract layer names
+        self.variation_names = [ # Extract variation names from layers
+            [str(rgba) for rgba in l["rgba"].keys()] if "rgba" in l else [str(filename) for filename in l["filenames"].keys()]
+            for l in self.layers
+        ]
+
+        # Try converting images  in the {layer_name: variation_name} format to picks
+        try:
+            for image in prev_batches:
+                self.prev_batches.append({name: image[name] for name in self.layer_names})
+                self.prev_picks.append(tuple(
+                    [
+                        self.variation_names[i].index(image[name])
+                        for i, name in enumerate(self.layer_names)
+                    ]
+                ))
+        except IndexError as e:
+            print(f"Unable to parse previous batches, continuing as if there were none")
+            self.prev_batches = []
+            self.prev_picks = []
+        utils.set_progress_for_ui("Setup unique trait generator", 1, 1)
 
         self.this_batch = []
-        self.dup_cnt_limit = dup_cnt_limit
+        self.new_picks = []
 
-    # A recursive function to generate unique image combinations
-    def create_new_image(self, id: int, dup_cnt: int = 0):
-        # New, empty dictionary
-        new_image = {}
-
-        # Seed each image based on randomness seed and ID
-        image_seed = f"{self.seed}{id}{dup_cnt}"
-        random.seed(image_seed)
-
-        # For each trait category, select a random trait based on the weightings
-        for l in self.layers:
-            new_image[l["layer_name"]] = random.choices(l["names"], l["weights"])[0]
-
-        if new_image in self.this_batch or new_image in self.prev_batches:
-            if dup_cnt > self.dup_cnt_limit:
-                return new_image
-            return self.create_new_image(id, dup_cnt + 1)
-        else:
-            return new_image
-
-    def generate_images(self, starting_id: int, image_cnt: int):
+    def generate_images(self, starting_id: int, image_cnt: int) -> List[dict]:
+        utils.set_progress_for_ui("Generate unique traits", 0, image_cnt)
         self.prev_batches.extend(self.this_batch)
+        self.prev_picks.extend(self.new_picks)
         self.this_batch = []
-        for i in range(image_cnt):
-            utils.set_progress_for_ui("Generate unique traits", i + 1, image_cnt)
-            unique_image = self.create_new_image(id=starting_id + i)
-            self.this_batch.append(unique_image)
-        # Add IDs
-        batch_with_id = []
-        for i, img in enumerate(self.this_batch):
-            batch_with_id.append(img)
-            batch_with_id[i]["ID"] = starting_id + i
-        return batch_with_id
+        self.new_picks = []
+
+        # Setup random sampler
+        weights = [ [ float(w)/ 100 for w in l["weights"] ] for l in self.layers]
+        rs = RandomSampler(weights, seed=self.seed)
+        rs.add_samples(self.prev_picks)
+        rs.set_progress_callback(
+            lambda done, total: utils.set_progress_for_ui("Generate unique traits", done+1, total)
+        )
+
+        # Generate unique picks
+        self.new_picks = rs.sample(image_cnt, range(starting_id, starting_id + image_cnt))
+
+        # Convert picks to images in the {layer_name: variation_name} format
+        for i, pick in enumerate(self.new_picks):
+            image = {
+                self.layer_names[layer_index]:
+                    self.variation_names[layer_index][variation_index]
+                for layer_index, variation_index in enumerate(pick)
+            }
+            image["ID"] = starting_id + i # Add ID
+            self.this_batch.append(image)
+
+        return self.this_batch
 
     # Sort the list by ID
-    def sortID(e):
+    def sortID(e: dict) -> int:
         return e["ID"]
 
 # Returns true if all images are unique
-def all_images_unique(all_images):
+def all_images_unique(all_images: List[dict]) -> bool:
     # Remove IDs to make comparison to new image easier
     images = deepcopy(all_images)
     for img in images:
