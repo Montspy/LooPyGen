@@ -23,6 +23,7 @@ class RandomSampler:
     layer_cnt: int
     random_range: int
     var_cnt: int
+    seed: str
     all_picks: List[Tuple[int]]
     picks_tree: PickTree
     cache_dict: dict
@@ -37,7 +38,8 @@ class RandomSampler:
 
         self.var_cnt = [len(w) for w in weights]
 
-        random.seed(seed)
+        self.seed = seed
+        random.seed(self.seed)
         self.all_picks = []
         # Tree with previous picks
         # keys: 1, 2, ... n are children
@@ -88,8 +90,13 @@ class RandomSampler:
             self.add_pick(self.picks_tree, pick)
             self.all_picks.append(pick)
 
-    def sample(self, count: int) -> List[Tuple[int]]:
+    def sample(self, count: int, ids: Iterable[int] = None) -> List[Tuple[int]]:
+        if ids:
+            assert len(ids) == count, "Number of ids must match the number of samples"
+
         for i in range(count):
+            if ids:
+                random.seed(f"{self.seed}{ids[i]}")
             r = random.randrange(*self.random_range)
             picks_tree_current = self.picks_tree
             new_pick = []
