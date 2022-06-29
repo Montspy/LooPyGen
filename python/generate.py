@@ -49,7 +49,7 @@ class ImageGenerator(object):
                         for i, name in enumerate(self.layer_names)
                     ]
                 ))
-        except IndexError as e:
+        except (ValueError, IndexError) as e:
             print(f"Unable to parse previous batches, continuing as if there were none")
             self.prev_batches = []
             self.prev_picks = []
@@ -291,6 +291,8 @@ def main():
         n = 1
         for l in traits.image_layers:
             item = image[l["layer_name"]]
+            if not item in l["count"]:
+                l["count"][item] = 0
             l["count"][item] += 1
 
     for i, l in enumerate(traits.image_layers):
