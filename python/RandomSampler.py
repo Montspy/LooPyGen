@@ -117,4 +117,4 @@ class RandomSampler:
 
             self.all_picks.append(new_pick)
 
-        return self.all_picks
+        return self.all_picks[-count:]
