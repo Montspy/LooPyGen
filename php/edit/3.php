@@ -34,21 +34,24 @@
                 let rarities = [];
                 // Build rarities array (rarities[t][v] = r => Trair 't', variation 'v' has rarity 'r'%)
                 for (const input of form) {
-                    const match = input.id.match(/trait(\d+)_(\d+)_rarity/);
+                    const match = input.id.match(/trait(\d+)_(\d+|empty)_rarity/);
                     if (match) {
                         const [/*ignore*/, trait, variation] = match;
                         if (rarities[trait] === undefined) {
                             rarities[trait] = [];
                         }
-                        rarities[trait][variation-1] = parseFloat(input.value);
+                        if (variation === 'empty') {
+                            rarities[trait]['empty'] = parseFloat(input.value);
+                        } else {
+                            rarities[trait][variation-1] = parseFloat(input.value);
+                        }
                     }
                 }
                 // Iterate through rarities backwards and make sure the sum is 100, or display message
                 const first_t = (rarities[0] === undefined) ? 1 : 0;
                 for (let t = rarities.length - 1; t >= first_t; t--) {
-                    console.log(t);
                     const errorH3 = document.getElementById(`trait${t}_error`);
-                    const sum = rarities[t].reduce((cum, el) => cum + el, 0);
+                    const sum = rarities[t].reduce((cum, el) => cum + el, 0) + rarities[t]['empty'];
                     if (abs(sum - 100) > 1e-6) {    // Float comparison for sum == 100, avoids rounding errors
                         errorH3.innerHTML = `The rarity percentages should add up to 100% (not ${sum}%)`;
                         errorH3.hidden = false;
@@ -84,8 +87,12 @@
             while ($s <= $new_traits['trait_count']) {
                 if ($t == 0 and $new_traits['background_color'] === true) {
                     unset($layer);
+                    $weights_empty = false;
                     if (($traits['background_color'] === true) and isset($traits['image_layers'][$s])) {
                         $layer = $traits["image_layers"][$s];
+                        if (isset($layer['weights_total']) && isset($layer['weights'])) {
+                            $weights_empty = $layer['weights_total'] - array_sum($layer['weights']);
+                        }
                     } ?>
                     <h3 class="trait-title" id="trait<?php echo $s; ?>">Setup Background Colors:</h3>
                     <h3 hidden class="error" id="trait<?php echo $s; ?>_error">No error</h3>
@@ -123,8 +130,12 @@
                     $s_offset = 0;
                     if ($traits['background_color'] === false) { $s_offset = -1; }
                     unset($layer);
+                    $weights_empty = false;
                     if (isset($traits['image_layers'][$s + $s_offset])) {
                         $layer = $traits["image_layers"][$s + $s_offset];
+                        if (isset($layer['weights_total']) && isset($layer['weights'])) {
+                            $weights_empty = $layer['weights_total'] - array_sum($layer['weights']);
+                        }
                     } ?>
                     <h3 class="trait-title" id="trait<?php echo $s; ?>">Setup "<?php echo $new_traits['image_layers'][$t]['layer_name']; ?>" Trait:</h3>
                     <h3 hidden class="error" id="trait<?php echo $s; ?>_error">No error</h3>
@@ -157,6 +168,15 @@
                         </div>
                     <?php $v = $v + 1; }
                 }
+                $trait_var = $s . "_empty"; ?>
+                <div class="trait-row" data-tooltip="Chance for the whole layer to be skipped, in percent">
+                    <h4 class="small">Skip layer:</h4>
+                    <div>
+                        <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label>
+                        <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100" value="<?php echo $weights_empty === false ? null : $weights_empty; ?>">&nbsp;%
+                    </div>
+                </div>
+                <?php
                 $t = $t + 1;
                 $s = $s + 1;
             } ?>
@@ -182,6 +202,7 @@
                     array_push($new_traits["image_layers"][$t]['weights'], (float)$_POST["trait${trait_var}_rarity"]);
                     $v = $v + 1;
                 }
+                $new_traits["image_layers"][$t]['weights_total'] = (float)$_POST["trait${s}_empty_rarity"] + array_sum($new_traits["image_layers"][$t]['weights']); // Should be 100
             } else {
                 $v = 1;
                 $new_traits["image_layers"][$t]['filenames'] = array();
@@ -189,7 +210,7 @@
                 while ($v <= $new_traits['image_layers'][$t]['variations']) {
                     $trait_var = $s . "_" . $v;
                     $var_name = $_POST["trait${trait_var}_name"];
-                    $var_weight =(float)$_POST["trait${trait_var}_rarity"];
+                    $var_weight = (float)$_POST["trait${trait_var}_rarity"];
 
                     if (isset($_FILES["trait${trait_var}_file"])) { // New file was uploaded
                         $filename = $_FILES["trait${trait_var}_file"]['name'];
@@ -205,6 +226,7 @@
                     array_push($new_traits["image_layers"][$t]['weights'], $var_weight);    // Add weights to weight array
                     $v = $v + 1;
                 }
+                $new_traits["image_layers"][$t]['weights_total'] = (float)$_POST["trait${s}_empty_rarity"] + array_sum($new_traits["image_layers"][$t]['weights']); // Should be 100
             }
             $t = $t + 1;
             $s = $s + 1;
