@@ -49,7 +49,7 @@
                     console.log(t);
                     const errorH3 = document.getElementById(`trait${t}_error`);
                     const sum = rarities[t].reduce((cum, el) => cum + el, 0);
-                    if (sum !== 100) {
+                    if (abs(sum - 100) > 1e-6) {    // Float comparison for sum == 100, avoids rounding errors
                         errorH3.innerHTML = `The rarity percentages should add up to 100% (not ${sum}%)`;
                         errorH3.hidden = false;
                         window.location.hash = `trait${t}`;
