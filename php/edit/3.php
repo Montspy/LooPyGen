@@ -85,7 +85,7 @@
         <form enctype="multipart/form-data" onSubmit="return rarityCheck(this);" method="post" action="/edit/3?collection=<?php echo $collection; ?>">
             <?php $t = 0;
             while ($s <= $new_traits['trait_count']) {
-                if ($t == 0 and $new_traits['background_color'] === true) {
+                if ($t == 0 and $new_traits['background_color'] === true) { // Background color layer
                     unset($layer);
                     $weights_empty = false;
                     if (($traits['background_color'] === true) and isset($traits['image_layers'][$s])) {
@@ -96,7 +96,7 @@
                     } ?>
                     <h3 class="trait-title" id="trait<?php echo $s; ?>">Setup Background Colors:</h3>
                     <h3 hidden class="error" id="trait<?php echo $s; ?>_error">No error</h3>
-                    <?php $v = 1; while ($v <= $new_traits["image_layers"][$s]['variations']) {
+                    <?php $v = 1; while ($v <= $new_traits["image_layers"][$s]['variations']) { // Background color variations
                         $trait_var = $s . "_" . $v;
                         unset($var_name);
                         if (isset($layer) and isset($layer['weights'][$v - 1])) {
@@ -107,26 +107,29 @@
                             }, $rgb));
                             $opacity = $layer['rgba'][$var_name][3];
                         } ?>
-                        <h4>Color #<?php echo $v ?>:</h4>
-                        <div data-tooltip="Display Name: The pretty name of this variation">
-                            <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
+                        <div>
+                            <h4>Color #<?php echo $v ?>:</h4>
+                            <div data-tooltip="Display Name: The pretty name of this variation">
+                                <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Color Display Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
+                            </div>
+                            <div class="trait-row">
+                                <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
+                                    <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
+                                    <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
+                                </div>
+                                <div data-tooltip="Color: The color of this background variation">
+                                    <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
+                                    <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" value="<?php echo isset($var_name) ? $color_hex : '#000000'; ?>" />
+                                </div>
+                                <div data-tooltip="Opacity: The transparency of this background variation&#xa;(0: invisible, 255: opaque)">
+                                    <label for="trait<?php echo $trait_var ?>_a">Opacity:</label><br />
+                                    <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" value="<?php echo isset($var_name) ? $opacity : 255; ?>" />
+                                </div>
+                            </div>
                         </div>
-                        <div class="trait-row">
-                            <div data-tooltip="Rarity: Chance for this variation to be picked, in percent">
-                                <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label><br />
-                                <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
-                            </div>
-                            <div data-tooltip="Color: The color of this background variation">
-                                <label for="trait<?php echo $trait_var ?>_r">Color:</label><br />
-                                <input required type="color" class="form small" id="trait<?php echo $trait_var ?>_color" name="trait<?php echo $trait_var ?>_color" value="<?php echo isset($var_name) ? $color_hex : '#000000'; ?>" />
-                            </div>
-                            <div data-tooltip="Opacity: The transparency of this background variation&#xa;(0: invisible, 255: opaque)">
-                                <label for="trait<?php echo $trait_var ?>_a">Opacity:</label><br />
-                                <input required type="number" class="form small" id="trait<?php echo $trait_var ?>_alpha" min="0" max="255" name="trait<?php echo $trait_var ?>_alpha" placeholder="0-255" value="<?php echo isset($var_name) ? $opacity : 255; ?>" />
-                            </div>
-                        </div>
+                        <hr />
                     <?php $v = $v + 1; }
-                } else {
+                } else { // Image layers
                     $s_offset = 0;
                     if ($traits['background_color'] === false) { $s_offset = -1; }
                     unset($layer);
@@ -139,7 +142,7 @@
                     } ?>
                     <h3 class="trait-title" id="trait<?php echo $s; ?>">Setup "<?php echo $new_traits['image_layers'][$t]['layer_name']; ?>" Trait:</h3>
                     <h3 hidden class="error" id="trait<?php echo $s; ?>_error">No error</h3>
-                    <?php $v = 1; while ($v <= $new_traits['image_layers'][$t]['variations']) {
+                    <?php $v = 1; while ($v <= $new_traits['image_layers'][$t]['variations']) { // Image layers variations
                         $trait_var = $s . "_" . $v;
                         unset($var_name);
                         if (isset($layer) and isset($layer['weights'][$v - 1])) {
@@ -166,6 +169,7 @@
                                 <?php } ?>
                             </div>
                         </div>
+                        <hr />
                     <?php $v = $v + 1; }
                 }
                 $trait_var = $s . "_empty"; ?>
