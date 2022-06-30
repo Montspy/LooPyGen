@@ -60,6 +60,22 @@
                 }
                 return valid;
             }
+            const setNameFromFilename = (fileInput) => {
+                const nameInput = document.getElementById(fileInput.id.replace("_file", "_name"));
+                if (fileInput === null || fileInput.files === null || fileInput.files.length === 0 ||
+                    nameInput === null || nameInput.value.length > 0) {
+                return;
+                }
+                const fileName = fileInput.files[0].name;
+                let name = fileName.replace(/\.[^/.]+$/, ""); // Strip the extension
+                name = name.replace(/[_-]/g, " "); // Replace underscores and hyphens with spaces
+                name = name.replace(/(?<=[a-zA-Z])(?=\d)|(?<=\d)(?=[a-zA-Z])/g, " "); // Add space between number and letter
+                name = name.replace(/\s+/g, " ").trim(); // Remove multiple spaces and trim whitespaces
+                name = name.split(" ")
+                        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                        .join(" "); // Capitalize first letter of each word
+                nameInput.value = name;
+            };
         </script>
         <form enctype="multipart/form-data" onSubmit="return rarityCheck(this);" method="post" action="/setup/3?collection=<?php echo $collection_lower; ?>">
             <?php $t = 0;
@@ -100,7 +116,7 @@
                             </div>
                             <div data-tooltip="Image File: Pick the image file for this variation.&#xa;(Browse or drag'n'drop)">
                                 <label for="trait<?php echo $trait_var ?>_r">Image File:</label><br />
-                                <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" />
+                                <input required type="file" class="form med" id="trait<?php echo $trait_var ?>_file" name="trait<?php echo $trait_var ?>_file" onChange="setNameFromFilename(this);" />
                             </div>
                         </div>
                     <?php $v = $v + 1; }
