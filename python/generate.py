@@ -28,9 +28,9 @@ class ImageGenerator(object):
         self.seed = seed
         # Keep trait properties only, to make comparison to new image easier
         self.prev_batches = []
+        layer_names = [l["layer_name"] for l in self.layers]
         for image in prev_batches:
-            layer_names = [l["layer_name"] for l in self.layers]
-            self.prev_batches.append({name: image[name] for name in layer_names})
+            self.prev_batches.append({name: image[name] for name in layer_names if name in image})
 
         self.this_batch = []
         self.dup_cnt_limit = dup_cnt_limit
@@ -46,7 +46,9 @@ class ImageGenerator(object):
 
         # For each trait category, select a random trait based on the weightings
         for l in self.layers:
-            new_image[l["layer_name"]] = random.choices(l["names"], l["weights"])[0]
+            random_variation_name = random.choices(l["variation_names"], l["weights"])[0]
+            if random_variation_name is not None:
+                new_image[l["layer_name"]] = random_variation_name
 
         if new_image in self.this_batch or new_image in self.prev_batches:
             if dup_cnt > self.dup_cnt_limit:
@@ -118,7 +120,10 @@ def make_directories(paths: utils.Struct, traits: utils.Struct, empty: bool):
 async def build_and_save_image(paths: utils.Struct, traits: utils.Struct, item: dict, task_id: int):
     with ImageBuilder(animated_format=traits.animated_format) as img_builder:
         for l in traits.image_layers:
-            layer_pretty_name = item[l["layer_name"]]
+            if l["layer_name"] in item:
+                layer_pretty_name = item[l["layer_name"]]
+            else: # Skip empty layers
+                continue
 
             if l["type"] == "filenames":
                 layer_file = os.path.join(l["path"], l["filenames"][layer_pretty_name])
@@ -244,9 +249,16 @@ def main():
     first_layer = 0 if traits.background_color else 1
     for i, l in enumerate(traits.image_layers):
         l["type"] = "filenames" if "filenames" in l else "rgba"
-        l["names"] = list(l[l["type"]].keys())
+        l["variation_names"] = list(l[l["type"]].keys())
 
         l["path"] = os.path.join(paths.source, f"layer{(first_layer + i):02}")
+
+        if "weights_total" in l: # If weights_total is defined, add a chance to skip the layer
+            weight_skip = l["weights_total"] - sum(l["weights"])
+            l["weights"].append(weight_skip)
+            l["variation_names"].append(None)
+        else: # Backward compatibility
+            l["weights_total"] = sum(l["weights"])
 
     # Generate the unique combinations based on layer weightings
     img_gen = ImageGenerator(layers=traits.image_layers, seed=args.seed, prev_batches=prev_batches, dup_cnt_limit=utils.get_variation_cnt(traits.image_layers))
@@ -266,13 +278,13 @@ def main():
     print("How many of each trait exist?")
 
     for l in traits.image_layers:
-        l["count"] = {item: 0 for item in l["names"]}
+        l["count"] = {item: 0 for item in l["variation_names"] if item is not None}
 
     for image in all_images:
-        n = 1
         for l in traits.image_layers:
-            item = image[l["layer_name"]]
-            l["count"][item] += 1
+            if l["layer_name"] in image:
+                item = image[l["layer_name"]]
+                l["count"][item] += 1
 
     for i, l in enumerate(traits.image_layers):
         print(f"Layer {i:02}: {l['count']}")
