@@ -131,12 +131,13 @@ class RandomSampler:
             # Seed randomness based on ids if provided
             if ids:
                 random.seed(f"{self.seed}{ids[i]}")
+            # Sample enough randomness for all layers at once
+            initial_r = random.randrange(*self.random_range)
 
             # Find a valid pick randomly
             pick_valid = False
             while not pick_valid:
-                # Sample enough randomness for all layers at once
-                r = random.randrange(*self.random_range)
+                r = initial_r
                 picks_tree_current = self.picks_tree
                 new_pick = []
                 # odds = []
