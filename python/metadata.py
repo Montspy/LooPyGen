@@ -166,7 +166,7 @@ def main():
 
             # Get trait properties only (remove ID, CID, etc...)
             layer_names = [l["layer_name"] for l in traits.image_layers]
-            properties = {name: image[name] for name in layer_names}
+            properties = {name: image[name] for name in layer_names if name in image}
 
             # Create all new info
             token = {
