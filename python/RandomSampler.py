@@ -28,6 +28,8 @@ class RandomSampler:
     picks_tree: PickTree            # The pick tree
     cache_dict: dict                # Cache for the adjusted weights calculation
     progress_cb: Callable[[int, int], None] # A progress callback function
+    validation_cb: Callable[[Tuple[int]], bool] # A validation callback function for picks
+    validate_each_layer: bool       # True if the validation callback should be called for each layer
 
     def __init__(self, weights: Iterable[Iterable[float]], seed: str = None):
         assert all(
@@ -42,7 +44,8 @@ class RandomSampler:
         self.seed = seed
         random.seed(self.seed)
         self.all_picks = []
-        # Tree with previous picks (leafs are picks that should have probability 0 for the next pick)
+        # Tree with previous picks represented as branches (leafs are picks that should have probability 0 for the next pick)
+        # Branches can be of length 0 < n <= layer_cnt
         # keys: 1, 2, ... n are children
         # If no keys are present, it's a leaf
         # If attribute path is None, it's the root
@@ -51,10 +54,12 @@ class RandomSampler:
         self.picks_tree.path = None
 
         self.progress_cb = None
+        self.set_validation_callback(lambda pick: True)
 
         self.cache_dict = {}
 
     # Add a pick to the pick tree and invalidate cache if necessary
+    # pick can be any length n > 0, which will create a branch of length n
     def add_pick(self, picks_node: PickTree, pick: Tuple[int], layer: int=0) -> bool:
         if layer == len(pick):  # Leaf reached
             return picks_node.cached
@@ -81,10 +86,12 @@ class RandomSampler:
 
     # Recursively compute the adjusted weights for a given layer variations based on the pick tree
     def adjusted_weights(self, picks_node: PickTree, layer: int=0) -> Tuple:
-        if picks_node is None:
-            return self.weights[0]
+        if picks_node is None: # Outside of the tree (i.e. no previous picks in that branch)
+            return self.weights[layer]
         if len(picks_node.keys()) == 0 and picks_node.path is not None:  # Is this a leaf?
-            return tuple([0])  # The probability of a leaf that has already been picked is 0
+            if layer >= self.layer_cnt:
+                return tuple([0])
+            return tuple([0] * len(self.weights[layer]))  # The probability of a leaf that has already been picked is 0 for all children
         adj_weights = list(self.weights[layer]) # Adjusted weights
         for i in range(len(adj_weights)):
             if i in picks_node:
@@ -103,6 +110,15 @@ class RandomSampler:
             return True
         return False
 
+    # Set a validation callback function for picks. The callback function should return True if the pick is valid, False otherwise
+    # If validate_each_layer is True, the callback function will be called for each layer. Otherwise, the callback function will be called once all layers have been picked
+    def set_validation_callback(self, callback: Callable[[Tuple[int]], bool], validate_each_layer: bool=False) -> bool:
+        if isinstance(callback, Callable):
+            self.validation_cb = callback
+            self.validate_each_layer = validate_each_layer
+            return True
+        return False
+
     # Sample unique random picks without replacement
     def sample(self, count: int, ids: Iterable[int] = None) -> List[Tuple[int]]:
         if ids:
@@ -115,26 +131,41 @@ class RandomSampler:
             # Seed randomness based on ids if provided
             if ids:
                 random.seed(f"{self.seed}{ids[i]}")
-            # Sample enough randomness for all layers at once
-            r = random.randrange(*self.random_range)
-            picks_tree_current = self.picks_tree
-            new_pick = []
-            # odds = []
-            for j in range(self.layer_cnt): # For each layer
-                # Compute adjusted weights based on the pick tree
-                adj_weights = self.adjusted_weights(picks_tree_current, j)
-                # odds.append(adj_weights)
-                adj_ratio =  sum(adj_weights)
-                # Determine the variation based on randomness
-                cweights = cum_weights(adj_weights) # Cumulative weights for the current layer
-                layer_rand = (r % 100) / 100 * adj_ratio
-                r //= 100
-                index = [i for i, cw in enumerate(cweights) if cw > layer_rand][0]
-                new_pick.append(index)
-                if picks_tree_current and index in picks_tree_current:
-                    picks_tree_current = picks_tree_current[index]
-                else:
-                    picks_tree_current = None # Outside of the tree
+
+            # Find a valid pick randomly
+            pick_valid = False
+            while not pick_valid:
+                # Sample enough randomness for all layers at once
+                r = random.randrange(*self.random_range)
+                picks_tree_current = self.picks_tree
+                new_pick = []
+                # odds = []
+                for j in range(self.layer_cnt): # For each layer
+                    # Compute adjusted weights based on the pick tree
+                    adj_weights = self.adjusted_weights(picks_tree_current, j)
+                    # odds.append(adj_weights)
+                    adj_ratio =  sum(adj_weights)
+                    # Determine the variation based on randomness
+                    cweights = cum_weights(adj_weights) # Cumulative weights for the current layer
+                    layer_rand = (r % 100) / 100 * adj_ratio
+                    r //= 100
+                    index = [i for i, cw in enumerate(cweights) if cw > layer_rand][0]
+                    new_pick.append(index)
+
+                    # Check if the pick is already invalid
+                    if self.validate_each_layer and not self.validation_cb(tuple(new_pick)):
+                        self.add_pick(self.picks_tree, tuple(new_pick)) # Add the pick to the pick tree to avoid it being picked again
+                        break
+
+                    if picks_tree_current and index in picks_tree_current: # Progress down the tree
+                        picks_tree_current = picks_tree_current[index]
+                    else:
+                        picks_tree_current = None # Outside of the tree
+
+                # Check if the new pick is valid
+                pick_valid = self.validation_cb(tuple(new_pick))
+                # if not pick_valid:
+                #     print("Invalid pick:", new_pick)
 
             new_pick = tuple(new_pick)
             assert new_pick not in self.all_picks, "Duplicate pick"
