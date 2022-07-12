@@ -53,6 +53,10 @@ h4 {
     margin: 10px 0 0 10px;
 }
 
+h5 {
+    font-size: 16px;
+}
+
 a,
 a:visited,
 a:active {
@@ -78,12 +82,21 @@ form {
 
 hr {
 	width: calc(100% + 10px);
-	height: 8px;
-	margin: -8px 0 8px 0;
-	border: 1px solid #22243a;
+	height: 5px;
+	margin: 8px 0;
+	border: 1px solid #000;
+}
+
+.hrbottom {
 	border-top: none;
-	border-radius: 0 0 20px 20px;
+	border-radius: 0;
 	box-shadow: 0 3px 5px #22243a;
+}
+
+.hrtop {
+	border-bottom: none;
+	border-radius: 0;
+	box-shadow: 0 -3px 5px #22243a;
 }
 
 .content {

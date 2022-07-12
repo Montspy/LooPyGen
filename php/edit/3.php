@@ -107,6 +107,7 @@
                             }, $rgb));
                             $opacity = $layer['rgba'][$var_name][3];
                         } ?>
+                        <hr class="hrtop" />
                         <div>
                             <h4>Color #<?php echo $v ?>:</h4>
                             <div data-tooltip="Display Name: The pretty name of this variation">
@@ -127,7 +128,7 @@
                                 </div>
                             </div>
                         </div>
-                        <hr />
+                        <hr class="hrbottom" />
                     <?php $v = $v + 1; }
                 } else { // Image layers
                     $s_offset = 0;
@@ -151,6 +152,7 @@
                             $filepath =  "./collections/" . $collection . "/config/source_layers/layer" . sprintf('%02d', $s) . "/" . $filename;
                             $file_exists = file_exists($filepath);
                         } ?>
+                        <hr class="hrtop" />
                         <h4>Variation #<?php echo $v ?>:</h4>
                         <div data-tooltip="Display Name: The pretty name of this variation">
                             <input required type="text" class="form wide" id="trait<?php echo $trait_var ?>_name" name="trait<?php echo $trait_var ?>_name" placeholder="Variation #<?php echo $v ?> Name" value="<?php echo isset($var_name) ? $var_name : null; ?>" />
@@ -169,12 +171,12 @@
                                 <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100"  value="<?php echo isset($var_name) ? $layer['weights'][$v-1] : null; ?>">&nbsp;%
                             </div>
                         </div>
-                        <hr />
+                        <hr class="hrbottom" />
                     <?php $v = $v + 1; }
                 }
                 $trait_var = $s . "_empty"; ?>
                 <div class="trait-row" data-tooltip="Chance for the whole layer to be skipped, in percent">
-                    <h4 class="small">Skip layer:</h4>
+                    <h5 class="small">Skip layer:</h5>
                     <div>
                         <label for="trait<?php echo $trait_var ?>_rarity">Set Rarity:</label>
                         <input required type="number" step="any" class="form small" id="trait<?php echo $trait_var ?>_rarity" min="0" max="100" name="trait<?php echo $trait_var ?>_rarity" placeholder="0-100" value="<?php echo $weights_empty === false ? null : $weights_empty; ?>">&nbsp;%
