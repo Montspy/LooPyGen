@@ -47,10 +47,14 @@ h3 {
 }
 
 h4 {
-    width: 500px;
+    width: 100%;
     text-align: left;
     font-size: 16px;
-    margin: 10px 0;
+    margin: 10px 0 0 10px;
+}
+
+h5 {
+    font-size: 16px;
 }
 
 a,
@@ -74,6 +78,25 @@ form {
     align-items: center;
     align-content: center;
     justify-content: space-around;
+}
+
+hr {
+	width: calc(100% + 10px);
+	height: 5px;
+	margin: 8px 0;
+	border: 1px solid #000;
+}
+
+.hrbottom {
+	border-top: none;
+	border-radius: 0;
+	box-shadow: 0 3px 5px #22243a;
+}
+
+.hrtop {
+	border-bottom: none;
+	border-radius: 0;
+	box-shadow: 0 -3px 5px #22243a;
 }
 
 .content {

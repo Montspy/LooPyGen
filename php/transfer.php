@@ -21,7 +21,7 @@
 
     if (empty($_GET['run']) and (empty($_POST['wallets']) or empty($_POST['nfts']) or empty($_POST['mode']))) { ?>
         <form method="post" action="/transfer">
-            <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
+            <h3 class="warning">You will receive estimated fees in the review screen</h3>
             <h3 class="info">Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
             <h3>Transfer Options</h3>
             <section id="artist">
