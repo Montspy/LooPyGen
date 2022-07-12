@@ -21,7 +21,7 @@
 
     if (empty($_GET['run']) and (empty($_POST['cid']) or empty($_POST['amount']))) { ?>
         <form method="post" action="/mint">
-            <h3 class="warning">You will not receive estimated fees, this runs the commands with current prices.</h3>
+            <h3 class="warning">You will receive estimated fees in the review screen</h3>
             <h3 class="info">Current Gas: <?php echo number_format((float)$gas, 2, '.', ''); ?> Gwei</h3>
             <h3>Minter Options</h3>
             <section id="artist">
