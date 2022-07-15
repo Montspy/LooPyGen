@@ -122,6 +122,7 @@ def parse_args():
     batch_group = parser.add_argument_group(title="Batch mint", description="Use these options to batch mint multiple NFTs:")
     batch_group.add_argument("--name", help="Specify the name of a collection to batch mint", type=str)
     batch_group.add_argument("-j", "--json", help="Specify a json file containing a list of CIDv0 hash to batch mint", type=str)
+    batch_group.add_argument("-l", "--lines", help="Specify a text file containing a list of CIDv0 hash, one per line, to batch mint", type=str)
     batch_group.add_argument("-s", "--start", help="Specify the the starting ID to batch mint", type=int)
     batch_group.add_argument("-e", "--end", help="Specify the last ID to batch mint", type=int)
     try:
@@ -139,6 +140,9 @@ def parse_args():
         args.cid = None
     elif args.json: # --json
         assert os.path.exists(args.json), f"JSON file not found: {args.json}"
+        args.cid = None
+    elif args.lines: # --lines
+        assert os.path.exists(args.lines), f"Line-delimited file not found: {args.lines}"
         args.cid = None
     elif args.cid:  # --cid
         args.json = None
@@ -404,6 +408,11 @@ async def main():
     if args.json:
         with open(args.json, 'r') as f:
             all_cids = json.load(f)
+    elif args.lines:
+        all_cids = []
+        with open(args.lines, 'r') as f:
+            for x, line in enumerate(f):
+                all_cids.append({"ID": x+1, "CID": line.strip()})
     elif args.cid:
         all_cids = [{"ID": 1, "CID": args.cid}]
 

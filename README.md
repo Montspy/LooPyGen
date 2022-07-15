@@ -129,6 +129,12 @@ Batch mint a collection:
 mint --name <my_nft_collection> --amount 1
 ```
 
+Batch mint a list of CIDs from a text file, one per line:
+
+```shell
+mint --lines cids.txt --amount 1
+```
+
 Mint a specific set of IDs:
 
 ```shell
