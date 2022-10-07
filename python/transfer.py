@@ -10,6 +10,7 @@ from typing import Dict, Tuple
 import base58
 import json
 import re
+from typing import List
 
 from utils import (
     Struct,
@@ -140,7 +141,6 @@ def parse_args() -> argparse.Namespace:
 
 # Build config dictionnary
 async def load_config(args, paths: Struct):
-
     cfg = Struct()
     secret = Struct()  # Split to avoid leaking keys to console or logs
     loopygen_cfg = load_config_json(
@@ -278,9 +278,22 @@ async def load_config(args, paths: Struct):
     args.to = str(args.to).strip()
     if os.path.exists(args.to):  # LIST
         with open(args.to, "r") as f:
-            cfg.tosRaw = [line.strip().lower() for line in f.readlines()]
+            lines: List[str] = [line.strip().lower() for line in f.readlines()]
     else:  # ADDRESS, ENS or ACCOUNTID
-        cfg.tosRaw = [args.to.strip().lower()]
+        lines = [args.to.strip().lower()]
+
+    # Handle optional quantity (wallet.loopring.eth,5)
+    cfg.tosRaw: List[str] = []
+    for line in lines:
+        try:
+            parts = line.split(",")
+            quantity = int(parts[1])
+            if quantity > 1:
+                cfg.tosRaw.extend([parts[0].strip()] * quantity)
+            elif quantity == 1:
+                cfg.tosRaw.append(parts[0].strip())
+        except (IndexError, ValueError):  # Catch not enough values to unpack and invalid int() conversion
+            cfg.tosRaw.append(parts[0].strip())
 
     # --fees
     if args.fees:
