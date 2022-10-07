@@ -141,8 +141,18 @@
         exec($command, $output, $code);
         if ($code == 0) {
             $code = "Success!";
+            $printable_output = '<h3 class="success">Transfer Done!</h3><pre>';
+            foreach ($output as $line) {
+                $printable_output .= $line . '<br />';
+            }
+            $printable_output .= '</pre>';
         } else {
             $code = "Error: ${code} (see output below)";
+            $printable_output = '<h3 class="error">Error transferring NFTs</h3><pre class="error">';
+            foreach ($output as $line) {
+                $printable_output .= $line . '<br />';
+            }
+            $printable_output .= '</pre>';
         }
 
         if (file_exists($wallet_file)) {
@@ -154,15 +164,9 @@
 
         if (file_exists($progress_file)) {
             unlink($progress_file);
-        } ?>
-        <h3 class="success">Transfer Done!</h3>
-        <pre>
-Result: <?php echo $code; ?>
-<br /><br />
-<?php foreach ($output as $line) {
-    echo $line . "<br />";
-} ?>
-        </pre>
+        }
+        echo $printable_output;
+        ?>
         <div class="nav">
             <a href="/transfer">TRANSFER AGAIN</a>
             <a href="/home">MAIN MENU</a>
