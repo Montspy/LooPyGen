@@ -252,10 +252,12 @@ class LoopringMintService(object):
 
         return counterfactual_nft
 
-    async def getOffChainFee(self, apiKey: str, accountId: int, requestType: int, tokenAddress: str) -> OffchainFee:
+    async def getOffChainFee(self, apiKey: str, accountId: int, requestType: int, tokenAddress: str = None) -> OffchainFee:
         params = {"accountId": accountId,
-                  "requestType": requestType,
-                  "tokenAddress": tokenAddress}
+                  "requestType": requestType}
+        if tokenAddress:
+            params["tokenAddress"] = tokenAddress
+
         headers = {"x-api-key": apiKey}
         off_chain_fee = None
 

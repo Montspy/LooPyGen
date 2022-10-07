@@ -282,6 +282,23 @@ async def load_config(args, paths: Struct):
     else:  # ADDRESS, ENS or ACCOUNTID
         cfg.tosRaw = [args.to.strip().lower()]
 
+    # --fees
+    if args.fees:
+        async with LoopringMintService() as lms:
+            off_chain_fees = await get_offchain_fee(lms, secret, cfg.fromAccount)
+
+        cfg.feeEstimate, cfg.feeLimit, cfg.feeSymbol = estimate_batch_fees(
+            cfg, off_chain_fees, len(cfg.tosRaw)
+        )
+        fee_range_string = f"{get_token_value(cfg.feeEstimate, cfg.feeSymbol)}-{get_token_value(cfg.feeLimit, cfg.feeSymbol)}{cfg.feeSymbol}"
+        print(
+            f"Estimated L2 fees for transfering NFTs to {len(cfg.tosRaw)} addresses: {fee_range_string}",
+            end="",
+        )
+        print()
+        sys.exit()
+
+
     # All valid (account, address) tuples
     cfg.tos = []
     # True/False representing validity of each cfg.tosRaw element
@@ -451,6 +468,21 @@ async def get_user_api_key(cfg, secret) -> None:
 
     secret.loopringApiKey = api_key_resp["apiKey"]
 
+async def get_offchain_fee(lms: LoopringMintService, secret, from_account, token_address = None):
+    # Getting the offchain fee (requestType=11 is NFT_TRANSFER)
+    try:
+        off_chain_fee = await lms.getOffChainFee(
+            apiKey=secret.loopringApiKey,
+            accountId=from_account,
+            requestType=11,
+            tokenAddress=token_address
+        )
+    except Exception as err:
+        print_exception_secret()
+        sys.exit(f"Unable to get offchain fee")
+
+    return off_chain_fee
+
 
 async def get_offchain_parameters(cfg, secret, nftTokenId) -> dict:
     async with LoopringMintService() as lms:
@@ -493,16 +525,7 @@ async def get_offchain_parameters(cfg, secret, nftTokenId) -> dict:
         parameters["counterfactual_nft"] = counterfactual_nft
 
         # Getting the offchain fee (requestType=11 is NFT_TRANSFER)
-        try:
-            off_chain_fee = await lms.getOffChainFee(
-                apiKey=secret.loopringApiKey,
-                accountId=cfg.fromAccount,
-                requestType=11,
-                tokenAddress=counterfactual_nft["tokenAddress"],
-            )
-        except Exception as err:
-            print_exception_secret()
-            sys.exit(f"Unable to get offchain fee")
+        off_chain_fee = await get_offchain_fee(lms, secret, cfg.fromAccount, counterfactual_nft["tokenAddress"])
         log(
             f"Offchain fee:  {json.dumps(off_chain_fee['fees'][cfg.maxFeeTokenId], indent=2)}"
         )
@@ -800,9 +823,6 @@ async def main() -> None:
             f"Estimated L2 fees for transfering NFTs to {len(cfg.transfer_data)} addresses: {fee_range_string}",
             end="",
         )
-        if args.fees:  # Exit if --fees
-            print()
-            sys.exit()
         if not args.noprompt:  # Skip approval if --noprompt
             approved_fees_prompt = prompt_yes_no(", continue?", default="no")
             transfer_info.append(
