@@ -6,6 +6,7 @@ from pprint import pprint
 import argparse
 import asyncio
 import random
+from typing import Dict, Tuple
 import base58
 import json
 import re
@@ -101,7 +102,7 @@ def parse_args() -> argparse.Namespace:
         "--amount",
         help="Amount of NFTs to send to each address (only valid with --single mode)",
         type=int,
-        default=1,
+        default=-1,
     )
     parser.add_argument("--test", help="Skips the transfer step", action="store_true")
 
@@ -277,9 +278,9 @@ async def load_config(args, paths: Struct):
     args.to = str(args.to).strip()
     if os.path.exists(args.to):  # LIST
         with open(args.to, "r") as f:
-            lines: List[str] = [line.strip() for line in f.readlines()]
+            lines: List[str] = [line.strip().lower() for line in f.readlines()]
     else:  # ADDRESS, ENS or ACCOUNTID
-        lines = [args.to]
+        lines = [args.to.strip().lower()]
 
     # Handle optional quantity (wallet.loopring.eth,5)
     cfg.tosRaw: List[str] = []
@@ -293,7 +294,6 @@ async def load_config(args, paths: Struct):
                 cfg.tosRaw.append(parts[0].strip())
         except (IndexError, ValueError):  # Catch not enough values to unpack and invalid int() conversion
             cfg.tosRaw.append(parts[0].strip())
-    print(cfg.tosRaw)
 
     # All valid (account, address) tuples
     cfg.tos = []
@@ -323,6 +323,10 @@ async def load_config(args, paths: Struct):
 
     # Transfer mode (--single, --ordered or --random)
     if args.single:
+        if args.amount != -1:
+            cfg.amount_provided = True
+        else:
+            args.amount = 1
         args.amount = int(args.amount)
         assert (
             cfg.nftsCount == 1
@@ -332,18 +336,18 @@ async def load_config(args, paths: Struct):
             cfg.totalAmount >= cfg.tosCount * args.amount
         ), f"Not enough copies of the NFT found in balance of account {cfg.fromAccount} (expected {cfg.tosCount * args.amount} or more, but got {cfg.totalAmount} matching)."
     elif args.random:
-        # --amount should be the default of 1
+        # --amount should be the default of -1
         assert (
-            args.amount == 1
+            args.amount == -1
         ), f"Unsupported --amount argument with --ordered transfer mode."
         # Make sure they have at least as many total NFT copies as to addresses
         assert (
             cfg.totalAmount >= cfg.tosCount * args.amount
         ), f"Not enough NFTs (including copies) found in balance of account {cfg.fromAccount} (expected {cfg.tosCount} or more, but got {cfg.totalAmount} matching)."
     elif args.ordered:
-        # --amount should be the default of 1
+        # --amount should be the default of -1
         assert (
-            args.amount == 1
+            args.amount == -1
         ), f"Unsupported --amount argument with --ordered transfer mode."
         # At least as many NFTs should be provided in --nfts as addresses in --to
         assert (
@@ -745,7 +749,7 @@ async def main() -> None:
     try:
         log("config dump:")
         plog(cfg)
-        transfer_info.append({"cfg": cfg})
+        transfer_info.append({"cfg": cfg.copy()})
 
         # Get storage id, token address and offchain fee
         print("Getting offchain parameters... ", end="")
@@ -755,14 +759,58 @@ async def main() -> None:
         transfer_info.append({"offchain_parameters": offchain_parameters})
         print("done!")
 
+        transfer_info.append({"transfer_data": []})
+        # Pre-determine quantities and NFT IDs, optimize transfers by grouping
+        transfer_data_info = []
+        cfg.transfer_data: Dict[Tuple[int, str, str], Tuple[int, NftInfo]] = {}
+        # cfg.transfer_data[(to_account, to_address, nft_id)] = (amount, NftInfo)
+        set_progress_for_ui("Optimizing transfers", 0, 0)
+        for i, (to_account, to_address) in enumerate(cfg.tos):
+            info = {"to_account": to_account, "to_address": to_address}
+
+            if args.single:
+                index = 0
+            elif args.random:
+                # Pick random NFT ID by index
+                index = random.choices(range(cfg.nfts["totalNum"]), cfg.weights)[0]
+                # Amount of that NFT is one less for subsequent random choice
+                cfg.weights[index] -= 1
+            elif args.ordered:
+                # Pick NFT ID sequentially
+                index = i
+
+            nft_info: NftInfo = cfg.nfts["data"][index]
+
+
+            info["index"] = index
+            info["nftId"] = nft_info["nftId"]
+
+            transfer_data_info.append(info)
+            transfer_info[-1]["transfer_data"] = transfer_data_info
+
+            log("Picked:", index)
+            plog(nft_info)
+
+            amount = args.amount if cfg.amount_provided else 1
+
+            key = (to_account, to_address, nft_info["nftId"])
+            if key in cfg.transfer_data:
+                data = cfg.transfer_data[key]
+            else:
+                data = (0, nft_info)
+            cfg.transfer_data[key] = (data[0] + amount, data[1])
+
+        if len(cfg.tos) > len(cfg.transfer_data):
+            print(f"Grouped {len(cfg.tos)} transfers into {len(cfg.transfer_data)} transfers")
+
         # Estimate fees and get user approval
         log("--------")
         cfg.feeEstimate, cfg.feeLimit, cfg.feeSymbol = estimate_batch_fees(
-            cfg, offchain_parameters["off_chain_fee"], cfg.tosCount
+            cfg, offchain_parameters["off_chain_fee"], len(cfg.transfer_data)
         )
         fee_range_string = f"{get_token_value(cfg.feeEstimate, cfg.feeSymbol)}-{get_token_value(cfg.feeLimit, cfg.feeSymbol)}{cfg.feeSymbol}"
         print(
-            f"Estimated L2 fees for transfering NFTs to {cfg.tosCount} addresses: {fee_range_string}",
+            f"Estimated L2 fees for transfering NFTs to {len(cfg.transfer_data)} addresses: {fee_range_string}",
             end="",
         )
         if args.fees:  # Exit if --fees
@@ -785,29 +833,14 @@ async def main() -> None:
         approved_off_chain_fees = offchain_parameters["off_chain_fee"]
 
         # NFT transfer sequence
-        for i, (to_account, to_address) in enumerate(cfg.tos):
-            set_progress_for_ui("Transferring", i + 1, cfg.tosCount)
+        transfer_info.append({"transfer_sequence": []})
+        transfer_sequence_info = []
+        for i, ((to_account, to_address, nft_id), (amount, nft_info)) in enumerate(cfg.transfer_data.items()):
+            set_progress_for_ui("Transferring", i + 1, len(cfg.transfer_data))
 
-            info = {"to_account": to_account, "to_address": to_address}
-
-            if args.single:
-                index = 0
-            elif args.random:
-                # Pick random NFT ID by index
-                index = random.choices(range(cfg.nfts["totalNum"]), cfg.weights)[0]
-                # Amount of that NFT is one less for subsequent random choice
-                cfg.weights[index] -= 1
-            elif args.ordered:
-                # Pick NFT ID sequentially
-                index = i
-
-            nft_info = cfg.nfts["data"][index]
-
-            log("Picked:", index)
-            plog(nft_info)
-
-            info["index"] = index
-            info["nftId"] = nft_info["nftId"]
+            info = {"to_account": to_account, "to_address": to_address, "nft_id": nft_id, "amount": amount}
+            transfer_sequence_info.append(info)
+            transfer_info[-1]["transfer_sequence"] = transfer_sequence_info
 
             # Get storage id, token address, and keep originally approved off chain fees
             offchain_parameters = await get_offchain_parameters(
@@ -820,7 +853,7 @@ async def main() -> None:
                 cfg,
                 secret,
                 nft_info["tokenId"],
-                args.amount,
+                amount,
                 to_address,
                 to_account,
                 offchain_parameters=offchain_parameters,
@@ -831,7 +864,7 @@ async def main() -> None:
             transfer_result, response = await transfer_nft(
                 cfg,
                 secret,
-                amount=args.amount,
+                amount=amount,
                 toAccount=to_account,
                 toAddress=to_address,
                 nftInfo=nft_info,
@@ -844,18 +877,18 @@ async def main() -> None:
 
             if transfer_result == TransferResult.SUCCESS:
                 print(
-                    f"{i+1}/{cfg.tosCount} {i+1}: Successful Transfer! (tx hash: {response['hash']}, to: {to_address}, nftId: {nft_info['nftId']})"
+                    f"{i+1}/{len(cfg.transfer_data)}: Successful Transfer! (tx hash: {response['hash']}, to: {to_address}, nftId: {nft_info['nftId']})"
                 )
                 offchain_parameters["storage_id"]["offchainId"] += 2
             elif transfer_result == TransferResult.FAILED:
                 print(
-                    f"{i+1}/{cfg.tosCount} {i+1}: Transfer FAILED... (to: {to_address}, nftId: {nft_info['nftId']})"
+                    f"{i+1}/{len(cfg.transfer_data)}: Transfer FAILED... (to: {to_address}, nftId: {nft_info['nftId']})"
                 )
             elif (
                 transfer_result == TransferResult.FEE_INVALID
             ):  # Invalid fees, exit cleanly
                 print(
-                    f"{i+1}/{cfg.tosCount} {i+1}: Transfer FAILED due to invalid fee. Was there a gas spike? (to: {to_address}, nftId: {nft_info['nftId']})"
+                    f"{i+1}/{len(cfg.transfer_data)}: Transfer FAILED due to invalid fee. Was there a gas spike? (to: {to_address}, nftId: {nft_info['nftId']})"
                 )
                 print(
                     f"Fees increased above the limit of {get_token_value(cfg.feeLimit, cfg.feeSymbol)}{cfg.feeSymbol}, aborting..."
@@ -863,10 +896,8 @@ async def main() -> None:
                 sys.exit(transfer_result)
             elif transfer_result == TransferResult.TESTMODE:
                 print(
-                    f"{i+1}/{cfg.tosCount} {i+1}: Skipping transfer (test mode) (to: {to_address}, nftId: {nft_info['nftId']})"
+                    f"{i+1}/{len(cfg.transfer_data)}: Skipping transfer (test mode) (to: {to_address}, nftId: {nft_info['nftId']})"
                 )
-
-            transfer_info.append(info)
 
         if not all(cfg.tosRawValid):
             invalid_to_addresses = [
