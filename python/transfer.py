@@ -9,6 +9,7 @@ import random
 import base58
 import json
 import re
+from typing import List
 
 from utils import (
     Struct,
@@ -277,32 +278,57 @@ async def load_config(args, paths: Struct):
     args.to = str(args.to).strip()
     if os.path.exists(args.to):  # LIST
         with open(args.to, "r") as f:
-            cfg.tosRaw = [line.strip() for line in f.readlines()]
+            lines: List[str] = [line.strip().lower() for line in f.readlines()]
+
     else:  # ADDRESS, ENS or ACCOUNTID
-        cfg.tosRaw = [args.to]
+
+        lines = [args.to.strip().lower()]
+
+        # Handle optional quantity (wallet.loopring.eth,5)
+    cfg.tosRaw: List[str] = []
+    for line in lines:
+        try:
+            # Check if the string contains a ","
+            if "," in line:
+                # Split the string by the "," and convert the quantity to an int
+                to, quantity = line.split(",")
+                quantity = int(quantity)
+            else:
+                to, quantity = line, 1
+
+            if quantity > 1:
+                cfg.tosRaw.extend([[to.strip(), quantity]])
+            elif quantity == 1:
+                cfg.tosRaw.extend([[to.strip(), 1]])
+        except (IndexError, ValueError):  # Catch not enough values to unpack and invalid int() conversion
+            cfg.tosRaw.append(to.strip())
 
     # All valid (account, address) tuples
     cfg.tos = []
     # True/False representing validity of each cfg.tosRaw element
     cfg.tosRawValid = []
     # Validate each entry by getting Loopring account ID and address
+    # print(cfg.tosRaw)
     for i, to in enumerate(cfg.tosRaw):
         set_progress_for_ui("Resolving wallets", i + 1, len(cfg.tosRaw))
         valid = False
         try:
-            to_account, to_address = await retry_async(get_account_info, to, retries=3)
+            to_account, to_address = await retry_async(get_account_info, to[0], retries=5)
             if to_account and to_address:
                 valid = True
         except:
             pass
         cfg.tosRawValid.append(valid)
         if valid:
-            cfg.tos.append((to_account, to_address))
+            cfg.tos.append((to_account, to_address, to[1]))
         else:
             print(f"Skipping invalid to address: {to}")
     plog(cfg.tos)
 
     cfg.tosCount = len(cfg.tos)
+    # Sum up the third element of each tuple (quantity)
+
+
     assert (
         cfg.tosCount > 0
     ), f"Could not parse --to argument {args.to}. Make sure it is an ADDRESS, ENS, ACCOUNTID or LIST."
@@ -323,9 +349,12 @@ async def load_config(args, paths: Struct):
             args.amount == 1
         ), f"Unsupported --amount argument with --ordered transfer mode."
         # Make sure they have at least as many total NFT copies as to addresses
+        total = sum([t[2] for t in cfg.tos])
         assert (
-            cfg.totalAmount >= cfg.tosCount * args.amount
-        ), f"Not enough NFTs (including copies) found in balance of account {cfg.fromAccount} (expected {cfg.tosCount} or more, but got {cfg.totalAmount} matching)."
+
+            cfg.totalAmount >= total
+            # cfg.totalAmount >= cfg.tosCount * args.amount
+        ), f"Not enough NFTs (including copies) found in balance of account {cfg.fromAccount} (expected {total} or more, but got {cfg.totalAmount} matching)."
     elif args.ordered:
         # --amount should be the default of 1
         assert (
@@ -771,8 +800,9 @@ async def main() -> None:
         approved_off_chain_fees = offchain_parameters["off_chain_fee"]
 
         # NFT transfer sequence
-        for i, (to_account, to_address) in enumerate(cfg.tos):
+        for i, (to_account, to_address, amount) in enumerate(cfg.tos):
             set_progress_for_ui("Transferring", i + 1, cfg.tosCount)
+            args.amount = amount
 
             info = {"to_account": to_account, "to_address": to_address}
 
@@ -849,7 +879,7 @@ async def main() -> None:
                 sys.exit(transfer_result)
             elif transfer_result == TransferResult.TESTMODE:
                 print(
-                    f"{i+1}/{cfg.tosCount} {i+1}: Skipping transfer (test mode) (to: {to_address}, nftId: {nft_info['nftId']})"
+                    f"{i+1}/{cfg.tosCount} {i+1}: Skipping transfer (test mode) ({args.amount} x to: {to_address}, nftId: {nft_info['nftId']})"
                 )
 
             transfer_info.append(info)
