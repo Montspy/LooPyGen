@@ -232,7 +232,7 @@ class MainWindow(wx.Frame):
         # Attempt to start
         if this_os == "Linux":
             # Linux
-            returncode = self.runCommand("systemctl --user start docker-desktop")
+            returncode = await self.runCommand("systemctl --user start docker-desktop")
             if returncode == 0:
                 was_detected = True
         elif this_os == "macOS":
@@ -242,7 +242,7 @@ class MainWindow(wx.Frame):
             log_debug(shutil.which("docker"))
             await self.runCommand("whoami")
             log_debug("$ open -a Docker")
-            returncode = self.runCommand("open -a Docker")
+            returncode = await self.runCommand("open -a Docker")
             if returncode == 0:
                 was_detected = True
         elif this_os == "Windows":
