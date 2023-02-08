@@ -1,3 +1,4 @@
+from typing import List, Tuple, Union
 from wxasync import WxAsyncApp, AsyncBind, StartCoroutine
 import os
 import wx
@@ -10,19 +11,23 @@ import webbrowser
 
 IMAGE = "sk33z3r/loopygen"
 
-LOG_ENABLED = False
+DEBUG_FILE = os.path.abspath('loopygen_debug.txt')
+LOG_ENABLED = os.path.isfile(DEBUG_FILE)
 
-def log_debug(content: str):
+def log_debug(*args):
+    lines = []
+    for item in args:
+        lines.extend(str(item).split('\n'))
+
+    log_time = time.strftime('%Y-%m-%dT%H:%M:%SZ')
+    for line in lines:
+        print(f"{log_time}: {line}")
+    
     if not LOG_ENABLED:
         return
-    DEBUG_FILE = './loopygen_debug.txt'
-    
-    if not isinstance(content, list):
-        content = [content]
-
     with open(DEBUG_FILE, 'a+') as f:
-        for line in content: 
-            f.write(time.strftime('%Y-%m-%dT%H:%M:%SZ') + ": " + str(line) + "\n")
+        for line in lines:
+            f.write(f"{log_time}: {line}\n")
 
 # Checks condition(args) every interval until it is ture or until timeout seconds is elapsed
 # Returns True if it timed out
@@ -49,6 +54,7 @@ class MainWindow(wx.Frame):
     DOCKER_PATH_MACOS = r"/usr/local/bin:"
 
     def __init__(self, parent, title, style=wx.DEFAULT_FRAME_STYLE):
+        log_debug("Setting up UI")
         self.client = None
         self.container = None
         self.status = "exited"
@@ -103,6 +109,7 @@ class MainWindow(wx.Frame):
         if self.busy:
             message = "Busy: " + message
         self.statusBar.SetStatusText(message)
+        log_debug(f"Status bar: {message}")
 
     async def getContainerByName(self, name):
         containers = await self.client.containers.list(all=True, filters={})
@@ -116,7 +123,10 @@ class MainWindow(wx.Frame):
         try:
             if not self.client:
                 self.client = aiodocker.Docker()
+                if self.client is not None:
+                    log_debug(f"Created Docker client")
         except Exception as e:
+            log_debug(f"Could not create Docker client: {e}")
             self.client = None
             return
 
@@ -145,10 +155,10 @@ class MainWindow(wx.Frame):
         try:
             self.container_image_id = await self.inspectContainer("Image")
         except Exception as e:
-            print("Failed to check for updates:")
-            print(e)
+            log_debug("Failed to check for updates:", e)
 
     async def updateUI(self):
+        log_debug("UI setup and updating")
         while True:
             if not self.busy:
                 await self.refreshDockerStatus()
@@ -197,15 +207,13 @@ class MainWindow(wx.Frame):
             self.updateButton.SetLabel("LooPyGen is up-to-date")
 
     async def runCommand(self, cmd):
+        log_debug(f"Running command: {cmd}")
         proc = await asyncio.create_subprocess_shell(cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await proc.communicate()
-        print(stdout)
-        print(stderr)
-        log_debug(stdout)
-        log_debug(stderr)
+        stdout, stderr = map(lambda bytes: bytes.decode('utf-8').strip(), await proc.communicate())
+        log_debug(stdout, stderr)
         return await proc.wait()
 
 
@@ -223,12 +231,12 @@ class MainWindow(wx.Frame):
 
         returncode = await self.runCommand("docker ps")
         if returncode == 0:
-            print("Docker Desktop is running")
             log_debug("Docker Desktop is running")
             return True
         
         self.setStatusBarMessage(f"Starting Docker Desktop for {this_os}...")
 
+        log_debug(f"on {this_os}")
         # Attempt to start
         if this_os == "Linux":
             # Linux
@@ -236,12 +244,10 @@ class MainWindow(wx.Frame):
             if returncode == 0:
                 was_detected = True
         elif this_os == "macOS":
-            log_debug("on macOS")
             # macOS
-            log_debug(os.getenv("PATH"))
-            log_debug(shutil.which("docker"))
+            log_debug("PATH", os.getenv("PATH"))
+            log_debug( "which docker", shutil.which("docker"))
             await self.runCommand("whoami")
-            log_debug("$ open -a Docker")
             returncode = await self.runCommand("open -a Docker")
             if returncode == 0:
                 was_detected = True
@@ -257,12 +263,12 @@ class MainWindow(wx.Frame):
                 )
             for potential_path in self.DOCKER_PATHS_WIN:
                 if os.path.exists(potential_path):
-                    print(f"Found Docker Desktop at {potential_path}")
+                    log_debug(f"Found Docker Desktop at {potential_path}")
                     os.spawnl(os.P_NOWAIT, potential_path, potential_path)
                     was_detected = True
                     break
         else:
-            print(f"Unknown platform {platform.system()}")
+            log_debug(f"Unknown platform {platform.system()}")
             return False
 
         if not was_detected:
@@ -273,7 +279,6 @@ class MainWindow(wx.Frame):
             return False
 
         # Wait for docker daemon to be up and running
-        print("Waiting for Docker daemon to be up and running...")
         log_debug("Waiting for Docker daemon to be up and running...")
         self.setStatusBarMessage("Waiting for Docker Desktop to start...")
         timed_out_waiting = await wait_until(
@@ -281,13 +286,13 @@ class MainWindow(wx.Frame):
                 (await self.runCommand(cmd)) == 0
                 for _ in "_"
             ).__anext__(),
-            0.5,
+            2,
             30,
             "docker ps",
         )
 
         if timed_out_waiting:
-            print("Timed out waiting for Docker daemon to start")
+            log_debug("Timed out waiting for Docker daemon to start")
             self.setStatusBarMessage(
                 "Failed to start Docker Desktop. Please install Docker Desktop and restart the app."
             )
@@ -298,6 +303,7 @@ class MainWindow(wx.Frame):
             return True
 
     async def initDocker(self):
+        log_debug("Initializing Docker")
         if await self.ensureDockerDesktop():
             self.busy = False
             self.setStatusBarMessage(f"Docker Desktop started")
@@ -321,10 +327,10 @@ class MainWindow(wx.Frame):
                 self.latest_image_id = (await resp.json())["config"]["digest"]
                 # print("latest_image_id", self.latest_image_id)
         except Exception as e:
-            print("Failed to check for updates:")
-            print(e)
+            log_debug("Failed to check for updates: ", e)
 
     async def createContainer(self, collection_dir: str = None):
+        log_debug("Creating a container")
         if not collection_dir:
             dialog = wx.DirDialog(
                 self,
@@ -337,7 +343,8 @@ class MainWindow(wx.Frame):
 
             collection_dir = dialog.GetPath()
             dialog.Destroy()
-
+        log_debug(f"Collection directory: {collection_dir}")
+        
         self.setStatusBarMessage(f"Downloading {IMAGE}, this can take a minute...")
         loopygen_image = await self.client.images.pull(IMAGE + ":latest")
         self.setStatusBarMessage(f"Starting LooPyGen, this can take a minute...")
@@ -367,7 +374,7 @@ class MainWindow(wx.Frame):
 
     async def onStartButton(self, event):
         self.busy = True
-        print("start", event)
+        log_debug("start", event)
         just_started = False
 
         if self.container is None:
@@ -384,6 +391,7 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage("Could not start LooPyGen")
             return
 
+        log_debug("Container started, waiting for UI")
         timed_out_waiting = await wait_until(
             lambda x: (await self.isUIRunning() for _ in "_").__anext__(),
             1,
@@ -395,13 +403,14 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage("Could not start LooPyGen")
             return
 
+        log_debug("UI running")
         self.openUI()
         self.busy = False
         self.setStatusBarMessage("Opening LooPyGen UI")
 
     async def onStopButton(self, event):
         self.busy = True
-        print("stop", event)
+        log_debug("stop", event)
         if (
             self.container
             and (await self.inspectContainer(["State", "Status"])) == "running"
@@ -412,7 +421,7 @@ class MainWindow(wx.Frame):
 
     async def onUpdateButton(self, event):
         self.busy = True
-        print("update", event)
+        log_debug("update", event)
 
         if self.container is None:
             self.busy = False
@@ -437,6 +446,7 @@ class MainWindow(wx.Frame):
         # Get collections path from existing container
         collection_dir = await self.inspectContainer(["Mounts", 0, "Source"])
 
+        log_debug(f"Using collection directory: {collection_dir}")
         # Delete old backup container if it exists
         old_container = await self.getContainerByName("old-loopygen")
         if old_container:
@@ -461,6 +471,7 @@ class MainWindow(wx.Frame):
             self.setStatusBarMessage("Failed to update LooPyGen")
             return
 
+        log_debug("Container started, waiting for UI")
         timed_out_waiting = await wait_until(
             lambda x: (await self.isUIRunning() for _ in "_").__anext__(),
             1,
@@ -484,7 +495,7 @@ class MainWindow(wx.Frame):
 
     async def onNukeButton(self, event):
         self.busy = True
-        print("nuke", event)
+        log_debug("nuke", event)
 
         if not self.container:
             self.busy = False
@@ -502,7 +513,7 @@ class MainWindow(wx.Frame):
             self.busy = False
             return
         dialog.Destroy()
-        print("nuke confirmed")
+        log_debug("nuke confirmed")
 
         # Continue with removing current container and image
         self.setStatusBarMessage("Uninstalling LooPyGen...")
@@ -530,6 +541,7 @@ class MainWindow(wx.Frame):
 
 
 async def main():
+    log_debug("Companion app starting up")
     app = WxAsyncApp(False)
     frame = MainWindow(
         None, "LooPyGen Companion", style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX
@@ -538,6 +550,7 @@ async def main():
     await app.MainLoop()
     if frame.client:
         await frame.client.close()
+        log_debug("Companion app stopped")
 
 
 asyncio.run(main())
