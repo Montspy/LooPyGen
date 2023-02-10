@@ -1,4 +1,7 @@
-# LooPyGen
+# sk33z3r doesn't maintain this, reach out to Montspy instead
+
+
+## LooPyGen
 
 ![Release](https://badgen.net/github/release/sk33z3r/LooPyGen)
 ![Checks](https://badgen.net/github/checks/sk33z3r/LooPyGen)
